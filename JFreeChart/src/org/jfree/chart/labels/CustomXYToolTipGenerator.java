@@ -2,36 +2,35 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * -------------------------------
  * CustomXYItemLabelGenerator.java
  * -------------------------------
- * (C) Copyright 2002-2005, by Richard Atkinson and Contributors.
+ * (C) Copyright 2002-2008, by Richard Atkinson and Contributors.
  *
  * Original Author:  Richard Atkinson;
  * Contributor(s):   David Gilbert (for Object Refinery Limited);
- *
- * $Id: CustomXYToolTipGenerator.java,v 1.3 2005/05/19 15:43:00 mungady Exp $
  *
  * Changes:
  * --------
@@ -41,7 +40,8 @@
  * 13-Aug-2003 : Implemented Cloneable (DG);
  * 17-Nov-2003 : Implemented PublicCloneable (DG);
  * 25-Feb-2004 : Renamed XYToolTipGenerator --> XYItemLabelGenerator (DG);
- * 
+ * 02-Feb-2007 : Removed author tags all over JFreeChart sources (DG);
+ *
  */
 
 package org.jfree.chart.labels;
@@ -53,19 +53,15 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.util.PublicCloneable;
 
 /**
- * A tool tip generator that stores custom tooltips. The dataset passed into 
+ * A tool tip generator that stores custom tooltips. The dataset passed into
  * the generateToolTip method is ignored.
- *
- * @author Richard Atkinson
  */
-public class CustomXYToolTipGenerator implements XYToolTipGenerator, 
-                                                 Cloneable, 
-                                                 PublicCloneable,
-                                                 Serializable {
+public class CustomXYToolTipGenerator implements XYToolTipGenerator,
+        Cloneable, PublicCloneable, Serializable {
 
     /** For serialization. */
-    private static final long serialVersionUID = 8636030004670141362L; 
-    
+    private static final long serialVersionUID = 8636030004670141362L;
+
     /** Storage for the tooltip lists. */
     private List toolTipSeries = new java.util.ArrayList();
 
@@ -144,29 +140,28 @@ public class CustomXYToolTipGenerator implements XYToolTipGenerator,
      *
      * @return The tooltip text.
      */
+    @Override
     public String generateToolTip(XYDataset data, int series, int item) {
-
         return getToolTipText(series, item);
-
     }
 
     /**
      * Returns an independent copy of the generator.
-     * 
+     *
      * @return A clone.
-     * 
+     *
      * @throws CloneNotSupportedException if cloning is not supported.
      */
+    @Override
     public Object clone() throws CloneNotSupportedException {
-        
-        CustomXYToolTipGenerator clone 
+        CustomXYToolTipGenerator clone
             = (CustomXYToolTipGenerator) super.clone();
         if (this.toolTipSeries != null) {
             clone.toolTipSeries = new java.util.ArrayList(this.toolTipSeries);
         }
         return clone;
-        
     }
+
     /**
      * Tests if this object is equal to another.
      *
@@ -174,12 +169,11 @@ public class CustomXYToolTipGenerator implements XYToolTipGenerator,
      *
      * @return A boolean.
      */
+    @Override
     public boolean equals(Object obj) {
-
         if (obj == this) {
             return true;
         }
-
         if (obj instanceof CustomXYToolTipGenerator) {
             CustomXYToolTipGenerator generator = (CustomXYToolTipGenerator) obj;
             boolean result = true;
@@ -197,9 +191,7 @@ public class CustomXYToolTipGenerator implements XYToolTipGenerator,
             }
             return result;
         }
-
         return false;
-
     }
 
 }

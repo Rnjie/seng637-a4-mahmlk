@@ -2,38 +2,38 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * ----------------
  * CompassPlot.java
  * ----------------
- * (C) Copyright 2002-2005, by the Australian Antarctic Division and 
+ * (C) Copyright 2002-2013, by the Australian Antarctic Division and
  * Contributors.
  *
  * Original Author:  Bryan Scott (for the Australian Antarctic Division);
  * Contributor(s):   David Gilbert (for Object Refinery Limited);
  *                   Arnaud Lelievre;
- *
- * $Id: CompassPlot.java,v 1.13 2005/07/19 14:23:56 mungady Exp $
+ *                   Martin Hoeller;
  *
  * Changes:
  * --------
@@ -42,7 +42,7 @@
  * 26-Mar-2003 : Implemented Serializable (DG);
  * 27-Mar-2003 : Changed MeterDataset to ValueDataset (DG);
  * 21-Aug-2003 : Implemented Cloneable (DG);
- * 08-Sep-2003 : Added internationalization via use of properties 
+ * 08-Sep-2003 : Added internationalization via use of properties
  *               resourceBundle (RFE 690236) (AL);
  * 09-Sep-2003 : Changed Color --> Paint (DG);
  * 15-Sep-2003 : Added null data value check (bug report 805009) (DG);
@@ -52,8 +52,16 @@
  * 16-Mar-2004 : Enabled LongNeedle to rotate about center.
  * 11-Jan-2005 : Removed deprecated code in preparation for 1.0.0 release (DG);
  * 17-Apr-2005 : Fixed bug in clone() method (DG);
- * 16-Jun-2005 : Renamed getData() --> getDatasets() and 
+ * 05-May-2005 : Updated draw() method parameters (DG);
+ * 08-Jun-2005 : Fixed equals() method to handle GradientPaint (DG);
+ * 16-Jun-2005 : Renamed getData() --> getDatasets() and
  *               addData() --> addDataset() (DG);
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 20-Mar-2007 : Fixed serialization (DG);
+ * 18-Dec-2008 : Use ResourceBundleWrapper - see patch 1607918 by
+ *               Jess Thrysoee (DG);
+ * 10-Oct-2011 : localization fix: bug #3353913 (MH);
+ * 02-Jul-2013 : Use ParamChecks (DG);
  *
  */
 
@@ -70,15 +78,14 @@ import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 
 import org.jfree.chart.LegendItemCollection;
-import org.jfree.chart.block.ArrangeParams;
-import org.jfree.chart.block.ArrangeResult;
-import org.jfree.chart.block.Block;
-import org.jfree.chart.block.RectangleConstraint;
 import org.jfree.chart.event.PlotChangeEvent;
 import org.jfree.chart.needle.ArrowNeedle;
 import org.jfree.chart.needle.LineNeedle;
@@ -90,8 +97,11 @@ import org.jfree.chart.needle.PlumNeedle;
 import org.jfree.chart.needle.PointerNeedle;
 import org.jfree.chart.needle.ShipNeedle;
 import org.jfree.chart.needle.WindNeedle;
+import org.jfree.chart.util.ParamChecks;
+import org.jfree.chart.util.ResourceBundleWrapper;
 import org.jfree.data.general.DefaultValueDataset;
 import org.jfree.data.general.ValueDataset;
+import org.jfree.io.SerialUtilities;
 import org.jfree.ui.RectangleInsets;
 import org.jfree.util.ObjectUtilities;
 import org.jfree.util.PaintUtilities;
@@ -99,18 +109,15 @@ import org.jfree.util.PaintUtilities;
 /**
  * A specialised plot that draws a compass to indicate a direction based on the
  * value from a {@link ValueDataset}.
- *
- * @author Bryan Scott
  */
-public class CompassPlot extends Plot 
-                         implements Block, Cloneable, Serializable {
+public class CompassPlot extends Plot implements Cloneable, Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = 6924382802125527395L;
-    
+
     /** The default label font. */
-    public static final Font DEFAULT_LABEL_FONT 
-        = new Font("SansSerif", Font.BOLD, 10);
+    public static final Font DEFAULT_LABEL_FONT = new Font("SansSerif",
+            Font.BOLD, 10);
 
     /** A constant for the label type. */
     public static final int NO_LABELS = 0;
@@ -124,14 +131,17 @@ public class CompassPlot extends Plot
     /** The label font. */
     private Font labelFont;
 
+    /** A flag that controls whether or not a border is drawn. */
+    private boolean drawBorder = false;
+
     /** The rose highlight paint. */
-    private Paint roseHighlightPaint = Color.black;
+    private transient Paint roseHighlightPaint = Color.black;
 
     /** The rose paint. */
-    private Paint rosePaint = Color.yellow;
+    private transient Paint rosePaint = Color.yellow;
 
     /** The rose center paint. */
-    private Paint roseCenterPaint = Color.white;
+    private transient Paint roseCenterPaint = Color.white;
 
     /** The compass font. */
     private Font compassFont = new Font("Arial", Font.PLAIN, 10);
@@ -158,10 +168,12 @@ public class CompassPlot extends Plot
     private MeterNeedle[] seriesNeedle = new MeterNeedle[1];
 
     /** The resourceBundle for the localization. */
-    protected static ResourceBundle localizationResources =
-        ResourceBundle.getBundle("org.jfree.chart.plot.LocalizationBundle");
+    protected static ResourceBundle localizationResources
+            = ResourceBundleWrapper.getBundle(
+                    "org.jfree.chart.plot.LocalizationBundle");
 
-    /** The count to complete one revolution.  Can be arbitaly set
+    /**
+     * The count to complete one revolution.  Can be arbitrarily set
      * For degrees (the default) it is 360, for radians this is 2*Pi, etc
      */
     protected double revolutionDistance = 360;
@@ -179,162 +191,183 @@ public class CompassPlot extends Plot
      * @param dataset  the dataset for the plot (<code>null</code> permitted).
      */
     public CompassPlot(ValueDataset dataset) {
-
         super();
-
         if (dataset != null) {
             this.datasets[0] = dataset;
             dataset.addChangeListener(this);
         }
-
-
         this.circle1 = new Ellipse2D.Double();
         this.circle2 = new Ellipse2D.Double();
         this.rect1   = new Rectangle2D.Double();
         setSeriesNeedle(0);
-
     }
 
     /**
-     * Returns the label type.  Defined by the constants: NO_LABELS, 
-     * VALUE_LABELS.
+     * Returns the label type.  Defined by the constants: {@link #NO_LABELS}
+     * and {@link #VALUE_LABELS}.
      *
      * @return The label type.
+     *
+     * @see #setLabelType(int)
      */
     public int getLabelType() {
+        // FIXME: this attribute is never used - deprecate?
         return this.labelType;
     }
 
     /**
-     * Sets the label type.
-     * <P>
-     * Valid types are defined by the following constants: NO_LABELS, 
-     * VALUE_LABELS.
+     * Sets the label type (either {@link #NO_LABELS} or {@link #VALUE_LABELS}.
      *
      * @param type  the type.
+     *
+     * @see #getLabelType()
      */
     public void setLabelType(int type) {
-
+        // FIXME: this attribute is never used - deprecate?
         if ((type != NO_LABELS) && (type != VALUE_LABELS)) {
             throw new IllegalArgumentException(
-                "MeterPlot.setLabelType(int): unrecognised type."
-            );
+                    "MeterPlot.setLabelType(int): unrecognised type.");
         }
-
         if (this.labelType != type) {
             this.labelType = type;
-            notifyListeners(new PlotChangeEvent(this));
+            fireChangeEvent();
         }
-
     }
 
     /**
      * Returns the label font.
      *
      * @return The label font.
+     *
+     * @see #setLabelFont(Font)
      */
     public Font getLabelFont() {
+        // FIXME: this attribute is not used - deprecate?
         return this.labelFont;
     }
 
     /**
-     * Sets the label font.
-     * <P>
-     * Notifies registered listeners that the plot has been changed.
+     * Sets the label font and sends a {@link PlotChangeEvent} to all
+     * registered listeners.
      *
      * @param font  the new label font.
+     *
+     * @see #getLabelFont()
      */
     public void setLabelFont(Font font) {
-
-        // check arguments...
-        if (font == null) {
-            throw new IllegalArgumentException("Null 'font' not allowed.");
-        }
-
-        // make the change...
-        if (!this.labelFont.equals(font)) {
-            this.labelFont = font;
-            notifyListeners(new PlotChangeEvent(this));
-        }
-
+        // FIXME: this attribute is not used - deprecate?
+        ParamChecks.nullNotPermitted(font, "font");
+        this.labelFont = font;
+        fireChangeEvent();
     }
 
     /**
      * Returns the paint used to fill the outer circle of the compass.
-     * 
+     *
      * @return The paint (never <code>null</code>).
+     *
+     * @see #setRosePaint(Paint)
      */
     public Paint getRosePaint() {
-        return this.rosePaint;   
-    }
-    
-    /**
-     * Sets the paint used to fill the outer circle of the compass, 
-     * and sends a {@link PlotChangeEvent} to all registered listeners.
-     * 
-     * @param paint  the paint (<code>null</code> not permitted).
-     */
-    public void setRosePaint(Paint paint) {
-        if (paint == null) {   
-            throw new IllegalArgumentException("Null 'paint' argument.");
-        }
-        this.rosePaint = paint;
-        notifyListeners(new PlotChangeEvent(this));        
+        return this.rosePaint;
     }
 
     /**
-     * Returns the paint used to fill the inner background area of the 
+     * Sets the paint used to fill the outer circle of the compass,
+     * and sends a {@link PlotChangeEvent} to all registered listeners.
+     *
+     * @param paint  the paint (<code>null</code> not permitted).
+     *
+     * @see #getRosePaint()
+     */
+    public void setRosePaint(Paint paint) {
+        ParamChecks.nullNotPermitted(paint, "paint");
+        this.rosePaint = paint;
+        fireChangeEvent();
+    }
+
+    /**
+     * Returns the paint used to fill the inner background area of the
      * compass.
-     * 
+     *
      * @return The paint (never <code>null</code>).
+     *
+     * @see #setRoseCenterPaint(Paint)
      */
     public Paint getRoseCenterPaint() {
-        return this.roseCenterPaint;   
+        return this.roseCenterPaint;
     }
-    
+
     /**
-     * Sets the paint used to fill the inner background area of the compass, 
+     * Sets the paint used to fill the inner background area of the compass,
      * and sends a {@link PlotChangeEvent} to all registered listeners.
-     * 
+     *
      * @param paint  the paint (<code>null</code> not permitted).
+     *
+     * @see #getRoseCenterPaint()
      */
     public void setRoseCenterPaint(Paint paint) {
-        if (paint == null) {   
-            throw new IllegalArgumentException("Null 'paint' argument.");
-        }
+        ParamChecks.nullNotPermitted(paint, "paint");
         this.roseCenterPaint = paint;
-        notifyListeners(new PlotChangeEvent(this));        
+        fireChangeEvent();
     }
-    
+
     /**
      * Returns the paint used to draw the circles, symbols and labels on the
      * compass.
-     * 
+     *
      * @return The paint (never <code>null</code>).
+     *
+     * @see #setRoseHighlightPaint(Paint)
      */
     public Paint getRoseHighlightPaint() {
-        return this.roseHighlightPaint;   
+        return this.roseHighlightPaint;
     }
-    
+
     /**
-     * Sets the paint used to draw the circles, symbols and labels of the 
+     * Sets the paint used to draw the circles, symbols and labels of the
      * compass, and sends a {@link PlotChangeEvent} to all registered listeners.
-     * 
+     *
      * @param paint  the paint (<code>null</code> not permitted).
+     *
+     * @see #getRoseHighlightPaint()
      */
     public void setRoseHighlightPaint(Paint paint) {
-        if (paint == null) {   
-            throw new IllegalArgumentException("Null 'paint' argument.");
-        }
+        ParamChecks.nullNotPermitted(paint, "paint");
         this.roseHighlightPaint = paint;
-        notifyListeners(new PlotChangeEvent(this));        
+        fireChangeEvent();
     }
-    
+
+    /**
+     * Returns a flag that controls whether or not a border is drawn.
+     *
+     * @return The flag.
+     *
+     * @see #setDrawBorder(boolean)
+     */
+    public boolean getDrawBorder() {
+        return this.drawBorder;
+    }
+
+    /**
+     * Sets a flag that controls whether or not a border is drawn.
+     *
+     * @param status  the flag status.
+     *
+     * @see #getDrawBorder()
+     */
+    public void setDrawBorder(boolean status) {
+        this.drawBorder = status;
+        fireChangeEvent();
+    }
+
     /**
      * Sets the series paint.
      *
      * @param series  the series index.
      * @param paint  the paint.
+     *
+     * @see #setSeriesOutlinePaint(int, Paint)
      */
     public void setSeriesPaint(int series, Paint paint) {
        // super.setSeriesPaint(series, paint);
@@ -348,6 +381,8 @@ public class CompassPlot extends Plot
      *
      * @param series  the series index.
      * @param p  the paint.
+     *
+     * @see #setSeriesPaint(int, Paint)
      */
     public void setSeriesOutlinePaint(int series, Paint p) {
 
@@ -362,12 +397,14 @@ public class CompassPlot extends Plot
      *
      * @param series  the series index.
      * @param stroke  the stroke.
+     *
+     * @see #setSeriesOutlinePaint(int, Paint)
      */
     public void setSeriesOutlineStroke(int series, Stroke stroke) {
 
-      if ((series >= 0) && (series < this.seriesNeedle.length)) {
-        this.seriesNeedle[series].setOutlineStroke(stroke);
-      }
+        if ((series >= 0) && (series < this.seriesNeedle.length)) {
+            this.seriesNeedle[series].setOutlineStroke(stroke);
+        }
 
     }
 
@@ -375,6 +412,8 @@ public class CompassPlot extends Plot
      * Sets the needle type.
      *
      * @param type  the type.
+     *
+     * @see #setSeriesNeedle(int, int)
      */
     public void setSeriesNeedle(int type) {
         setSeriesNeedle(0, type);
@@ -396,6 +435,8 @@ public class CompassPlot extends Plot
      * </ul>
      * @param index  the series index.
      * @param type  the needle type.
+     *
+     * @see #setSeriesNeedle(int)
      */
     public void setSeriesNeedle(int index, int type) {
         switch (type) {
@@ -444,26 +485,25 @@ public class CompassPlot extends Plot
     }
 
     /**
-     * Sets the needle for a series.
+     * Sets the needle for a series and sends a {@link PlotChangeEvent} to all
+     * registered listeners.
      *
      * @param index  the series index.
      * @param needle  the needle.
      */
     public void setSeriesNeedle(int index, MeterNeedle needle) {
-
         if ((needle != null) && (index < this.seriesNeedle.length)) {
             this.seriesNeedle[index] = needle;
         }
-        notifyListeners(new PlotChangeEvent(this));
-
+        fireChangeEvent();
     }
 
     /**
-     * Returns the dataset.
-     * <P>
-     * Provided for convenience.
+     * Returns an array of dataset references for the plot.
      *
      * @return The dataset for the plot, cast as a ValueDataset.
+     *
+     * @see #addDataset(ValueDataset)
      */
     public ValueDataset[] getDatasets() {
         return this.datasets;
@@ -472,7 +512,9 @@ public class CompassPlot extends Plot
     /**
      * Adds a dataset to the compass.
      *
-     * @param dataset  the new dataset.
+     * @param dataset  the new dataset (<code>null</code> ignored).
+     *
+     * @see #addDataset(ValueDataset, MeterNeedle)
      */
     public void addDataset(ValueDataset dataset) {
         addDataset(dataset, null);
@@ -481,8 +523,8 @@ public class CompassPlot extends Plot
     /**
      * Adds a dataset to the compass.
      *
-     * @param dataset  the new dataset.
-     * @param needle  the needle.
+     * @param dataset  the new dataset (<code>null</code> ignored).
+     * @param needle  the needle (<code>null</code> permitted).
      */
     public void addDataset(ValueDataset dataset, MeterNeedle needle) {
 
@@ -513,61 +555,38 @@ public class CompassPlot extends Plot
     }
 
     /**
-     * Arranges the contents of the block, within the given constraints, and 
-     * returns the block size.
-     * 
-     * @param g2  the graphics device.
-     * @param constraint  the constraint (<code>null</code> not permitted).
-     * @param params  the layout parameters (<code>null</code> not permitted).
-     * 
-     * @return The layout result.
-     */
-    public ArrangeResult arrange(Graphics2D g2, RectangleConstraint constraint, 
-            ArrangeParams params) {
-        
-        // there isn't any content to arrange, so we just need to return the
-        // size for the given constraint
-        ArrangeResult result = params.getRecyclableResult();
-        double w = constraint.calculateConstrainedWidth(getDefaultWidth());
-        double h = constraint.calculateConstrainedHeight(getDefaultHeight());
-        if (result != null) {
-            result.setSize(w, h);
-        }
-        else {
-            result = new ArrangeResult(w, h, null);
-        }
-        return result;
-        
-    }
-    
-    /**
-     * Draws the plot on a Java 2D graphics device (such as the screen or a 
+     * Draws the plot on a Java 2D graphics device (such as the screen or a
      * printer).
      *
      * @param g2  the graphics device.
-     * @param plotArea  the area within which the plot should be drawn.
+     * @param area  the area within which the plot should be drawn.
+     * @param anchor  the anchor point (<code>null</code> permitted).
      * @param parentState  the state from the parent plot, if there is one.
      * @param info  collects info about the drawing.
      */
-    public void draw(Graphics2D g2, Rectangle2D plotArea, Point2D anchor, 
+    @Override
+    public void draw(Graphics2D g2, Rectangle2D area, Point2D anchor,
                      PlotState parentState, PlotRenderingInfo info) {
 
-        int outerRadius = 0;
-        int innerRadius = 0;
+        int outerRadius, innerRadius;
         int x1, y1, x2, y2;
         double a;
 
         if (info != null) {
-            info.setPlotArea(plotArea);
+            info.setPlotArea(area);
         }
 
-        RectangleInsets margin = getMargin();
-        margin.trim(plotArea);
+        // adjust for insets...
+        RectangleInsets insets = getInsets();
+        insets.trim(area);
 
-        drawBackground(g2, plotArea);
+        // draw the background
+        if (this.drawBorder) {
+            drawBackground(g2, area);
+        }
 
-        int midX = (int) (plotArea.getWidth() / 2);
-        int midY = (int) (plotArea.getHeight() / 2);
+        int midX = (int) (area.getWidth() / 2);
+        int midY = (int) (area.getHeight() / 2);
         int radius = midX;
         if (midY < midX) {
             radius = midY;
@@ -575,12 +594,12 @@ public class CompassPlot extends Plot
         --radius;
         int diameter = 2 * radius;
 
-        midX += (int) plotArea.getMinX();
-        midY += (int) plotArea.getMinY();
+        midX += (int) area.getMinX();
+        midY += (int) area.getMinY();
 
         this.circle1.setFrame(midX - radius, midY - radius, diameter, diameter);
         this.circle2.setFrame(
-            midX - radius + 15, midY - radius + 15, 
+            midX - radius + 15, midY - radius + 15,
             diameter - 30, diameter - 30
         );
         g2.setPaint(this.rosePaint);
@@ -619,10 +638,8 @@ public class CompassPlot extends Plot
             a = Math.toRadians(w);
             x1 = midX - ((int) (Math.sin(a) * innerRadius));
             y1 = midY - ((int) (Math.cos(a) * innerRadius));
-            g2.fillOval(
-                x1 - outerRadius, y1 - outerRadius, 
-                2 * outerRadius, 2 * outerRadius
-            );
+            g2.fillOval(x1 - outerRadius, y1 - outerRadius, 2 * outerRadius,
+                    2 * outerRadius);
         }
 
         /// Squares
@@ -643,10 +660,10 @@ public class CompassPlot extends Plot
         innerRadius = radius - 42;
         Font f = getCompassFont(radius);
         g2.setFont(f);
-        g2.drawString("N", midX - 5, midY - innerRadius + f.getSize());
-        g2.drawString("S", midX - 5, midY + innerRadius - 5);
-        g2.drawString("W", midX - innerRadius + 5, midY + 5);
-        g2.drawString("E", midX + innerRadius - f.getSize(), midY + 5);
+        g2.drawString(localizationResources.getString("N"), midX - 5, midY - innerRadius + f.getSize());
+        g2.drawString(localizationResources.getString("S"), midX - 5, midY + innerRadius - 5);
+        g2.drawString(localizationResources.getString("W"), midX - innerRadius + 5, midY + 5);
+        g2.drawString(localizationResources.getString("E"), midX + innerRadius - f.getSize(), midY + 5);
 
         // plot the data (unless the dataset is null)...
         y1 = radius / 2;
@@ -655,19 +672,23 @@ public class CompassPlot extends Plot
             (midX - x1), (midY - y1), (2 * x1), (2 * y1)
         );
         int x = this.seriesNeedle.length;
-        int current = 0;
-        double value = 0;
+        int current;
+        double value;
         int i = (this.datasets.length - 1);
         for (; i >= 0; --i) {
             ValueDataset data = this.datasets[i];
 
             if (data != null && data.getValue() != null) {
-                value = (data.getValue().doubleValue()) 
+                value = (data.getValue().doubleValue())
                     % this.revolutionDistance;
                 value = value / this.revolutionDistance * 360;
                 current = i % x;
                 this.seriesNeedle[current].draw(g2, needleArea, value);
             }
+        }
+
+        if (this.drawBorder) {
+            drawOutline(g2, area);
         }
 
     }
@@ -677,16 +698,18 @@ public class CompassPlot extends Plot
      *
      * @return A string describing the plot.
      */
+    @Override
     public String getPlotType() {
         return localizationResources.getString("Compass_Plot");
     }
 
     /**
-     * Returns the legend items for the plot.  For now, no legend is available 
+     * Returns the legend items for the plot.  For now, no legend is available
      * - this method returns null.
      *
      * @return The legend items.
      */
+    @Override
     public LegendItemCollection getLegendItems() {
         return null;
     }
@@ -696,27 +719,25 @@ public class CompassPlot extends Plot
      *
      * @param percent  the zoom amount.
      */
+    @Override
     public void zoom(double percent) {
         // no zooming possible
     }
 
     /**
-     * Returns the font for the compass.
+     * Returns the font for the compass, adjusted for the size of the plot.
      *
      * @param radius the radius.
      *
      * @return The font.
      */
     protected Font getCompassFont(int radius) {
-
         float fontSize = radius / 10.0f;
         if (fontSize < 8) {
             fontSize = 8;
         }
-
         Font newFont = this.compassFont.deriveFont(fontSize);
         return newFont;
-
     }
 
     /**
@@ -726,6 +747,7 @@ public class CompassPlot extends Plot
      *
      * @return A boolean.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
@@ -743,14 +765,17 @@ public class CompassPlot extends Plot
         if (!ObjectUtilities.equal(this.labelFont, that.labelFont)) {
             return false;
         }
-        if (!PaintUtilities.equal(this.roseHighlightPaint, 
+        if (this.drawBorder != that.drawBorder) {
+            return false;
+        }
+        if (!PaintUtilities.equal(this.roseHighlightPaint,
                 that.roseHighlightPaint)) {
             return false;
         }
         if (!PaintUtilities.equal(this.rosePaint, that.rosePaint)) {
             return false;
         }
-        if (!PaintUtilities.equal(this.roseCenterPaint, 
+        if (!PaintUtilities.equal(this.roseCenterPaint,
                 that.roseCenterPaint)) {
             return false;
         }
@@ -764,26 +789,21 @@ public class CompassPlot extends Plot
             return false;
         }
         return true;
+
     }
 
     /**
-     * Returns a clone of the annotation.
+     * Returns a clone of the plot.
      *
      * @return A clone.
      *
-     * @throws CloneNotSupportedException  this class will not throw this 
+     * @throws CloneNotSupportedException  this class will not throw this
      *         exception, but subclasses (if any) might.
      */
+    @Override
     public Object clone() throws CloneNotSupportedException {
 
         CompassPlot clone = (CompassPlot) super.clone();
-        //private int labelType <-- primitive
-        //private Font labelFont <-- immutable
-        //private boolean drawBorder = false <-- primitive
-        //private Color roseHighlightColour <-- immutable
-        //private Color roseColour <-- immutable
-        //private Color roseCenterColour <-- immutable
-        //private Font compassFont <-- immutable
         if (this.circle1 != null) {
             clone.circle1 = (Ellipse2D) this.circle1.clone();
         }
@@ -797,7 +817,7 @@ public class CompassPlot extends Plot
             clone.a2 = (Area) this.a2.clone();
         }
         if (this.rect1 != null) {
-            clone.rect1 = (Rectangle2D) this.rect1.clone();            
+            clone.rect1 = (Rectangle2D) this.rect1.clone();
         }
         clone.datasets = (ValueDataset[]) this.datasets.clone();
         clone.seriesNeedle = (MeterNeedle[]) this.seriesNeedle.clone();
@@ -813,10 +833,12 @@ public class CompassPlot extends Plot
     }
 
     /**
-     * Sets the count to complete one revolution.  Can be arbitaly set
+     * Sets the count to complete one revolution.  Can be arbitrarily set
      * For degrees (the default) it is 360, for radians this is 2*Pi, etc
      *
      * @param size the count to complete one revolution.
+     *
+     * @see #getRevolutionDistance()
      */
     public void setRevolutionDistance(double size) {
         if (size > 0) {
@@ -827,10 +849,42 @@ public class CompassPlot extends Plot
     /**
      * Gets the count to complete one revolution.
      *
-     * @return The count to complete one revolution
+     * @return The count to complete one revolution.
+     *
+     * @see #setRevolutionDistance(double)
      */
     public double getRevolutionDistance() {
         return this.revolutionDistance;
+    }
+
+    /**
+     * Provides serialization support.
+     *
+     * @param stream  the output stream.
+     *
+     * @throws IOException  if there is an I/O error.
+     */
+    private void writeObject(ObjectOutputStream stream) throws IOException {
+        stream.defaultWriteObject();
+        SerialUtilities.writePaint(this.rosePaint, stream);
+        SerialUtilities.writePaint(this.roseCenterPaint, stream);
+        SerialUtilities.writePaint(this.roseHighlightPaint, stream);
+    }
+
+    /**
+     * Provides serialization support.
+     *
+     * @param stream  the input stream.
+     *
+     * @throws IOException  if there is an I/O error.
+     * @throws ClassNotFoundException  if there is a classpath problem.
+     */
+    private void readObject(ObjectInputStream stream)
+        throws IOException, ClassNotFoundException {
+        stream.defaultReadObject();
+        this.rosePaint = SerialUtilities.readPaint(stream);
+        this.roseCenterPaint = SerialUtilities.readPaint(stream);
+        this.roseHighlightPaint = SerialUtilities.readPaint(stream);
     }
 
 }

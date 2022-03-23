@@ -2,36 +2,35 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * ------------------
  * SeriesDataset.java
  * ------------------
- * (C) Copyright 2000-2005, by Object Refinery Limited.
+ * (C) Copyright 2000-2008, by Object Refinery Limited.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
  * Contributor(s):   -;
- *
- * $Id: SeriesDataset.java,v 1.4 2005/05/20 14:51:10 mungady Exp $
  *
  * Changes
  * -------
@@ -39,7 +38,7 @@
  * 07-Oct-2002 : Fixed errors reported by Checkstyle (DG);
  * 19-May-2005 : Changed getSeriesName() --> getSeriesKey() and added indexOf()
  *               method (DG);
- * 
+ *
  */
 
 package org.jfree.data.general;
@@ -58,9 +57,7 @@ import org.jfree.data.xy.XYZDataset;
  * @see IntervalXYZDataset
  * @see XYDataset
  * @see XYZDataset
- *
  */
-
 public interface SeriesDataset extends Dataset {
 
     /**
@@ -73,19 +70,21 @@ public interface SeriesDataset extends Dataset {
     /**
      * Returns the key for a series.
      *
-     * @param series  the series (zero-based index).
+     * @param series  the series index (in the range <code>0</code> to
+     *     <code>getSeriesCount() - 1</code>).
      *
      * @return The key for the series.
      */
     public Comparable getSeriesKey(int series);
 
     /**
-     * Returns the index of the named series, or -1.
-     * 
-     * @param seriesKey  the series key.
-     * 
-     * @return The index.
+     * Returns the index of the series with the specified key, or -1 if there
+     * is no such series in the dataset.
+     *
+     * @param seriesKey  the series key (<code>null</code> permitted).
+     *
+     * @return The index, or -1.
      */
     public int indexOf(Comparable seriesKey);
-    
+
 }

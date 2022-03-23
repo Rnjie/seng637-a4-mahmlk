@@ -2,54 +2,56 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * --------------------
  * CombinedDataset.java
  * --------------------
- * (C) Copyright 2001-2005, by Bill Kelemen and Contributors.
+ * (C) Copyright 2001-2009, by Bill Kelemen and Contributors.
  *
  * Original Author:  Bill Kelemen;
  * Contributor(s):   David Gilbert (for Object Refinery Limited);
- *
- * $Id: CombinedDataset.java,v 1.6 2005/05/20 08:20:04 mungady Exp $
  *
  * Changes
  * -------
  * 06-Dec-2001 : Version 1 (BK);
  * 27-Dec-2001 : Fixed bug in getChildPosition method (BK);
- * 29-Dec-2001 : Fixed bug in getChildPosition method with complex 
+ * 29-Dec-2001 : Fixed bug in getChildPosition method with complex
  *               CombinePlot (BK);
- * 05-Feb-2002 : Small addition to the interface HighLowDataset, as requested 
+ * 05-Feb-2002 : Small addition to the interface HighLowDataset, as requested
  *               by Sylvain Vieujot (DG);
- * 14-Feb-2002 : Added bug fix for IntervalXYDataset methods, submitted by 
+ * 14-Feb-2002 : Added bug fix for IntervalXYDataset methods, submitted by
  *               Gyula Kun-Szabo (DG);
  * 11-Jun-2002 : Updated for change in event constructor (DG);
  * 04-Oct-2002 : Fixed errors reported by Checkstyle (DG);
- * 06-May-2004 : Now extends AbstractIntervalXYDataset and added other methods 
+ * 06-May-2004 : Now extends AbstractIntervalXYDataset and added other methods
  *               that return double primitives (DG);
- * 15-Jul-2004 : Switched getX() with getXValue() and getY() with 
+ * 15-Jul-2004 : Switched getX() with getXValue() and getY() with
  *               getYValue() (DG);
- *
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 02-Feb-2007 : Removed author tags from all over JFreeChart sources (DG);
+ * 04-Feb-2009 : Deprecated the class (DG);
+ * 
  */
 
 package org.jfree.data.general;
@@ -57,22 +59,22 @@ package org.jfree.data.general;
 import java.util.List;
 
 import org.jfree.data.xy.AbstractIntervalXYDataset;
-import org.jfree.data.xy.OHLCDataset;
 import org.jfree.data.xy.IntervalXYDataset;
+import org.jfree.data.xy.OHLCDataset;
 import org.jfree.data.xy.XYDataset;
 
 /**
- * This class can combine instances of {@link XYDataset}, {@link OHLCDataset} 
- * and {@link IntervalXYDataset} together exposing the union of all the series 
- * under one dataset.  
+ * This class can combine instances of {@link XYDataset}, {@link OHLCDataset}
+ * and {@link IntervalXYDataset} together exposing the union of all the series
+ * under one dataset.
  *
- * @author Bill Kelemen (bill@kelemen-usa.com)
+ * @deprecated As of version 1.0.13.  This class will be removed from
+ *     JFreeChart 1.2.0 onwards.  Anyone needing this facility will need to
+ *     maintain it outside of JFreeChart.
  */
 public class CombinedDataset extends AbstractIntervalXYDataset
-                             implements XYDataset, 
-                                        OHLCDataset, 
-                                        IntervalXYDataset,
-                                        CombinationDataset {
+        implements XYDataset, OHLCDataset, IntervalXYDataset,
+        CombinationDataset {
 
     /** Storage for the datasets we combine. */
     private List datasetInfo = new java.util.ArrayList();
@@ -87,7 +89,7 @@ public class CombinedDataset extends AbstractIntervalXYDataset
     /**
      * Creates a CombinedDataset initialized with an array of SeriesDatasets.
      *
-     * @param data  array of SeriesDataset that contains the SeriesDatasets to 
+     * @param data  array of SeriesDataset that contains the SeriesDatasets to
      *              combine.
      */
     public CombinedDataset(SeriesDataset[] data) {
@@ -153,6 +155,7 @@ public class CombinedDataset extends AbstractIntervalXYDataset
      *
      * @return The number of series in the dataset.
      */
+    @Override
     public int getSeriesCount() {
         return this.datasetInfo.size();
     }
@@ -164,6 +167,7 @@ public class CombinedDataset extends AbstractIntervalXYDataset
      *
      * @return The key for a series.
      */
+    @Override
     public Comparable getSeriesKey(int series) {
         DatasetInfo di = getDatasetInfo(series);
         return di.data.getSeriesKey(di.series);
@@ -176,7 +180,7 @@ public class CombinedDataset extends AbstractIntervalXYDataset
     /**
      * Returns the X-value for the specified series and item.
      * <P>
-     * Note:  throws <code>ClassCastException</code> if the series is not from 
+     * Note:  throws <code>ClassCastException</code> if the series is not from
      * a {@link XYDataset}.
      *
      * @param series  the index of the series of interest (zero-based).
@@ -184,6 +188,7 @@ public class CombinedDataset extends AbstractIntervalXYDataset
      *
      * @return The X-value for the specified series and item.
      */
+    @Override
     public Number getX(int series, int item) {
         DatasetInfo di = getDatasetInfo(series);
         return ((XYDataset) di.data).getX(di.series, item);
@@ -192,7 +197,7 @@ public class CombinedDataset extends AbstractIntervalXYDataset
     /**
      * Returns the Y-value for the specified series and item.
      * <P>
-     * Note:  throws <code>ClassCastException</code> if the series is not from 
+     * Note:  throws <code>ClassCastException</code> if the series is not from
      * a {@link XYDataset}.
      *
      * @param series  the index of the series of interest (zero-based).
@@ -200,6 +205,7 @@ public class CombinedDataset extends AbstractIntervalXYDataset
      *
      * @return The Y-value for the specified series and item.
      */
+    @Override
     public Number getY(int series, int item) {
         DatasetInfo di = getDatasetInfo(series);
         return ((XYDataset) di.data).getY(di.series, item);
@@ -208,13 +214,14 @@ public class CombinedDataset extends AbstractIntervalXYDataset
     /**
      * Returns the number of items in a series.
      * <P>
-     * Note:  throws <code>ClassCastException</code> if the series is not from 
+     * Note:  throws <code>ClassCastException</code> if the series is not from
      * a {@link XYDataset}.
      *
      * @param series  the index of the series of interest (zero-based).
      *
      * @return The number of items in a series.
      */
+    @Override
     public int getItemCount(int series) {
         DatasetInfo di = getDatasetInfo(series);
         return ((XYDataset) di.data).getItemCount(di.series);
@@ -235,27 +242,29 @@ public class CombinedDataset extends AbstractIntervalXYDataset
      *
      * @return The high-value for the specified series and item.
      */
+    @Override
     public Number getHigh(int series, int item) {
         DatasetInfo di = getDatasetInfo(series);
         return ((OHLCDataset) di.data).getHigh(di.series, item);
     }
 
     /**
-     * Returns the high-value (as a double primitive) for an item within a 
+     * Returns the high-value (as a double primitive) for an item within a
      * series.
-     * 
+     *
      * @param series  the series (zero-based index).
      * @param item  the item (zero-based index).
-     * 
+     *
      * @return The high-value.
      */
+    @Override
     public double getHighValue(int series, int item) {
         double result = Double.NaN;
         Number high = getHigh(series, item);
         if (high != null) {
-            result = high.doubleValue();   
+            result = high.doubleValue();
         }
-        return result;   
+        return result;
     }
 
     /**
@@ -269,27 +278,29 @@ public class CombinedDataset extends AbstractIntervalXYDataset
      *
      * @return The low-value for the specified series and item.
      */
+    @Override
     public Number getLow(int series, int item) {
         DatasetInfo di = getDatasetInfo(series);
         return ((OHLCDataset) di.data).getLow(di.series, item);
     }
 
     /**
-     * Returns the low-value (as a double primitive) for an item within a 
+     * Returns the low-value (as a double primitive) for an item within a
      * series.
-     * 
+     *
      * @param series  the series (zero-based index).
      * @param item  the item (zero-based index).
-     * 
+     *
      * @return The low-value.
      */
+    @Override
     public double getLowValue(int series, int item) {
         double result = Double.NaN;
         Number low = getLow(series, item);
         if (low != null) {
-            result = low.doubleValue();   
+            result = low.doubleValue();
         }
-        return result;   
+        return result;
     }
 
     /**
@@ -303,27 +314,29 @@ public class CombinedDataset extends AbstractIntervalXYDataset
      *
      * @return The open-value for the specified series and item.
      */
+    @Override
     public Number getOpen(int series, int item) {
         DatasetInfo di = getDatasetInfo(series);
         return ((OHLCDataset) di.data).getOpen(di.series, item);
     }
 
     /**
-     * Returns the open-value (as a double primitive) for an item within a 
+     * Returns the open-value (as a double primitive) for an item within a
      * series.
-     * 
+     *
      * @param series  the series (zero-based index).
      * @param item  the item (zero-based index).
-     * 
+     *
      * @return The open-value.
      */
+    @Override
     public double getOpenValue(int series, int item) {
         double result = Double.NaN;
         Number open = getOpen(series, item);
         if (open != null) {
-            result = open.doubleValue();   
+            result = open.doubleValue();
         }
-        return result;   
+        return result;
     }
 
     /**
@@ -337,27 +350,29 @@ public class CombinedDataset extends AbstractIntervalXYDataset
      *
      * @return The close-value for the specified series and item.
      */
+    @Override
     public Number getClose(int series, int item) {
         DatasetInfo di = getDatasetInfo(series);
         return ((OHLCDataset) di.data).getClose(di.series, item);
     }
 
     /**
-     * Returns the close-value (as a double primitive) for an item within a 
+     * Returns the close-value (as a double primitive) for an item within a
      * series.
-     * 
+     *
      * @param series  the series (zero-based index).
      * @param item  the item (zero-based index).
-     * 
+     *
      * @return The close-value.
      */
+    @Override
     public double getCloseValue(int series, int item) {
         double result = Double.NaN;
         Number close = getClose(series, item);
         if (close != null) {
-            result = close.doubleValue();   
+            result = close.doubleValue();
         }
-        return result;   
+        return result;
     }
 
     /**
@@ -371,27 +386,29 @@ public class CombinedDataset extends AbstractIntervalXYDataset
      *
      * @return The volume value for the specified series and item.
      */
+    @Override
     public Number getVolume(int series, int item) {
         DatasetInfo di = getDatasetInfo(series);
         return ((OHLCDataset) di.data).getVolume(di.series, item);
     }
 
     /**
-     * Returns the volume-value (as a double primitive) for an item within a 
+     * Returns the volume-value (as a double primitive) for an item within a
      * series.
-     * 
+     *
      * @param series  the series (zero-based index).
      * @param item  the item (zero-based index).
-     * 
+     *
      * @return The volume-value.
      */
+    @Override
     public double getVolumeValue(int series, int item) {
         double result = Double.NaN;
         Number volume = getVolume(series, item);
         if (volume != null) {
-            result = volume.doubleValue();   
+            result = volume.doubleValue();
         }
-        return result;   
+        return result;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -406,6 +423,7 @@ public class CombinedDataset extends AbstractIntervalXYDataset
      *
      * @return The value.
      */
+    @Override
     public Number getStartX(int series, int item) {
         DatasetInfo di = getDatasetInfo(series);
         if (di.data instanceof IntervalXYDataset) {
@@ -424,6 +442,7 @@ public class CombinedDataset extends AbstractIntervalXYDataset
      *
      * @return The value.
      */
+    @Override
     public Number getEndX(int series, int item) {
         DatasetInfo di = getDatasetInfo(series);
         if (di.data instanceof IntervalXYDataset) {
@@ -442,6 +461,7 @@ public class CombinedDataset extends AbstractIntervalXYDataset
      *
      * @return The starting Y value for the specified series and item.
      */
+    @Override
     public Number getStartY(int series, int item) {
         DatasetInfo di = getDatasetInfo(series);
         if (di.data instanceof IntervalXYDataset) {
@@ -460,6 +480,7 @@ public class CombinedDataset extends AbstractIntervalXYDataset
      *
      * @return The ending Y value for the specified series and item.
      */
+    @Override
     public Number getEndY(int series, int item) {
         DatasetInfo di = getDatasetInfo(series);
         if (di.data instanceof IntervalXYDataset) {
@@ -481,13 +502,14 @@ public class CombinedDataset extends AbstractIntervalXYDataset
      *
      * @return The parent Dataset of this combination or <code>null</code>.
      */
+    @Override
     public SeriesDataset getParent() {
 
         SeriesDataset parent = null;
         for (int i = 0; i < this.datasetInfo.size(); i++) {
             SeriesDataset child = getDatasetInfo(i).data;
             if (child instanceof CombinationDataset) {
-                SeriesDataset childParent 
+                SeriesDataset childParent
                     = ((CombinationDataset) child).getParent();
                 if (parent == null) {
                     parent = childParent;
@@ -514,6 +536,7 @@ public class CombinedDataset extends AbstractIntervalXYDataset
      *
      * @see #getParent()
      */
+    @Override
     public int[] getMap() {
 
         int[] map = null;

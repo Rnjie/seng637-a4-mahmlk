@@ -2,7 +2,7 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
@@ -16,22 +16,21 @@
  * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, 
+ * USA.  
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * ------------------------------
  * HighLowItemLabelGenerator.java
  * ------------------------------
- * (C) Copyright 2001-2005, by Object Refinery Limited.
+ * (C) Copyright 2001-2013, by Object Refinery Limited.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
  * Contributor(s):   David Basten;
- *
- * $Id: HighLowItemLabelGenerator.java,v 1.7 2005/05/20 08:20:03 mungady Exp $
  *
  * Changes
  * -------
@@ -47,6 +46,7 @@
  * 15-Jul-2004 : Switched getX() with getXValue() and getY() with 
  *               getYValue() (DG);
  * 20-Apr-2005 : Renamed XYLabelGenerator --> XYItemLabelGenerator (DG);
+ * 31-Mar-2008 : Added hashCode() method to appease FindBugs (DG);
  *
  */
 
@@ -57,6 +57,7 @@ import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.Date;
 
+import org.jfree.chart.HashUtilities;
 import org.jfree.data.xy.OHLCDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.util.PublicCloneable;
@@ -66,10 +67,7 @@ import org.jfree.util.PublicCloneable;
  * {@link OHLCDataset}.
  */
 public class HighLowItemLabelGenerator implements XYItemLabelGenerator, 
-                                                  XYToolTipGenerator,
-                                                  Cloneable, 
-                                                  PublicCloneable,
-                                                  Serializable {
+        XYToolTipGenerator, Cloneable, PublicCloneable, Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = 5617111754832211830L;
@@ -100,13 +98,11 @@ public class HighLowItemLabelGenerator implements XYItemLabelGenerator,
                                      NumberFormat numberFormatter) {
         if (dateFormatter == null) {
             throw new IllegalArgumentException(
-                "Null 'dateFormatter' argument."
-            );   
+                    "Null 'dateFormatter' argument.");   
         }
         if (numberFormatter == null) {
             throw new IllegalArgumentException(
-                "Null 'numberFormatter' argument."
-            );
+                    "Null 'numberFormatter' argument.");
         }
         this.dateFormatter = dateFormatter;
         this.numberFormatter = numberFormatter;
@@ -121,45 +117,40 @@ public class HighLowItemLabelGenerator implements XYItemLabelGenerator,
      *
      * @return The tooltip text.
      */
+    @Override
     public String generateToolTip(XYDataset dataset, int series, int item) {
-
-        String result = null;
-
-        if (dataset instanceof OHLCDataset) {
-            OHLCDataset d = (OHLCDataset) dataset;
-            Number high = d.getHigh(series, item);
-            Number low = d.getLow(series, item);
-            Number open = d.getOpen(series, item);
-            Number close = d.getClose(series, item);
-            Number x = d.getX(series, item);
-
-            result = d.getSeriesKey(series).toString();
-
-            if (x != null) {
-                Date date = new Date(x.longValue());
-                result = result + "--> Date=" + this.dateFormatter.format(date);
-                if (high != null) {
-                    result = result + " High=" 
-                             + this.numberFormatter.format(high.doubleValue());
-                }
-                if (low != null) {
-                    result = result + " Low=" 
-                             + this.numberFormatter.format(low.doubleValue());
-                }
-                if (open != null) {
-                    result = result + " Open=" 
-                             + this.numberFormatter.format(open.doubleValue());
-                }
-                if (close != null) {
-                    result = result + " Close=" 
-                             + this.numberFormatter.format(close.doubleValue());
-                }
-            }
-
+        if (!(dataset instanceof OHLCDataset)) {
+            return null;
         }
-
-        return result;
-
+        StringBuilder sb = new StringBuilder();
+        OHLCDataset d = (OHLCDataset) dataset;
+        Number high = d.getHigh(series, item);
+        Number low = d.getLow(series, item);
+        Number open = d.getOpen(series, item);
+        Number close = d.getClose(series, item);
+        Number x = d.getX(series, item);
+        sb.append(d.getSeriesKey(series).toString());
+        if (x != null) {
+            Date date = new Date(x.longValue());
+            sb.append("--> Date=").append(this.dateFormatter.format(date));
+            if (high != null) {
+                sb.append(" High=");
+                sb.append(this.numberFormatter.format(high.doubleValue()));
+            }
+            if (low != null) {
+                sb.append(" Low=");
+                sb.append(this.numberFormatter.format(low.doubleValue()));
+            }
+            if (open != null) {
+                sb.append(" Open=");
+                sb.append(this.numberFormatter.format(open.doubleValue()));
+            }
+            if (close != null) {
+                sb.append(" Close=");
+                sb.append(this.numberFormatter.format(close.doubleValue()));
+            }
+        }
+        return sb.toString();
     }
 
     /**
@@ -172,6 +163,7 @@ public class HighLowItemLabelGenerator implements XYItemLabelGenerator,
      *
      * @return The label (possibly <code>null</code>).
      */
+    @Override
     public String generateLabel(XYDataset dataset, int series, int category) {
         return null;  //TODO: implement this method properly
     }
@@ -183,20 +175,17 @@ public class HighLowItemLabelGenerator implements XYItemLabelGenerator,
      * 
      * @throws CloneNotSupportedException if cloning is not supported.
      */
+    @Override
     public Object clone() throws CloneNotSupportedException {
-        
         HighLowItemLabelGenerator clone 
-            = (HighLowItemLabelGenerator) super.clone();
-
+                = (HighLowItemLabelGenerator) super.clone();
         if (this.dateFormatter != null) {
             clone.dateFormatter = (DateFormat) this.dateFormatter.clone();
         }
         if (this.numberFormatter != null) {
             clone.numberFormatter = (NumberFormat) this.numberFormatter.clone();
         }
-        
         return clone;
-        
     }
     
     /**
@@ -206,6 +195,7 @@ public class HighLowItemLabelGenerator implements XYItemLabelGenerator,
      *
      * @return A boolean.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
@@ -221,6 +211,19 @@ public class HighLowItemLabelGenerator implements XYItemLabelGenerator,
             return false;   
         }
         return true;
+    }
+    
+    /**
+     * Returns a hash code for this instance.
+     * 
+     * @return A hash code.
+     */
+    @Override
+    public int hashCode() {
+        int result = 127;
+        result = HashUtilities.hashCode(result, this.dateFormatter);
+        result = HashUtilities.hashCode(result, this.numberFormatter);
+        return result;
     }
     
 }

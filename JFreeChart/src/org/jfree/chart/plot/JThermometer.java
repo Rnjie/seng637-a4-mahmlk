@@ -2,33 +2,34 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * -----------------
  * JThermometer.java
  * -----------------
  * A plot that displays a single value in a thermometer type display.
  *
- * (C) Copyright 2000-2005, Australian Antarctic Division and Contributors.
+ * (C) Copyright 2000-2008, Australian Antarctic Division and Contributors.
  *
  * Original Author:  Bryan Scott.
  * Contributor(s):   David Gilbert (for Object Refinery Limited);
@@ -65,17 +66,12 @@ import org.jfree.ui.RectangleInsets;
 /**
  * An initial quick and dirty.  The concept behind this class would be to
  * generate a gui bean that could be used within JBuilder, Netbeans etc...
- *
- * Copyright (c) 2002
- * Australian Antarctic Division
- *
- * @author Bryan Scott
  */
 public class JThermometer extends JPanel implements Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = 1079905665515589820L;
-    
+
     /** The dataset. */
     private DefaultValueDataset data;
 
@@ -93,14 +89,11 @@ public class JThermometer extends JPanel implements Serializable {
      */
     public JThermometer() {
         super(new CardLayout());
-        //this.plot.setInsets(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
-        this.plot.setMargin(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
+        this.plot.setInsets(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
         this.data = new DefaultValueDataset();
-        //data.setRange(new Double(-60000), new Double(60000));
         this.plot.setDataset(this.data);
-        this.chart = new JFreeChart(
-            null, JFreeChart.DEFAULT_TITLE_FONT, this.plot, false
-        );
+        this.chart = new JFreeChart(null, JFreeChart.DEFAULT_TITLE_FONT,
+                this.plot, false);
         this.panel = new ChartPanel(this.chart);
         add(this.panel, "Panel");
         setBackground(getBackground());
@@ -160,7 +153,7 @@ public class JThermometer extends JPanel implements Serializable {
      * @param displayLow  the low value.
      * @param displayHigh  the high value.
      */
-    public void setSubrangeInfo(int range, double displayLow, 
+    public void setSubrangeInfo(int range, double displayLow,
                                 double displayHigh) {
         this.plot.setSubrangeInfo(range, displayLow, displayHigh);
     }
@@ -178,7 +171,7 @@ public class JThermometer extends JPanel implements Serializable {
                              double rangeLow, double rangeHigh,
                              double displayLow, double displayHigh) {
 
-        this.plot.setSubrangeInfo(range, rangeLow, rangeHigh, displayLow, 
+        this.plot.setSubrangeInfo(range, rangeLow, rangeHigh, displayLow,
                 displayHigh);
 
     }
@@ -248,10 +241,22 @@ public class JThermometer extends JPanel implements Serializable {
     }
 
     /**
+     * Sets the outline paint.
+     *
+     * @param p  the paint.
+     */
+    public void setOutlinePaint(Paint p) {
+        if (this.plot != null) {
+            this.plot.setOutlinePaint(p);
+        }
+    }
+
+    /**
      * Sets the foreground color.
      *
      * @param fg  the foreground color.
      */
+    @Override
     public void setForeground(Color fg) {
         super.setForeground(fg);
         if (this.plot != null) {
@@ -264,6 +269,7 @@ public class JThermometer extends JPanel implements Serializable {
      *
      * @param bg  the background color.
      */
+    @Override
     public void setBackground(Color bg) {
         super.setBackground(bg);
         if (this.plot != null) {
@@ -353,7 +359,7 @@ public class JThermometer extends JPanel implements Serializable {
 
     /**
      * Sets the location for the axis.
-     * 
+     *
      * @param location  the location.
      */
     public void setShowAxisLocation(int location) {
@@ -362,7 +368,7 @@ public class JThermometer extends JPanel implements Serializable {
 
     /**
      * Returns the location for the axis.
-     * 
+     *
      * @return The location.
      */
     public int getShowAxisLocation() {

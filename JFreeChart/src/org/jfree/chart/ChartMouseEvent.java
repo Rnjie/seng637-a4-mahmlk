@@ -2,36 +2,35 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * --------------------
  * ChartMouseEvent.java
  * --------------------
- * (C) Copyright 2002-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2002-2008, by Object Refinery Limited and Contributors.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
  * Contributor(s):   Alex Weber;
- *
- * $Id: ChartMouseEvent.java,v 1.3 2005/05/19 15:40:56 mungady Exp $
  *
  * Changes
  * -------
@@ -40,6 +39,8 @@
  * 26-Sep-2002 : Fixed errors reported by Checkstyle (DG);
  * 05-Nov-2002 : Added a reference to the source chart (DG);
  * 13-Jul-2004 : Now extends EventObject and implements Serializable (DG);
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 24-May-2007 : Updated API docs (DG);
  *
  */
 
@@ -53,12 +54,14 @@ import org.jfree.chart.entity.ChartEntity;
 
 /**
  * A mouse event for a chart that is displayed in a {@link ChartPanel}.
+ *
+ * @see ChartMouseListener
  */
 public class ChartMouseEvent extends EventObject implements Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = -682393837314562149L;
-    
+
     /** The chart that the mouse event relates to. */
     private JFreeChart chart;
 
@@ -72,12 +75,12 @@ public class ChartMouseEvent extends EventObject implements Serializable {
      * Constructs a new event.
      *
      * @param chart  the source chart (<code>null</code> not permitted).
-     * @param trigger  the mouse event that triggered this event 
+     * @param trigger  the mouse event that triggered this event
      *                 (<code>null</code> not permitted).
-     * @param entity  the chart entity (if any) under the mouse point 
+     * @param entity  the chart entity (if any) under the mouse point
      *                (<code>null</code> permitted).
      */
-    public ChartMouseEvent(JFreeChart chart, MouseEvent trigger, 
+    public ChartMouseEvent(JFreeChart chart, MouseEvent trigger,
                            ChartEntity entity) {
         super(chart);
         this.chart = chart;

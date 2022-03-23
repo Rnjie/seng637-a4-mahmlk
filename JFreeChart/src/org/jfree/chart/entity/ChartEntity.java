@@ -2,38 +2,37 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.]
  *
  * ----------------
  * ChartEntity.java
  * ----------------
- * (C) Copyright 2002-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2002-2008, by Object Refinery Limited and Contributors.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
  * Contributor(s):   Richard Atkinson;
  *                   Xavier Poinsard;
  *                   Robert Fuller;
- *
- * $Id: ChartEntity.java,v 1.8 2005/05/19 15:42:54 mungady Exp $
  *
  * Changes:
  * --------
@@ -42,24 +41,33 @@
  * 26-Jun-2002 : Added methods for image maps (DG);
  * 05-Aug-2002 : Added constructor and accessors for URL support in image maps
  *               Added getImageMapAreaTag() - previously in subclasses (RA);
- * 05-Sep-2002 : Added getImageMapAreaTag(boolean) to support OverLIB for 
+ * 05-Sep-2002 : Added getImageMapAreaTag(boolean) to support OverLIB for
  *               tooltips http://www.bosrup.com/web/overlib (RA);
  * 03-Oct-2002 : Fixed errors reported by Checkstyle (DG);
- * 08-Oct-2002 : Changed getImageMapAreaTag to use title instead of alt 
- *               attribute so HTML image maps now work in Mozilla and Opera as 
+ * 08-Oct-2002 : Changed getImageMapAreaTag to use title instead of alt
+ *               attribute so HTML image maps now work in Mozilla and Opera as
  *               well as Internet Explorer (RA);
  * 13-Mar-2003 : Change getImageMapAreaTag to only return a tag when there is a
- *               tooltip or URL, as suggested by Xavier Poinsard (see Feature 
+ *               tooltip or URL, as suggested by Xavier Poinsard (see Feature
  *               Request 688079) (DG);
- * 12-Aug-2003 : Added support for custom image maps using 
+ * 12-Aug-2003 : Added support for custom image maps using
  *               ToolTipTagFragmentGenerator and URLTagFragmentGenerator (RA);
  * 02-Sep-2003 : Incorporated fix (791901) submitted by Robert Fuller (DG);
- * 19-May-2004 : Added equals() method and implemented Cloneable and 
+ * 19-May-2004 : Added equals() method and implemented Cloneable and
  *               Serializable (DG);
  * 29-Sep-2004 : Implemented PublicCloneable (DG);
  * 13-Jan-2005 : Fixed for compliance with XHTML 1.0 (DG);
  * 18-Apr-2005 : Use StringBuffer (DG);
  * 20-Apr-2005 : Added toString() implementation (DG);
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 06-Feb-2007 : API doc update (DG);
+ * 13-Nov-2007 : Reorganised equals(), implemented hashCode (DG);
+ * 04-Dec-2007 : Added 'nohref' attribute in getImageMapAreaTag() method, to
+ *               fix bug 1460195 (DG);
+ * 04-Dec-2007 : Escape the toolTipText and urlText in getImageMapAreaTag() to
+ *               prevent special characters corrupting the HTML (DG);
+ * 05-Dec-2007 : Previous change reverted - let the tool tip and url tag
+ *               generators handle filtering / escaping (DG);
  *
  */
 
@@ -73,21 +81,23 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import org.jfree.chart.HashUtilities;
 import org.jfree.chart.imagemap.ToolTipTagFragmentGenerator;
 import org.jfree.chart.imagemap.URLTagFragmentGenerator;
+import org.jfree.chart.util.ParamChecks;
 import org.jfree.io.SerialUtilities;
 import org.jfree.util.ObjectUtilities;
 import org.jfree.util.PublicCloneable;
 
 /**
- * A class that captures information about some component of a chart (a bar, 
+ * A class that captures information about some component of a chart (a bar,
  * line etc).
  */
 public class ChartEntity implements Cloneable, PublicCloneable, Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = -4445994133561919083L;
-    
+
     /** The area occupied by the entity (in Java 2D space). */
     private transient Shape area;
 
@@ -123,13 +133,11 @@ public class ChartEntity implements Cloneable, PublicCloneable, Serializable {
      *
      * @param area  the area (<code>null</code> not permitted).
      * @param toolTipText  the tool tip text (<code>null</code> permitted).
-     * @param urlText  the URL text for HTML image maps (<code>null</code> 
+     * @param urlText  the URL text for HTML image maps (<code>null</code>
      *                 permitted).
      */
     public ChartEntity(Shape area, String toolTipText, String urlText) {
-        if (area == null) {
-            throw new IllegalArgumentException("Null 'area' argument.");   
-        }
+        ParamChecks.nullNotPermitted(area, "area");
         this.area = area;
         this.toolTipText = toolTipText;
         this.urlText = urlText;
@@ -154,14 +162,15 @@ public class ChartEntity implements Cloneable, PublicCloneable, Serializable {
      * @param area  the area (<code>null</code> not permitted).
      */
     public void setArea(Shape area) {
-        if (area == null) {
-            throw new IllegalArgumentException("Null 'area' argument.");   
-        }
+        ParamChecks.nullNotPermitted(area, "area");
         this.area = area;
     }
 
     /**
-     * Returns the tool tip text for the entity.
+     * Returns the tool tip text for the entity.  Be aware that this text
+     * may have been generated from user supplied data, so for security
+     * reasons some form of filtering should be applied before incorporating
+     * this text into any HTML output.
      *
      * @return The tool tip text (possibly <code>null</code>).
      */
@@ -179,7 +188,9 @@ public class ChartEntity implements Cloneable, PublicCloneable, Serializable {
     }
 
     /**
-     * Returns the URL text for the entity.
+     * Returns the URL text for the entity.  Be aware that this text
+     * may have been generated from user supplied data, so some form of
+     * filtering should be applied before this "URL" is used in any output.
      *
      * @return The URL text (possibly <code>null</code>).
      */
@@ -234,9 +245,7 @@ public class ChartEntity implements Cloneable, PublicCloneable, Serializable {
      * @return Upper left and lower right corner of a rectangle.
      */
     private String getRectCoords(Rectangle2D rectangle) {
-        if (rectangle == null) {
-            throw new IllegalArgumentException("Null 'rectangle' argument.");   
-        }
+        ParamChecks.nullNotPermitted(rectangle, "rectangle");
         int x1 = (int) rectangle.getX();
         int y1 = (int) rectangle.getY();
         int x2 = x1 + (int) rectangle.getWidth();
@@ -261,10 +270,8 @@ public class ChartEntity implements Cloneable, PublicCloneable, Serializable {
      * @return The coordinates for a given shape as string.
      */
     private String getPolyCoords(Shape shape) {
-        if (shape == null) {
-            throw new IllegalArgumentException("Null 'shape' argument.");   
-        }
-        StringBuffer result = new StringBuffer();
+        ParamChecks.nullNotPermitted(shape, "shape");
+        StringBuilder result = new StringBuilder();
         boolean first = true;
         float[] coords = new float[6];
         PathIterator pi = shape.getPathIterator(null, 1.0);
@@ -290,34 +297,37 @@ public class ChartEntity implements Cloneable, PublicCloneable, Serializable {
      * Returns an HTML image map tag for this entity.  The returned fragment
      * should be <code>XHTML 1.0</code> compliant.
      *
-     * @param toolTipTagFragmentGenerator  the generator for tooltip fragment.
-     * @param urlTagFragmentGenerator  the generator for the URL fragment.
-     * 
+     * @param toolTipTagFragmentGenerator  a generator for the HTML fragment
+     *     that will contain the tooltip text (<code>null</code> not permitted
+     *     if this entity contains tooltip information).
+     * @param urlTagFragmentGenerator  a generator for the HTML fragment that
+     *     will contain the URL reference (<code>null</code> not permitted if
+     *     this entity has a URL).
+     *
      * @return The HTML tag.
      */
     public String getImageMapAreaTag(
             ToolTipTagFragmentGenerator toolTipTagFragmentGenerator,
             URLTagFragmentGenerator urlTagFragmentGenerator) {
 
-        StringBuffer tag = new StringBuffer();
-        boolean hasURL 
-            = (this.urlText == null ? false : !this.urlText.equals(""));
-        boolean hasToolTip 
-            = (this.toolTipText == null ? false : !this.toolTipText.equals(""));
+        StringBuilder tag = new StringBuilder();
+        boolean hasURL = (this.urlText == null ? false
+                : !this.urlText.equals(""));
+        boolean hasToolTip = (this.toolTipText == null ? false
+                : !this.toolTipText.equals(""));
         if (hasURL || hasToolTip) {
-            tag.append(
-                "<area shape=\"" + getShapeType() + "\"" + " coords=\"" 
-                + getShapeCoords() + "\""
-            );
+            tag.append("<area shape=\"").append(getShapeType()).append("\"")
+                    .append(" coords=\"").append(getShapeCoords()).append("\"");
             if (hasToolTip) {
                 tag.append(toolTipTagFragmentGenerator.generateToolTipFragment(
-                    this.toolTipText
-                ));
+                        this.toolTipText));
             }
             if (hasURL) {
-                tag.append(
-                    urlTagFragmentGenerator.generateURLFragment(this.urlText)
-                );
+                tag.append(urlTagFragmentGenerator.generateURLFragment(
+                        this.urlText));
+            }
+            else {
+                tag.append(" nohref=\"nohref\"");
             }
             // if there is a tool tip, we expect it to generate the title and
             // alt values, so we only add an empty alt if there is no tooltip
@@ -328,59 +338,75 @@ public class ChartEntity implements Cloneable, PublicCloneable, Serializable {
         }
         return tag.toString();
     }
-    
+
     /**
-     * Returns a string representation of the chart entity, useful for 
+     * Returns a string representation of the chart entity, useful for
      * debugging.
-     * 
+     *
      * @return A string.
      */
+    @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer("ChartEntity: ");
-        buf.append("tooltip = ");
-        buf.append(this.toolTipText);
-        return buf.toString();
+        StringBuilder sb = new StringBuilder("ChartEntity: ");
+        sb.append("tooltip = ");
+        sb.append(this.toolTipText);
+        return sb.toString();
     }
-    
+
     /**
      * Tests the entity for equality with an arbitrary object.
-     * 
+     *
      * @param obj  the object to test against (<code>null</code> permitted).
-     * 
+     *
      * @return A boolean.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
-            return true;   
-        }
-        if (obj instanceof ChartEntity) {
-            ChartEntity that = (ChartEntity) obj;
-            if (!this.area.equals(that.area)) {
-                return false;   
-            }
-            if (!ObjectUtilities.equal(this.toolTipText, that.toolTipText)) {
-                return false;   
-            }
-            if (!ObjectUtilities.equal(this.urlText, that.urlText)) {
-                return false;   
-            }
             return true;
         }
-        return false;
+        if (!(obj instanceof ChartEntity)) {
+            return false;
+        }
+        ChartEntity that = (ChartEntity) obj;
+        if (!this.area.equals(that.area)) {
+            return false;
+        }
+        if (!ObjectUtilities.equal(this.toolTipText, that.toolTipText)) {
+            return false;
+        }
+        if (!ObjectUtilities.equal(this.urlText, that.urlText)) {
+            return false;
+        }
+        return true;
     }
-    
+
+    /**
+     * Returns a hash code for this instance.
+     *
+     * @return A hash code.
+     */
+    @Override
+    public int hashCode() {
+        int result = 37;
+        result = HashUtilities.hashCode(result, this.toolTipText);
+        result = HashUtilities.hashCode(result, this.urlText);
+        return result;
+    }
+
     /**
      * Returns a clone of the entity.
-     * 
+     *
      * @return A clone.
-     * 
-     * @throws CloneNotSupportedException if there is a problem cloning the 
+     *
+     * @throws CloneNotSupportedException if there is a problem cloning the
      *         entity.
      */
+    @Override
     public Object clone() throws CloneNotSupportedException {
-        return super.clone();    
+        return super.clone();
     }
-    
+
     /**
      * Provides serialization support.
      *
@@ -401,7 +427,7 @@ public class ChartEntity implements Cloneable, PublicCloneable, Serializable {
      * @throws IOException  if there is an I/O error.
      * @throws ClassNotFoundException  if there is a classpath problem.
      */
-    private void readObject(ObjectInputStream stream) 
+    private void readObject(ObjectInputStream stream)
         throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         this.area = SerialUtilities.readShape(stream);

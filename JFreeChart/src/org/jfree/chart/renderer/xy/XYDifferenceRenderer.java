@@ -2,37 +2,39 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2014, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, 
- * USA.  
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.]
  *
  * -------------------------
  * XYDifferenceRenderer.java
  * -------------------------
- * (C) Copyright 2003-2005, by Object Refinery Limited.
+ * (C) Copyright 2003-2014, by Object Refinery Limited and Contributors.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
- * Contributor(s):   Christian W. Zuckschwerdt;
- *
- * $Id: XYDifferenceRenderer.java,v 1.15 2005/12/12 14:11:32 mungady Exp $
+ * Contributor(s):   Richard West, Advanced Micro Devices, Inc. (major rewrite
+ *                   of difference drawing algorithm);
+ *                   Patrick Schlott
+ *                   Christoph Schroeder
+ *                   Martin Hoeller
  *
  * Changes:
  * --------
@@ -41,11 +43,11 @@
  * 20-Aug-2003 : Implemented Cloneable and PublicCloneable (DG);
  * 16-Sep-2003 : Changed ChartRenderingInfo --> PlotRenderingInfo (DG);
  * 09-Feb-2004 : Updated to support horizontal plot orientation (DG);
- * 10-Feb-2004 : Added default constructor, setter methods and updated 
+ * 10-Feb-2004 : Added default constructor, setter methods and updated
  *               Javadocs (DG);
  * 25-Feb-2004 : Replaced CrosshairInfo with CrosshairState (DG);
  * 30-Mar-2004 : Fixed bug in getNegativePaint() method (DG);
- * 15-Jul-2004 : Switched getX() with getXValue() and getY() with 
+ * 15-Jul-2004 : Switched getX() with getXValue() and getY() with
  *               getYValue() (DG);
  * 25-Aug-2004 : Fixed a bug preventing the use of crosshairs (DG);
  * 11-Nov-2004 : Now uses ShapeUtilities to translate shapes (DG);
@@ -56,7 +58,26 @@
  * 04-May-2005 : Override equals() method, renamed get/setPlotShapes() -->
  *               get/setShapesVisible (DG);
  * 09-Jun-2005 : Updated equals() to handle GradientPaint (DG);
- * 
+ * 16-Jun-2005 : Fix bug (1221021) affecting stroke used for each series (DG);
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 24-Jan-2007 : Added flag to allow rounding of x-coordinates, and fixed
+ *               bug in clone() (DG);
+ * 05-Feb-2007 : Added an extra call to updateCrosshairValues() in
+ *               drawItemPass1(), to fix bug 1564967 (DG);
+ * 06-Feb-2007 : Fixed bug 1086307, crosshairs with multiple axes (DG);
+ * 08-Mar-2007 : Fixed entity generation (DG);
+ * 20-Apr-2007 : Updated getLegendItem() for renderer change (DG);
+ * 23-Apr-2007 : Rewrite of difference drawing algorithm to allow use of
+ *               series with disjoint x-values (RW);
+ * 04-May-2007 : Set processVisibleItemsOnly flag to false (DG);
+ * 17-May-2007 : Set datasetIndex and seriesIndex in getLegendItem() (DG);
+ * 18-May-2007 : Set dataset and seriesKey for LegendItem (DG);
+ * 05-Nov-2007 : Draw item labels if visible (RW);
+ * 17-Jun-2008 : Apply legend shape, font and paint attributes (DG);
+ * 13-Feb-2012 : Applied patch 3450234 for bug 3425881 by Patrick Schlott and
+ *               Christoph Schroeder (MH);
+ * 03-Jul-2013 : Use ParamChecks (DG);
+ *
  */
 
 package org.jfree.chart.renderer.xy;
@@ -72,7 +93,8 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.util.Collections;
+import java.util.LinkedList;
 
 import org.jfree.chart.LegendItem;
 import org.jfree.chart.axis.ValueAxis;
@@ -84,6 +106,8 @@ import org.jfree.chart.plot.CrosshairState;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.urls.XYURLGenerator;
+import org.jfree.chart.util.ParamChecks;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.io.SerialUtilities;
 import org.jfree.ui.RectangleEdge;
@@ -93,22 +117,19 @@ import org.jfree.util.ShapeUtilities;
 
 /**
  * A renderer for an {@link XYPlot} that highlights the differences between two
- * series.  The renderer expects a dataset that:
- * <ul>
- * <li>has exactly two series;</li>
- * <li>each series has the same x-values;</li>
- * <li>no <code>null</code> values;
- * </ul>
+ * series.  The example shown here is generated by the
+ * <code>DifferenceChartDemo1.java</code> program included in the JFreeChart
+ * demo collection:
+ * <br><br>
+ * <img src="../../../../../images/XYDifferenceRendererSample.png"
+ * alt="XYDifferenceRendererSample.png">
  */
-public class XYDifferenceRenderer extends AbstractXYItemRenderer 
-                                  implements XYItemRenderer, 
-                                             Cloneable,
-                                             PublicCloneable,
-                                             Serializable {
+public class XYDifferenceRenderer extends AbstractXYItemRenderer
+        implements XYItemRenderer, PublicCloneable {
 
     /** For serialization. */
     private static final long serialVersionUID = -8447915602375584857L;
-    
+
     /** The paint used to highlight positive differences (y(0) > y(1)). */
     private transient Paint positivePaint;
 
@@ -117,9 +138,20 @@ public class XYDifferenceRenderer extends AbstractXYItemRenderer
 
     /** Display shapes at each point? */
     private boolean shapesVisible;
-    
+
     /** The shape to display in the legend item. */
     private transient Shape legendLine;
+
+    /**
+     * This flag controls whether or not the x-coordinates (in Java2D space)
+     * are rounded to integers.  When set to true, this can avoid the vertical
+     * striping that anti-aliasing can generate.  However, the rounding may not
+     * be appropriate for output in high resolution formats (for example,
+     * vector graphics formats such as SVG and PDF).
+     *
+     * @since 1.0.4
+     */
+    private boolean roundXCoordinates;
 
     /**
      * Creates a new renderer with default attributes.
@@ -127,158 +159,193 @@ public class XYDifferenceRenderer extends AbstractXYItemRenderer
     public XYDifferenceRenderer() {
         this(Color.green, Color.red, false);
     }
-    
+
     /**
      * Creates a new renderer.
      *
-     * @param positivePaint  the highlight color for positive differences 
+     * @param positivePaint  the highlight color for positive differences
      *                       (<code>null</code> not permitted).
-     * @param negativePaint  the highlight color for negative differences 
+     * @param negativePaint  the highlight color for negative differences
      *                       (<code>null</code> not permitted).
      * @param shapes  draw shapes?
      */
-    public XYDifferenceRenderer(Paint positivePaint, Paint negativePaint, 
+    public XYDifferenceRenderer(Paint positivePaint, Paint negativePaint,
                                 boolean shapes) {
-        if (positivePaint == null) {
-            throw new IllegalArgumentException(
-                "Null 'positivePaint' argument."
-            );
-        }
-        if (negativePaint == null) {
-            throw new IllegalArgumentException(
-                "Null 'negativePaint' argument."
-            );
-        }
+        ParamChecks.nullNotPermitted(positivePaint, "positivePaint");
+        ParamChecks.nullNotPermitted(negativePaint, "negativePaint");
         this.positivePaint = positivePaint;
         this.negativePaint = negativePaint;
         this.shapesVisible = shapes;
         this.legendLine = new Line2D.Double(-7.0, 0.0, 7.0, 0.0);
+        this.roundXCoordinates = false;
     }
 
     /**
      * Returns the paint used to highlight positive differences.
      *
      * @return The paint (never <code>null</code>).
+     *
+     * @see #setPositivePaint(Paint)
      */
     public Paint getPositivePaint() {
         return this.positivePaint;
     }
 
     /**
-     * Sets the paint used to highlight positive differences.
-     * 
+     * Sets the paint used to highlight positive differences and sends a
+     * {@link RendererChangeEvent} to all registered listeners.
+     *
      * @param paint  the paint (<code>null</code> not permitted).
+     *
+     * @see #getPositivePaint()
      */
     public void setPositivePaint(Paint paint) {
-        if (paint == null) {
-            throw new IllegalArgumentException("Null 'paint' argument.");
-        }
+        ParamChecks.nullNotPermitted(paint, "paint");
         this.positivePaint = paint;
-        notifyListeners(new RendererChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
      * Returns the paint used to highlight negative differences.
      *
      * @return The paint (never <code>null</code>).
+     *
+     * @see #setNegativePaint(Paint)
      */
     public Paint getNegativePaint() {
         return this.negativePaint;
     }
-    
+
     /**
      * Sets the paint used to highlight negative differences.
-     * 
+     *
      * @param paint  the paint (<code>null</code> not permitted).
+     *
+     * @see #getNegativePaint()
      */
     public void setNegativePaint(Paint paint) {
-        if (paint == null) {
-            throw new IllegalArgumentException("Null 'paint' argument.");
-        }
+        ParamChecks.nullNotPermitted(paint, "paint");
         this.negativePaint = paint;
         notifyListeners(new RendererChangeEvent(this));
     }
 
     /**
-     * Returns a flag that controls whether or not shapes are drawn for each 
+     * Returns a flag that controls whether or not shapes are drawn for each
      * data value.
-     * 
+     *
      * @return A boolean.
+     *
+     * @see #setShapesVisible(boolean)
      */
     public boolean getShapesVisible() {
         return this.shapesVisible;
     }
 
     /**
-     * Sets a flag that controls whether or not shapes are drawn for each 
-     * data value.
-     * 
+     * Sets a flag that controls whether or not shapes are drawn for each
+     * data value, and sends a {@link RendererChangeEvent} to all registered
+     * listeners.
+     *
      * @param flag  the flag.
+     *
+     * @see #getShapesVisible()
      */
     public void setShapesVisible(boolean flag) {
         this.shapesVisible = flag;
-        notifyListeners(new RendererChangeEvent(this));
-    }
-    
-    /**
-     * Returns the shape used to represent a line in the legend.
-     * 
-     * @return The legend line (never <code>null</code>).
-     */
-    public Shape getLegendLine() {
-        return this.legendLine;   
-    }
-    
-    /**
-     * Sets the shape used as a line in each legend item and sends a 
-     * {@link RendererChangeEvent} to all registered listeners.
-     * 
-     * @param line  the line (<code>null</code> not permitted).
-     */
-    public void setLegendLine(Shape line) {
-        if (line == null) {
-            throw new IllegalArgumentException("Null 'line' argument.");   
-        }
-        this.legendLine = line;
-        notifyListeners(new RendererChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
-     * Initialises the renderer and returns a state object that should be 
-     * passed to subsequent calls to the drawItem() method.  This method will 
-     * be called before the first item is rendered, giving the renderer an 
-     * opportunity to initialise any state information it wants to maintain.  
+     * Returns the shape used to represent a line in the legend.
+     *
+     * @return The legend line (never <code>null</code>).
+     *
+     * @see #setLegendLine(Shape)
+     */
+    public Shape getLegendLine() {
+        return this.legendLine;
+    }
+
+    /**
+     * Sets the shape used as a line in each legend item and sends a
+     * {@link RendererChangeEvent} to all registered listeners.
+     *
+     * @param line  the line (<code>null</code> not permitted).
+     *
+     * @see #getLegendLine()
+     */
+    public void setLegendLine(Shape line) {
+        ParamChecks.nullNotPermitted(line, "line");
+        this.legendLine = line;
+        fireChangeEvent();
+    }
+
+    /**
+     * Returns the flag that controls whether or not the x-coordinates (in
+     * Java2D space) are rounded to integer values.
+     *
+     * @return The flag.
+     *
+     * @since 1.0.4
+     *
+     * @see #setRoundXCoordinates(boolean)
+     */
+    public boolean getRoundXCoordinates() {
+        return this.roundXCoordinates;
+    }
+
+    /**
+     * Sets the flag that controls whether or not the x-coordinates (in
+     * Java2D space) are rounded to integer values, and sends a
+     * {@link RendererChangeEvent} to all registered listeners.
+     *
+     * @param round  the new flag value.
+     *
+     * @since 1.0.4
+     *
+     * @see #getRoundXCoordinates()
+     */
+    public void setRoundXCoordinates(boolean round) {
+        this.roundXCoordinates = round;
+        fireChangeEvent();
+    }
+
+    /**
+     * Initialises the renderer and returns a state object that should be
+     * passed to subsequent calls to the drawItem() method.  This method will
+     * be called before the first item is rendered, giving the renderer an
+     * opportunity to initialise any state information it wants to maintain.
      * The renderer can do nothing if it chooses.
      *
      * @param g2  the graphics device.
      * @param dataArea  the area inside the axes.
      * @param plot  the plot.
      * @param data  the data.
-     * @param info  an optional info collection object to return data back to 
+     * @param info  an optional info collection object to return data back to
      *              the caller.
      *
      * @return A state object.
      */
-    public XYItemRendererState initialise(Graphics2D g2,
-                                          Rectangle2D dataArea,
-                                          XYPlot plot,
-                                          XYDataset data,
-                                          PlotRenderingInfo info) {
-
-        return super.initialise(g2, dataArea, plot, data, info);
-
+    @Override
+    public XYItemRendererState initialise(Graphics2D g2, Rectangle2D dataArea,
+            XYPlot plot, XYDataset data, PlotRenderingInfo info) {
+        XYItemRendererState state = super.initialise(g2, dataArea, plot, data,
+                info);
+        state.setProcessVisibleItemsOnly(false);
+        return state;
     }
 
     /**
-     * Returns <code>2</code>, the number of passes required by the renderer.  
+     * Returns <code>2</code>, the number of passes required by the renderer.
      * The {@link XYPlot} will run through the dataset this number of times.
-     * 
+     *
      * @return The number of passes required by the renderer.
      */
+    @Override
     public int getPassCount() {
         return 2;
     }
-    
+
     /**
      * Draws the visual representation of a single data item.
      *
@@ -286,41 +353,30 @@ public class XYDifferenceRenderer extends AbstractXYItemRenderer
      * @param state  the renderer state.
      * @param dataArea  the area within which the data is being drawn.
      * @param info  collects information about the drawing.
-     * @param plot  the plot (can be used to obtain standard color 
+     * @param plot  the plot (can be used to obtain standard color
      *              information etc).
      * @param domainAxis  the domain (horizontal) axis.
      * @param rangeAxis  the range (vertical) axis.
      * @param dataset  the dataset.
      * @param series  the series index (zero-based).
      * @param item  the item index (zero-based).
-     * @param crosshairState  crosshair information for the plot 
+     * @param crosshairState  crosshair information for the plot
      *                        (<code>null</code> permitted).
      * @param pass  the pass index.
      */
-    public void drawItem(Graphics2D g2,
-                         XYItemRendererState state,
-                         Rectangle2D dataArea,
-                         PlotRenderingInfo info,
-                         XYPlot plot,
-                         ValueAxis domainAxis,
-                         ValueAxis rangeAxis,
-                         XYDataset dataset,
-                         int series,
-                         int item,
-                         CrosshairState crosshairState,
-                         int pass) {
+    @Override
+    public void drawItem(Graphics2D g2, XYItemRendererState state,
+            Rectangle2D dataArea, PlotRenderingInfo info, XYPlot plot,
+            ValueAxis domainAxis, ValueAxis rangeAxis, XYDataset dataset,
+            int series, int item, CrosshairState crosshairState, int pass) {
 
         if (pass == 0) {
-            drawItemPass0(
-                g2, dataArea, info, plot, domainAxis, rangeAxis, dataset,
-                series, item, crosshairState
-            );
+            drawItemPass0(g2, dataArea, info, plot, domainAxis, rangeAxis,
+                    dataset, series, item, crosshairState);
         }
         else if (pass == 1) {
-            drawItemPass1(
-                g2, dataArea, info, plot, domainAxis, rangeAxis, dataset,
-                series, item, crosshairState
-            );
+            drawItemPass1(g2, dataArea, info, plot, domainAxis, rangeAxis,
+                    dataset, series, item, crosshairState);
         }
 
     }
@@ -328,518 +384,729 @@ public class XYDifferenceRenderer extends AbstractXYItemRenderer
     /**
      * Draws the visual representation of a single data item, first pass.
      *
-     * @param g2  the graphics device.
-     * @param dataArea  the area within which the data is being drawn.
-     * @param info  collects information about the drawing.
-     * @param plot  the plot (can be used to obtain standard color 
-     *              information etc).
-     * @param domainAxis  the domain (horizontal) axis.
-     * @param rangeAxis  the range (vertical) axis.
-     * @param dataset  the dataset.
-     * @param series  the series index (zero-based).
-     * @param item  the item index (zero-based).
-     * @param crosshairState  crosshair information for the plot 
-     *                        (<code>null</code> permitted).
+     * @param x_graphics  the graphics device.
+     * @param x_dataArea  the area within which the data is being drawn.
+     * @param x_info  collects information about the drawing.
+     * @param x_plot  the plot (can be used to obtain standard color
+     *                information etc).
+     * @param x_domainAxis  the domain (horizontal) axis.
+     * @param x_rangeAxis  the range (vertical) axis.
+     * @param x_dataset  the dataset.
+     * @param x_series  the series index (zero-based).
+     * @param x_item  the item index (zero-based).
+     * @param x_crosshairState  crosshair information for the plot
+     *                          (<code>null</code> permitted).
      */
-    protected void drawItemPass0(Graphics2D g2,
-                                 Rectangle2D dataArea,
-                                 PlotRenderingInfo info,
-                                 XYPlot plot,
-                                 ValueAxis domainAxis,
-                                 ValueAxis rangeAxis,
-                                 XYDataset dataset,
-                                 int series,
-                                 int item,
-                                 CrosshairState crosshairState) {
+    protected void drawItemPass0(Graphics2D x_graphics,
+                                 Rectangle2D x_dataArea,
+                                 PlotRenderingInfo x_info,
+                                 XYPlot x_plot,
+                                 ValueAxis x_domainAxis,
+                                 ValueAxis x_rangeAxis,
+                                 XYDataset x_dataset,
+                                 int x_series,
+                                 int x_item,
+                                 CrosshairState x_crosshairState) {
 
-        if (series == 0) {
-
-            PlotOrientation orientation = plot.getOrientation();
-            RectangleEdge domainAxisLocation = plot.getDomainAxisEdge();
-            RectangleEdge rangeAxisLocation = plot.getRangeAxisEdge();
-            
-            double y0 = dataset.getYValue(0, item);
-            double x1 = dataset.getXValue(1, item);
-            double y1 = dataset.getYValue(1, item);
-
-            double transY0 = rangeAxis.valueToJava2D(
-                y0, dataArea, rangeAxisLocation
-            );
-            double transX1 = domainAxis.valueToJava2D(
-                x1, dataArea, domainAxisLocation
-            );
-            double transY1 = rangeAxis.valueToJava2D(
-                y1, dataArea, rangeAxisLocation
-            );
-
-            if (item > 0) {
-                double prevx0 = dataset.getXValue(0, item - 1);
-                double prevy0 = dataset.getYValue(0, item - 1);
-                double prevy1 = dataset.getYValue(1, item - 1);
-
-                double prevtransX0 = domainAxis.valueToJava2D(
-                    prevx0, dataArea, domainAxisLocation
-                );
-                double prevtransY0 = rangeAxis.valueToJava2D(
-                    prevy0, dataArea, rangeAxisLocation
-                );
-                double prevtransY1 = rangeAxis.valueToJava2D(
-                    prevy1, dataArea, rangeAxisLocation
-                );
-
-                Shape positive = getPositiveArea(
-                    (float) prevtransX0, (float) prevtransY0, 
-                    (float) prevtransY1,
-                    (float) transX1, (float) transY0, (float) transY1,
-                    orientation
-                );
-                if (positive != null) {
-                    g2.setPaint(getPositivePaint());
-                    g2.fill(positive);
-                }
-
-                Shape negative = getNegativeArea(
-                    (float) prevtransX0, (float) prevtransY0, 
-                    (float) prevtransY1,
-                    (float) transX1, (float) transY0, (float) transY1,
-                    orientation
-                );
-
-                if (negative != null) {
-                    g2.setPaint(getNegativePaint());
-                    g2.fill(negative);
-                }
-            }
+        if (!((0 == x_series) && (0 == x_item))) {
+            return;
         }
 
-    }
+        boolean b_impliedZeroSubtrahend = (1 == x_dataset.getSeriesCount());
 
-    /**
-     * Draws the visual representation of a single data item, second pass.  In 
-     * the second pass, the renderer draws the lines and shapes for the 
-     * individual points in the two series.
-     *
-     * @param g2  the graphics device.
-     * @param dataArea  the area within which the data is being drawn.
-     * @param info  collects information about the drawing.
-     * @param plot  the plot (can be used to obtain standard color information 
-     *              etc).
-     * @param domainAxis  the domain (horizontal) axis.
-     * @param rangeAxis  the range (vertical) axis.
-     * @param dataset  the dataset.
-     * @param series  the series index (zero-based).
-     * @param item  the item index (zero-based).
-     * @param crosshairState  crosshair information for the plot 
-     *                        (<code>null</code> permitted).
-     */
-    protected void drawItemPass1(Graphics2D g2,
-                                 Rectangle2D dataArea,
-                                 PlotRenderingInfo info,
-                                 XYPlot plot,
-                                 ValueAxis domainAxis,
-                                 ValueAxis rangeAxis,
-                                 XYDataset dataset,
-                                 int series,
-                                 int item,
-                                 CrosshairState crosshairState) {
-
-        Shape entityArea = null;
-        EntityCollection entities = null;
-        if (info != null) {
-            entities = info.getOwner().getEntityCollection();
+        // check if either series is a degenerate case (i.e. less than 2 points)
+        if (isEitherSeriesDegenerate(x_dataset, b_impliedZeroSubtrahend)) {
+            return;
         }
 
-        Paint seriesPaint = getItemPaint(series, item);
-        Stroke seriesStroke = getItemStroke(series, item);
-        g2.setPaint(seriesPaint);
-        g2.setStroke(seriesStroke);
-
-        if (series == 0) {
-
-            PlotOrientation orientation = plot.getOrientation(); 
-            RectangleEdge domainAxisLocation = plot.getDomainAxisEdge();
-            RectangleEdge rangeAxisLocation = plot.getRangeAxisEdge();
-
-            double x0 = dataset.getXValue(0, item);
-            double y0 = dataset.getYValue(0, item);
-            double x1 = dataset.getXValue(1, item);
-            double y1 = dataset.getYValue(1, item);
-
-            double transX0 = domainAxis.valueToJava2D(
-                x0, dataArea, domainAxisLocation
-            );
-            double transY0 = rangeAxis.valueToJava2D(
-                y0, dataArea, rangeAxisLocation
-            );
-            double transX1 = domainAxis.valueToJava2D(
-                x1, dataArea, domainAxisLocation
-            );
-            double transY1 = rangeAxis.valueToJava2D(
-                y1, dataArea, rangeAxisLocation
-            );
-
-            if (item > 0) {
-                // get the previous data points...
-                double prevx0 = dataset.getXValue(0, item - 1);
-                double prevy0 = dataset.getYValue(0, item - 1);
-                double prevx1 = dataset.getXValue(1, item - 1);
-                double prevy1 = dataset.getYValue(1, item - 1);
-
-                double prevtransX0 = domainAxis.valueToJava2D(
-                    prevx0, dataArea, domainAxisLocation
-                );
-                double prevtransY0 = rangeAxis.valueToJava2D(
-                    prevy0, dataArea, rangeAxisLocation
-                );
-                double prevtransX1 = domainAxis.valueToJava2D(
-                    prevx1, dataArea, domainAxisLocation
-                );
-                double prevtransY1 = rangeAxis.valueToJava2D(
-                    prevy1, dataArea, rangeAxisLocation
-                );
-
-                Line2D line0 = null;
-                Line2D line1 = null;
-                if (orientation == PlotOrientation.HORIZONTAL) {
-                    line0 = new Line2D.Double(
-                        transY0, transX0, prevtransY0, prevtransX0
-                    );
-                    line1 = new Line2D.Double(
-                        transY1, transX1, prevtransY1, prevtransX1
-                    );
-                }
-                else if (orientation == PlotOrientation.VERTICAL) {
-                    line0 = new Line2D.Double(
-                        transX0, transY0, prevtransX0, prevtransY0
-                    );
-                    line1 = new Line2D.Double(
-                        transX1, transY1, prevtransX1, prevtransY1
-                    );
-                }
-                if (line0 != null && line0.intersects(dataArea)) {
-                    g2.setPaint(getItemPaint(series, item));
-                    g2.setStroke(getItemStroke(series, item));
-                    g2.draw(line0);
-                }
-                if (line1 != null && line1.intersects(dataArea)) {
-                    g2.setPaint(getItemPaint(1, item));
-                    g2.setStroke(getItemStroke(1, item));
-                    g2.draw(line1);
-                }
-            }
-
-            if (getShapesVisible()) {
-                Shape shape0 = getItemShape(series, item);
-                if (orientation == PlotOrientation.HORIZONTAL) {
-                    shape0 = ShapeUtilities.createTranslatedShape(
-                        shape0, transY0, transX0
-                    );
-                }
-                else {  // vertical
-                    shape0 = ShapeUtilities.createTranslatedShape(
-                        shape0, transX0, transY0
-                    );
-                }
-                if (shape0.intersects(dataArea)) {
-                    g2.setPaint(getItemPaint(series, item));
-                    g2.fill(shape0);
-                }
-                entityArea = shape0;
-
-                // add an entity for the item...
-                if (entities != null) {
-                    if (entityArea == null) {
-                        entityArea = new Rectangle2D.Double(
-                            transX0 - 2, transY0 - 2, 4, 4
-                        );
-                    }
-                    String tip = null;
-                    XYToolTipGenerator generator = getToolTipGenerator(
-                        series, item
-                    );
-                    if (generator != null) {
-                        tip = generator.generateToolTip(dataset, series, item);
-                    }
-                    String url = null;
-                    if (getURLGenerator() != null) {
-                        url = getURLGenerator().generateURL(
-                            dataset, series, item
-                        );
-                    }
-                    XYItemEntity entity = new XYItemEntity(
-                        entityArea, dataset, series, item, tip, url
-                    );
-                    entities.add(entity);
-                }
-
-                Shape shape1 = getItemShape(series + 1, item);
-                if (orientation == PlotOrientation.HORIZONTAL) {
-                    shape1 = ShapeUtilities.createTranslatedShape(
-                        shape1, transY1, transX1
-                    );
-                }
-                else {  // vertical
-                    shape1 = ShapeUtilities.createTranslatedShape(
-                        shape1, transX1, transY1
-                    );
-                }
-                if (shape1.intersects(dataArea)) {
-                    g2.setPaint(getItemPaint(series + 1, item));
-                    g2.fill(shape1);
-                }
-                entityArea = shape1;
-
-                // add an entity for the item...
-                if (entities != null) {
-                    if (entityArea == null) {
-                        entityArea = new Rectangle2D.Double(
-                            transX1 - 2, transY1 - 2, 4, 4
-                        );
-                    }
-                    String tip = null;
-                    XYToolTipGenerator generator = getToolTipGenerator(
-                        series, item
-                    );
-                    if (generator != null) {
-                        tip = generator.generateToolTip(
-                            dataset, series + 1, item
-                        );
-                    }
-                    String url = null;
-                    if (getURLGenerator() != null) {
-                        url = getURLGenerator().generateURL(
-                            dataset, series + 1, item
-                        );
-                    }
-                    XYItemEntity entity = new XYItemEntity(
-                        entityArea, dataset, series + 1, item, tip, url
-                    );
-                    entities.add(entity);
-                }
-            }
-            updateCrosshairValues(
-                crosshairState, x1, y1, transX1, transY1, orientation
-            );
+        // check if series are disjoint (i.e. domain-spans do not overlap)
+        if (!b_impliedZeroSubtrahend && areSeriesDisjoint(x_dataset)) {
+            return;
         }
 
-    }
+        // polygon definitions
+        LinkedList l_minuendXs    = new LinkedList();
+        LinkedList l_minuendYs    = new LinkedList();
+        LinkedList l_subtrahendXs = new LinkedList();
+        LinkedList l_subtrahendYs = new LinkedList();
+        LinkedList l_polygonXs    = new LinkedList();
+        LinkedList l_polygonYs    = new LinkedList();
 
-    /**
-     * Returns the positive area for a crossover point.
-     * 
-     * @param x0  x coordinate.
-     * @param y0A  y coordinate A.
-     * @param y0B  y coordinate B.
-     * @param x1  x coordinate.
-     * @param y1A  y coordinate A.
-     * @param y1B  y coordinate B.
-     * @param orientation  the plot orientation.
-     * 
-     * @return The positive area.
-     */
-    protected Shape getPositiveArea(float x0, float y0A, float y0B, 
-                                    float x1, float y1A, float y1B,
-                                    PlotOrientation orientation) {
+        // state
+        int l_minuendItem      = 0;
+        int l_minuendItemCount = x_dataset.getItemCount(0);
+        Double l_minuendCurX   = null;
+        Double l_minuendNextX  = null;
+        Double l_minuendCurY   = null;
+        Double l_minuendNextY  = null;
+        double l_minuendMaxY   = Double.NEGATIVE_INFINITY;
+        double l_minuendMinY   = Double.POSITIVE_INFINITY;
 
-        Shape result = null;
+        int l_subtrahendItem      = 0;
+        int l_subtrahendItemCount = 0; // actual value set below
+        Double l_subtrahendCurX   = null;
+        Double l_subtrahendNextX  = null;
+        Double l_subtrahendCurY   = null;
+        Double l_subtrahendNextY  = null;
+        double l_subtrahendMaxY   = Double.NEGATIVE_INFINITY;
+        double l_subtrahendMinY   = Double.POSITIVE_INFINITY;
 
-        boolean startsNegative = (y0A >= y0B);  
-        boolean endsNegative = (y1A >= y1B);
-        if (orientation == PlotOrientation.HORIZONTAL) {
-            startsNegative = (y0B >= y0A);
-            endsNegative = (y1B >= y1A);
-        }
-        
-        if (startsNegative) {  // starts negative
-            if (endsNegative) {
-                // all negative - return null
-                result = null;
-            }
-            else {
-                // changed from negative to positive
-                float[] p = getIntersection(x0, y0A, x1, y1A, x0, y0B, x1, y1B);
-                GeneralPath area = new GeneralPath();
-                if (orientation == PlotOrientation.HORIZONTAL) {
-                    area.moveTo(y1A, x1);
-                    area.lineTo(p[1], p[0]);
-                    area.lineTo(y1B, x1);
-                    area.closePath();
-                }
-                else if (orientation == PlotOrientation.VERTICAL) {
-                    area.moveTo(x1, y1A);
-                    area.lineTo(p[0], p[1]);
-                    area.lineTo(x1, y1B);
-                    area.closePath();
-                }
-                result = area;
-            }
-        }
-        else {  // starts positive
-            if (endsNegative) {
-                // changed from positive to negative
-                float[] p = getIntersection(x0, y0A, x1, y1A, x0, y0B, x1, y1B);
-                GeneralPath area = new GeneralPath();
-                if (orientation == PlotOrientation.HORIZONTAL) {
-                    area.moveTo(y0A, x0);
-                    area.lineTo(p[1], p[0]);
-                    area.lineTo(y0B, x0);
-                    area.closePath();
-                }
-                else if (orientation == PlotOrientation.VERTICAL) {
-                    area.moveTo(x0, y0A);
-                    area.lineTo(p[0], p[1]);
-                    area.lineTo(x0, y0B);
-                    area.closePath();
-                }
-                result = area;
+        // if a subtrahend is not specified, assume it is zero
+        if (b_impliedZeroSubtrahend) {
+            l_subtrahendItem      = 0;
+            l_subtrahendItemCount = 2;
+            l_subtrahendCurX      = new Double(x_dataset.getXValue(0, 0));
+            l_subtrahendNextX     = new Double(x_dataset.getXValue(0,
+                    (l_minuendItemCount - 1)));
+            l_subtrahendCurY      = new Double(0.0);
+            l_subtrahendNextY     = new Double(0.0);
+            l_subtrahendMaxY      = 0.0;
+            l_subtrahendMinY      = 0.0;
 
-            }
-            else {
-                GeneralPath area = new GeneralPath();
-                if (orientation == PlotOrientation.HORIZONTAL) {
-                    area.moveTo(y0A, x0);
-                    area.lineTo(y1A, x1);
-                    area.lineTo(y1B, x1);
-                    area.lineTo(y0B, x0);
-                    area.closePath();
-                }
-                else if (orientation == PlotOrientation.VERTICAL) {
-                    area.moveTo(x0, y0A);
-                    area.lineTo(x1, y1A);
-                    area.lineTo(x1, y1B);
-                    area.lineTo(x0, y0B);
-                    area.closePath();
-                }
-                result = area;
-            }
-
-        }
-
-        return result;
-
-    }
-
-    /**
-     * Returns the negative area for a cross-over section.
-     * 
-     * @param x0  x coordinate.
-     * @param y0A  y coordinate A.
-     * @param y0B  y coordinate B.
-     * @param x1  x coordinate.
-     * @param y1A  y coordinate A.
-     * @param y1B  y coordinate B.
-     * @param orientation  the plot orientation.
-     * 
-     * @return The negative area.
-     */
-    protected Shape getNegativeArea(float x0, float y0A, float y0B, 
-                                    float x1, float y1A, float y1B,
-                                    PlotOrientation orientation) {
-
-        Shape result = null;
-
-        boolean startsNegative = (y0A >= y0B);
-        boolean endsNegative = (y1A >= y1B);
-        if (orientation == PlotOrientation.HORIZONTAL) {
-            startsNegative = (y0B >= y0A);
-            endsNegative = (y1B >= y1A);
-        }
-        if (startsNegative) {  // starts negative
-            if (endsNegative) {  // all negative
-                GeneralPath area = new GeneralPath();
-                if (orientation == PlotOrientation.HORIZONTAL) {
-                    area.moveTo(y0A, x0);
-                    area.lineTo(y1A, x1);
-                    area.lineTo(y1B, x1);
-                    area.lineTo(y0B, x0);
-                    area.closePath();
-                }
-                else if (orientation == PlotOrientation.VERTICAL) {
-                    area.moveTo(x0, y0A);
-                    area.lineTo(x1, y1A);
-                    area.lineTo(x1, y1B);
-                    area.lineTo(x0, y0B);
-                    area.closePath();
-                }
-                result = area;
-            }
-            else {  // changed from negative to positive
-                float[] p = getIntersection(x0, y0A, x1, y1A, x0, y0B, x1, y1B);
-                GeneralPath area = new GeneralPath();
-                if (orientation == PlotOrientation.HORIZONTAL) {
-                    area.moveTo(y0A, x0);
-                    area.lineTo(p[1], p[0]);
-                    area.lineTo(y0B, x0);
-                    area.closePath();
-                }
-                else if (orientation == PlotOrientation.VERTICAL) {
-                    area.moveTo(x0, y0A);
-                    area.lineTo(p[0], p[1]);
-                    area.lineTo(x0, y0B);
-                    area.closePath();
-                }
-                result = area;
-            }
+            l_subtrahendXs.add(l_subtrahendCurX);
+            l_subtrahendYs.add(l_subtrahendCurY);
         }
         else {
-            if (endsNegative) {
-                // changed from positive to negative
-                float[] p = getIntersection(x0, y0A, x1, y1A, x0, y0B, x1, y1B);
-                GeneralPath area = new GeneralPath();
-                if (orientation == PlotOrientation.HORIZONTAL) {
-                    area.moveTo(y1A, x1);
-                    area.lineTo(p[1], p[0]);
-                    area.lineTo(y1B, x1);
-                    area.closePath();
-                }
-                else if (orientation == PlotOrientation.VERTICAL) {
-                    area.moveTo(x1, y1A);
-                    area.lineTo(p[0], p[1]);
-                    area.lineTo(x1, y1B);
-                    area.closePath();
-                }
-                result = area;
-            }
-            else {
-                // all negative - return null
-            }
-
+            l_subtrahendItemCount = x_dataset.getItemCount(1);
         }
 
-        return result;
+        boolean b_minuendDone           = false;
+        boolean b_minuendAdvanced       = true;
+        boolean b_minuendAtIntersect    = false;
+        boolean b_minuendFastForward    = false;
+        boolean b_subtrahendDone        = false;
+        boolean b_subtrahendAdvanced    = true;
+        boolean b_subtrahendAtIntersect = false;
+        boolean b_subtrahendFastForward = false;
+        boolean b_colinear              = false;
 
+        boolean b_positive;
+
+        // coordinate pairs
+        double l_x1 = 0.0, l_y1 = 0.0; // current minuend point
+        double l_x2 = 0.0, l_y2 = 0.0; // next minuend point
+        double l_x3 = 0.0, l_y3 = 0.0; // current subtrahend point
+        double l_x4 = 0.0, l_y4 = 0.0; // next subtrahend point
+
+        // fast-forward through leading tails
+        boolean b_fastForwardDone = false;
+        while (!b_fastForwardDone) {
+            // get the x and y coordinates
+            l_x1 = x_dataset.getXValue(0, l_minuendItem);
+            l_y1 = x_dataset.getYValue(0, l_minuendItem);
+            l_x2 = x_dataset.getXValue(0, l_minuendItem + 1);
+            l_y2 = x_dataset.getYValue(0, l_minuendItem + 1);
+
+            l_minuendCurX  = new Double(l_x1);
+            l_minuendCurY  = new Double(l_y1);
+            l_minuendNextX = new Double(l_x2);
+            l_minuendNextY = new Double(l_y2);
+
+            if (b_impliedZeroSubtrahend) {
+                l_x3 = l_subtrahendCurX.doubleValue();
+                l_y3 = l_subtrahendCurY.doubleValue();
+                l_x4 = l_subtrahendNextX.doubleValue();
+                l_y4 = l_subtrahendNextY.doubleValue();
+            }
+            else {
+                l_x3 = x_dataset.getXValue(1, l_subtrahendItem);
+                l_y3 = x_dataset.getYValue(1, l_subtrahendItem);
+                l_x4 = x_dataset.getXValue(1, l_subtrahendItem + 1);
+                l_y4 = x_dataset.getYValue(1, l_subtrahendItem + 1);
+
+                l_subtrahendCurX  = new Double(l_x3);
+                l_subtrahendCurY  = new Double(l_y3);
+                l_subtrahendNextX = new Double(l_x4);
+                l_subtrahendNextY = new Double(l_y4);
+            }
+
+            if (l_x2 <= l_x3) {
+                // minuend needs to be fast forwarded
+                l_minuendItem++;
+                b_minuendFastForward = true;
+                continue;
+            }
+
+            if (l_x4 <= l_x1) {
+                // subtrahend needs to be fast forwarded
+                l_subtrahendItem++;
+                b_subtrahendFastForward = true;
+                continue;
+            }
+
+            // check if initial polygon needs to be clipped
+            if ((l_x3 < l_x1) && (l_x1 < l_x4)) {
+                // project onto subtrahend
+                double l_slope   = (l_y4 - l_y3) / (l_x4 - l_x3);
+                l_subtrahendCurX = l_minuendCurX;
+                l_subtrahendCurY = new Double((l_slope * l_x1)
+                        + (l_y3 - (l_slope * l_x3)));
+
+                l_subtrahendXs.add(l_subtrahendCurX);
+                l_subtrahendYs.add(l_subtrahendCurY);
+            }
+
+            if ((l_x1 < l_x3) && (l_x3 < l_x2)) {
+                // project onto minuend
+                double l_slope = (l_y2 - l_y1) / (l_x2 - l_x1);
+                l_minuendCurX  = l_subtrahendCurX;
+                l_minuendCurY  = new Double((l_slope * l_x3)
+                        + (l_y1 - (l_slope * l_x1)));
+
+                l_minuendXs.add(l_minuendCurX);
+                l_minuendYs.add(l_minuendCurY);
+            }
+
+            l_minuendMaxY    = l_minuendCurY.doubleValue();
+            l_minuendMinY    = l_minuendCurY.doubleValue();
+            l_subtrahendMaxY = l_subtrahendCurY.doubleValue();
+            l_subtrahendMinY = l_subtrahendCurY.doubleValue();
+
+            b_fastForwardDone = true;
+        }
+
+        // start of algorithm
+        while (!b_minuendDone && !b_subtrahendDone) {
+            if (!b_minuendDone && !b_minuendFastForward && b_minuendAdvanced) {
+                l_x1 = x_dataset.getXValue(0, l_minuendItem);
+                l_y1 = x_dataset.getYValue(0, l_minuendItem);
+                l_minuendCurX = new Double(l_x1);
+                l_minuendCurY = new Double(l_y1);
+
+                if (!b_minuendAtIntersect) {
+                    l_minuendXs.add(l_minuendCurX);
+                    l_minuendYs.add(l_minuendCurY);
+                }
+
+                l_minuendMaxY = Math.max(l_minuendMaxY, l_y1);
+                l_minuendMinY = Math.min(l_minuendMinY, l_y1);
+
+                l_x2 = x_dataset.getXValue(0, l_minuendItem + 1);
+                l_y2 = x_dataset.getYValue(0, l_minuendItem + 1);
+                l_minuendNextX = new Double(l_x2);
+                l_minuendNextY = new Double(l_y2);
+            }
+
+            // never updated the subtrahend if it is implied to be zero
+            if (!b_impliedZeroSubtrahend && !b_subtrahendDone
+                    && !b_subtrahendFastForward && b_subtrahendAdvanced) {
+                l_x3 = x_dataset.getXValue(1, l_subtrahendItem);
+                l_y3 = x_dataset.getYValue(1, l_subtrahendItem);
+                l_subtrahendCurX = new Double(l_x3);
+                l_subtrahendCurY = new Double(l_y3);
+
+                if (!b_subtrahendAtIntersect) {
+                    l_subtrahendXs.add(l_subtrahendCurX);
+                    l_subtrahendYs.add(l_subtrahendCurY);
+                }
+
+                l_subtrahendMaxY = Math.max(l_subtrahendMaxY, l_y3);
+                l_subtrahendMinY = Math.min(l_subtrahendMinY, l_y3);
+
+                l_x4 = x_dataset.getXValue(1, l_subtrahendItem + 1);
+                l_y4 = x_dataset.getYValue(1, l_subtrahendItem + 1);
+                l_subtrahendNextX = new Double(l_x4);
+                l_subtrahendNextY = new Double(l_y4);
+            }
+
+            // deassert b_*FastForward (only matters for 1st time through loop)
+            b_minuendFastForward    = false;
+            b_subtrahendFastForward = false;
+
+            Double l_intersectX = null;
+            Double l_intersectY = null;
+            boolean b_intersect = false;
+
+            b_minuendAtIntersect    = false;
+            b_subtrahendAtIntersect = false;
+
+            // check for intersect
+            if ((l_x2 == l_x4) && (l_y2 == l_y4)) {
+                // check if line segments are colinear
+                if ((l_x1 == l_x3) && (l_y1 == l_y3)) {
+                    b_colinear = true;
+                }
+                else {
+                    // the intersect is at the next point for both the minuend
+                    // and subtrahend
+                    l_intersectX = new Double(l_x2);
+                    l_intersectY = new Double(l_y2);
+
+                    b_intersect             = true;
+                    b_minuendAtIntersect    = true;
+                    b_subtrahendAtIntersect = true;
+                 }
+            }
+            else {
+                // compute common denominator
+                double l_denominator = ((l_y4 - l_y3) * (l_x2 - l_x1))
+                        - ((l_x4 - l_x3) * (l_y2 - l_y1));
+
+                // compute common deltas
+                double l_deltaY = l_y1 - l_y3;
+                double l_deltaX = l_x1 - l_x3;
+
+                // compute numerators
+                double l_numeratorA = ((l_x4 - l_x3) * l_deltaY)
+                        - ((l_y4 - l_y3) * l_deltaX);
+                double l_numeratorB = ((l_x2 - l_x1) * l_deltaY)
+                        - ((l_y2 - l_y1) * l_deltaX);
+
+                // check if line segments are colinear
+                if ((0 == l_numeratorA) && (0 == l_numeratorB)
+                        && (0 == l_denominator)) {
+                    b_colinear = true;
+                }
+                else {
+                    // check if previously colinear
+                    if (b_colinear) {
+                        // clear colinear points and flag
+                        l_minuendXs.clear();
+                        l_minuendYs.clear();
+                        l_subtrahendXs.clear();
+                        l_subtrahendYs.clear();
+                        l_polygonXs.clear();
+                        l_polygonYs.clear();
+
+                        b_colinear = false;
+
+                        // set new starting point for the polygon
+                        boolean b_useMinuend = ((l_x3 <= l_x1)
+                                && (l_x1 <= l_x4));
+                        l_polygonXs.add(b_useMinuend ? l_minuendCurX
+                                : l_subtrahendCurX);
+                        l_polygonYs.add(b_useMinuend ? l_minuendCurY
+                                : l_subtrahendCurY);
+                    }
+                }
+
+                // compute slope components
+                double l_slopeA = l_numeratorA / l_denominator;
+                double l_slopeB = l_numeratorB / l_denominator;
+
+                // test if both grahphs have a vertical rise at the same x-value
+                boolean b_vertical = (l_x1 == l_x2) && (l_x3 == l_x4) && (l_x2 == l_x4);
+
+                // check if the line segments intersect
+                if (((0 < l_slopeA) && (l_slopeA <= 1) && (0 < l_slopeB)
+                        && (l_slopeB <= 1))|| b_vertical) {
+
+                    // compute the point of intersection
+                    double l_xi;
+                    double l_yi;
+                    if(b_vertical){
+                        b_colinear = false;
+                        l_xi = l_x2;
+                        l_yi = l_x4;
+                    }
+                    else{
+                        l_xi = l_x1 + (l_slopeA * (l_x2 - l_x1));
+                        l_yi = l_y1 + (l_slopeA * (l_y2 - l_y1));
+                    }
+
+                    l_intersectX            = new Double(l_xi);
+                    l_intersectY            = new Double(l_yi);
+                    b_intersect             = true;
+                    b_minuendAtIntersect    = ((l_xi == l_x2)
+                            && (l_yi == l_y2));
+                    b_subtrahendAtIntersect = ((l_xi == l_x4)
+                            && (l_yi == l_y4));
+
+                    // advance minuend and subtrahend to intesect
+                    l_minuendCurX    = l_intersectX;
+                    l_minuendCurY    = l_intersectY;
+                    l_subtrahendCurX = l_intersectX;
+                    l_subtrahendCurY = l_intersectY;
+                }
+            }
+
+            if (b_intersect) {
+                // create the polygon
+                // add the minuend's points to polygon
+                l_polygonXs.addAll(l_minuendXs);
+                l_polygonYs.addAll(l_minuendYs);
+
+                // add intersection point to the polygon
+                l_polygonXs.add(l_intersectX);
+                l_polygonYs.add(l_intersectY);
+
+                // add the subtrahend's points to the polygon in reverse
+                Collections.reverse(l_subtrahendXs);
+                Collections.reverse(l_subtrahendYs);
+                l_polygonXs.addAll(l_subtrahendXs);
+                l_polygonYs.addAll(l_subtrahendYs);
+
+                // create an actual polygon
+                b_positive = (l_subtrahendMaxY <= l_minuendMaxY)
+                        && (l_subtrahendMinY <= l_minuendMinY);
+                createPolygon(x_graphics, x_dataArea, x_plot, x_domainAxis,
+                        x_rangeAxis, b_positive, l_polygonXs, l_polygonYs);
+
+                // clear the point vectors
+                l_minuendXs.clear();
+                l_minuendYs.clear();
+                l_subtrahendXs.clear();
+                l_subtrahendYs.clear();
+                l_polygonXs.clear();
+                l_polygonYs.clear();
+
+                // set the maxY and minY values to intersect y-value
+                double l_y       = l_intersectY.doubleValue();
+                l_minuendMaxY    = l_y;
+                l_subtrahendMaxY = l_y;
+                l_minuendMinY    = l_y;
+                l_subtrahendMinY = l_y;
+
+                // add interection point to new polygon
+                l_polygonXs.add(l_intersectX);
+                l_polygonYs.add(l_intersectY);
+            }
+
+            // advance the minuend if needed
+            if (l_x2 <= l_x4) {
+                l_minuendItem++;
+                b_minuendAdvanced = true;
+            }
+            else {
+                b_minuendAdvanced = false;
+            }
+
+            // advance the subtrahend if needed
+            if (l_x4 <= l_x2) {
+                l_subtrahendItem++;
+                b_subtrahendAdvanced = true;
+            }
+            else {
+                b_subtrahendAdvanced = false;
+            }
+
+            b_minuendDone    = (l_minuendItem == (l_minuendItemCount - 1));
+            b_subtrahendDone = (l_subtrahendItem == (l_subtrahendItemCount
+                    - 1));
+        }
+
+        // check if the final polygon needs to be clipped
+        if (b_minuendDone && (l_x3 < l_x2) && (l_x2 < l_x4)) {
+            // project onto subtrahend
+            double l_slope    = (l_y4 - l_y3) / (l_x4 - l_x3);
+            l_subtrahendNextX = l_minuendNextX;
+            l_subtrahendNextY = new Double((l_slope * l_x2)
+                    + (l_y3 - (l_slope * l_x3)));
+        }
+
+        if (b_subtrahendDone && (l_x1 < l_x4) && (l_x4 < l_x2)) {
+            // project onto minuend
+            double l_slope = (l_y2 - l_y1) / (l_x2 - l_x1);
+            l_minuendNextX = l_subtrahendNextX;
+            l_minuendNextY = new Double((l_slope * l_x4)
+                    + (l_y1 - (l_slope * l_x1)));
+        }
+
+        // consider last point of minuend and subtrahend for determining
+        // positivity
+        l_minuendMaxY    = Math.max(l_minuendMaxY,
+                l_minuendNextY.doubleValue());
+        l_subtrahendMaxY = Math.max(l_subtrahendMaxY,
+                l_subtrahendNextY.doubleValue());
+        l_minuendMinY    = Math.min(l_minuendMinY,
+                l_minuendNextY.doubleValue());
+        l_subtrahendMinY = Math.min(l_subtrahendMinY,
+                l_subtrahendNextY.doubleValue());
+
+        // add the last point of the minuned and subtrahend
+        l_minuendXs.add(l_minuendNextX);
+        l_minuendYs.add(l_minuendNextY);
+        l_subtrahendXs.add(l_subtrahendNextX);
+        l_subtrahendYs.add(l_subtrahendNextY);
+
+        // create the polygon
+        // add the minuend's points to polygon
+        l_polygonXs.addAll(l_minuendXs);
+        l_polygonYs.addAll(l_minuendYs);
+
+        // add the subtrahend's points to the polygon in reverse
+        Collections.reverse(l_subtrahendXs);
+        Collections.reverse(l_subtrahendYs);
+        l_polygonXs.addAll(l_subtrahendXs);
+        l_polygonYs.addAll(l_subtrahendYs);
+
+        // create an actual polygon
+        b_positive = (l_subtrahendMaxY <= l_minuendMaxY)
+                && (l_subtrahendMinY <= l_minuendMinY);
+        createPolygon(x_graphics, x_dataArea, x_plot, x_domainAxis,
+                x_rangeAxis, b_positive, l_polygonXs, l_polygonYs);
     }
 
     /**
-     * Returns the intersection point of two lines.
-     * 
-     * @param x1  x1
-     * @param y1  y1
-     * @param x2  x2
-     * @param y2  y2
-     * @param x3  x3
-     * @param y3  y3
-     * @param x4  x4
-     * @param y4  y4
-     * 
-     * @return The intersection point.
+     * Draws the visual representation of a single data item, second pass.  In
+     * the second pass, the renderer draws the lines and shapes for the
+     * individual points in the two series.
+     *
+     * @param x_graphics  the graphics device.
+     * @param x_dataArea  the area within which the data is being drawn.
+     * @param x_info  collects information about the drawing.
+     * @param x_plot  the plot (can be used to obtain standard color
+     *         information etc).
+     * @param x_domainAxis  the domain (horizontal) axis.
+     * @param x_rangeAxis  the range (vertical) axis.
+     * @param x_dataset  the dataset.
+     * @param x_series  the series index (zero-based).
+     * @param x_item  the item index (zero-based).
+     * @param x_crosshairState  crosshair information for the plot
+     *                          (<code>null</code> permitted).
      */
-    private float[] getIntersection(float x1, float y1, float x2, float y2,
-                                    float x3, float y3, float x4, float y4) {
+    protected void drawItemPass1(Graphics2D x_graphics,
+                                 Rectangle2D x_dataArea,
+                                 PlotRenderingInfo x_info,
+                                 XYPlot x_plot,
+                                 ValueAxis x_domainAxis,
+                                 ValueAxis x_rangeAxis,
+                                 XYDataset x_dataset,
+                                 int x_series,
+                                 int x_item,
+                                 CrosshairState x_crosshairState) {
 
-        float n = (x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3);
-        float d = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
-        float u = n / d;
+        Shape l_entityArea = null;
+        EntityCollection l_entities = null;
+        if (null != x_info) {
+            l_entities = x_info.getOwner().getEntityCollection();
+        }
 
-        float[] result = new float[2];
-        result[0] = x1 + u * (x2 - x1);
-        result[1] = y1 + u * (y2 - y1);
-        return result;
+        Paint l_seriesPaint   = getItemPaint(x_series, x_item);
+        Stroke l_seriesStroke = getItemStroke(x_series, x_item);
+        x_graphics.setPaint(l_seriesPaint);
+        x_graphics.setStroke(l_seriesStroke);
 
+        PlotOrientation l_orientation      = x_plot.getOrientation();
+        RectangleEdge l_domainAxisLocation = x_plot.getDomainAxisEdge();
+        RectangleEdge l_rangeAxisLocation  = x_plot.getRangeAxisEdge();
+
+        double l_x0 = x_dataset.getXValue(x_series, x_item);
+        double l_y0 = x_dataset.getYValue(x_series, x_item);
+        double l_x1 = x_domainAxis.valueToJava2D(l_x0, x_dataArea,
+                l_domainAxisLocation);
+        double l_y1 = x_rangeAxis.valueToJava2D(l_y0, x_dataArea,
+                l_rangeAxisLocation);
+
+        if (getShapesVisible()) {
+            Shape l_shape = getItemShape(x_series, x_item);
+            if (l_orientation == PlotOrientation.HORIZONTAL) {
+                l_shape = ShapeUtilities.createTranslatedShape(l_shape,
+                        l_y1, l_x1);
+            }
+            else {
+                l_shape = ShapeUtilities.createTranslatedShape(l_shape,
+                        l_x1, l_y1);
+            }
+            if (l_shape.intersects(x_dataArea)) {
+                x_graphics.setPaint(getItemPaint(x_series, x_item));
+                x_graphics.fill(l_shape);
+            }
+            l_entityArea = l_shape;
+        }
+
+        // add an entity for the item...
+        if (null != l_entities) {
+            if (null == l_entityArea) {
+                l_entityArea = new Rectangle2D.Double((l_x1 - 2), (l_y1 - 2),
+                        4, 4);
+            }
+            String l_tip = null;
+            XYToolTipGenerator l_tipGenerator = getToolTipGenerator(x_series,
+                    x_item);
+            if (null != l_tipGenerator) {
+                l_tip = l_tipGenerator.generateToolTip(x_dataset, x_series,
+                        x_item);
+            }
+            String l_url = null;
+            XYURLGenerator l_urlGenerator = getURLGenerator();
+            if (null != l_urlGenerator) {
+                l_url = l_urlGenerator.generateURL(x_dataset, x_series,
+                        x_item);
+            }
+            XYItemEntity l_entity = new XYItemEntity(l_entityArea, x_dataset,
+                    x_series, x_item, l_tip, l_url);
+            l_entities.add(l_entity);
+        }
+
+        // draw the item label if there is one...
+        if (isItemLabelVisible(x_series, x_item)) {
+            drawItemLabel(x_graphics, l_orientation, x_dataset, x_series,
+                          x_item, l_x1, l_y1, (l_y1 < 0.0));
+        }
+
+        int l_domainAxisIndex = x_plot.getDomainAxisIndex(x_domainAxis);
+        int l_rangeAxisIndex  = x_plot.getRangeAxisIndex(x_rangeAxis);
+        updateCrosshairValues(x_crosshairState, l_x0, l_y0, l_domainAxisIndex,
+                              l_rangeAxisIndex, l_x1, l_y1, l_orientation);
+
+        if (0 == x_item) {
+            return;
+        }
+
+        double l_x2 = x_domainAxis.valueToJava2D(x_dataset.getXValue(x_series,
+                (x_item - 1)), x_dataArea, l_domainAxisLocation);
+        double l_y2 = x_rangeAxis.valueToJava2D(x_dataset.getYValue(x_series,
+                (x_item - 1)), x_dataArea, l_rangeAxisLocation);
+
+        Line2D l_line = null;
+        if (PlotOrientation.HORIZONTAL == l_orientation) {
+            l_line = new Line2D.Double(l_y1, l_x1, l_y2, l_x2);
+        }
+        else if (PlotOrientation.VERTICAL == l_orientation) {
+            l_line = new Line2D.Double(l_x1, l_y1, l_x2, l_y2);
+        }
+
+        if ((null != l_line) && l_line.intersects(x_dataArea)) {
+            x_graphics.setPaint(getItemPaint(x_series, x_item));
+            x_graphics.setStroke(getItemStroke(x_series, x_item));
+            x_graphics.draw(l_line);
+        }
     }
-    
+
     /**
-     * Returns a default legend item for the specified series.  Subclasses 
+     * Determines if a dataset is degenerate.  A degenerate dataset is a
+     * dataset where either series has less than two (2) points.
+     *
+     * @param x_dataset  the dataset.
+     * @param x_impliedZeroSubtrahend  if false, do not check the subtrahend
+     *
+     * @return true if the dataset is degenerate.
+     */
+    private boolean isEitherSeriesDegenerate(XYDataset x_dataset,
+            boolean x_impliedZeroSubtrahend) {
+
+        if (x_impliedZeroSubtrahend) {
+            return (x_dataset.getItemCount(0) < 2);
+        }
+
+        return ((x_dataset.getItemCount(0) < 2)
+                || (x_dataset.getItemCount(1) < 2));
+    }
+
+    /**
+     * Determines if the two (2) series are disjoint.
+     * Disjoint series do not overlap in the domain space.
+     *
+     * @param x_dataset  the dataset.
+     *
+     * @return true if the dataset is degenerate.
+     */
+    private boolean areSeriesDisjoint(XYDataset x_dataset) {
+
+        int l_minuendItemCount = x_dataset.getItemCount(0);
+        double l_minuendFirst  = x_dataset.getXValue(0, 0);
+        double l_minuendLast   = x_dataset.getXValue(0, l_minuendItemCount - 1);
+
+        int l_subtrahendItemCount = x_dataset.getItemCount(1);
+        double l_subtrahendFirst  = x_dataset.getXValue(1, 0);
+        double l_subtrahendLast   = x_dataset.getXValue(1,
+                l_subtrahendItemCount - 1);
+
+        return ((l_minuendLast < l_subtrahendFirst)
+                || (l_subtrahendLast < l_minuendFirst));
+    }
+
+    /**
+     * Draws the visual representation of a polygon
+     *
+     * @param x_graphics  the graphics device.
+     * @param x_dataArea  the area within which the data is being drawn.
+     * @param x_plot  the plot (can be used to obtain standard color
+     *                information etc).
+     * @param x_domainAxis  the domain (horizontal) axis.
+     * @param x_rangeAxis  the range (vertical) axis.
+     * @param x_positive  indicates if the polygon is positive (true) or
+     *                    negative (false).
+     * @param x_xValues  a linked list of the x values (expects values to be
+     *                   of type Double).
+     * @param x_yValues  a linked list of the y values (expects values to be
+     *                   of type Double).
+     */
+    private void createPolygon (Graphics2D x_graphics,
+                                Rectangle2D x_dataArea,
+                                XYPlot x_plot,
+                                ValueAxis x_domainAxis,
+                                ValueAxis x_rangeAxis,
+                                boolean x_positive,
+                                LinkedList x_xValues,
+                                LinkedList x_yValues) {
+
+        PlotOrientation l_orientation      = x_plot.getOrientation();
+        RectangleEdge l_domainAxisLocation = x_plot.getDomainAxisEdge();
+        RectangleEdge l_rangeAxisLocation  = x_plot.getRangeAxisEdge();
+
+        Object[] l_xValues = x_xValues.toArray();
+        Object[] l_yValues = x_yValues.toArray();
+
+        GeneralPath l_path = new GeneralPath();
+
+        if (PlotOrientation.VERTICAL == l_orientation) {
+            double l_x = x_domainAxis.valueToJava2D((
+                    (Double) l_xValues[0]).doubleValue(), x_dataArea,
+                    l_domainAxisLocation);
+            if (this.roundXCoordinates) {
+                l_x = Math.rint(l_x);
+            }
+
+            double l_y = x_rangeAxis.valueToJava2D((
+                    (Double) l_yValues[0]).doubleValue(), x_dataArea,
+                    l_rangeAxisLocation);
+
+            l_path.moveTo((float) l_x, (float) l_y);
+            for (int i = 1; i < l_xValues.length; i++) {
+                l_x = x_domainAxis.valueToJava2D((
+                        (Double) l_xValues[i]).doubleValue(), x_dataArea,
+                        l_domainAxisLocation);
+                if (this.roundXCoordinates) {
+                    l_x = Math.rint(l_x);
+                }
+
+                l_y = x_rangeAxis.valueToJava2D((
+                        (Double) l_yValues[i]).doubleValue(), x_dataArea,
+                        l_rangeAxisLocation);
+                l_path.lineTo((float) l_x, (float) l_y);
+            }
+            l_path.closePath();
+        }
+        else {
+            double l_x = x_domainAxis.valueToJava2D((
+                    (Double) l_xValues[0]).doubleValue(), x_dataArea,
+                    l_domainAxisLocation);
+            if (this.roundXCoordinates) {
+                l_x = Math.rint(l_x);
+            }
+
+            double l_y = x_rangeAxis.valueToJava2D((
+                    (Double) l_yValues[0]).doubleValue(), x_dataArea,
+                    l_rangeAxisLocation);
+
+            l_path.moveTo((float) l_y, (float) l_x);
+            for (int i = 1; i < l_xValues.length; i++) {
+                l_x = x_domainAxis.valueToJava2D((
+                        (Double) l_xValues[i]).doubleValue(), x_dataArea,
+                        l_domainAxisLocation);
+                if (this.roundXCoordinates) {
+                    l_x = Math.rint(l_x);
+                }
+
+                l_y = x_rangeAxis.valueToJava2D((
+                        (Double) l_yValues[i]).doubleValue(), x_dataArea,
+                        l_rangeAxisLocation);
+                l_path.lineTo((float) l_y, (float) l_x);
+            }
+            l_path.closePath();
+        }
+
+        if (l_path.intersects(x_dataArea)) {
+            x_graphics.setPaint(x_positive ? getPositivePaint()
+                    : getNegativePaint());
+            x_graphics.fill(l_path);
+        }
+    }
+
+    /**
+     * Returns a default legend item for the specified series.  Subclasses
      * should override this method to generate customised items.
      *
      * @param datasetIndex  the dataset index (zero-based).
@@ -847,6 +1114,7 @@ public class XYDifferenceRenderer extends AbstractXYItemRenderer
      *
      * @return A legend item for the series.
      */
+    @Override
     public LegendItem getLegendItem(int datasetIndex, int series) {
         LegendItem result = null;
         XYPlot p = getPlot();
@@ -855,27 +1123,33 @@ public class XYDifferenceRenderer extends AbstractXYItemRenderer
             if (dataset != null) {
                 if (getItemVisible(series, 0)) {
                     String label = getLegendItemLabelGenerator().generateLabel(
-                        dataset, series
-                    );
+                            dataset, series);
                     String description = label;
                     String toolTipText = null;
                     if (getLegendItemToolTipGenerator() != null) {
-                        toolTipText = getLegendItemToolTipGenerator().generateLabel(
-                            dataset, series
-                        );
+                        toolTipText
+                            = getLegendItemToolTipGenerator().generateLabel(
+                                    dataset, series);
                     }
                     String urlText = null;
                     if (getLegendItemURLGenerator() != null) {
                         urlText = getLegendItemURLGenerator().generateLabel(
-                            dataset, series
-                        );
+                                dataset, series);
                     }
-                    Paint paint = getSeriesPaint(series);
-                    Stroke stroke = getSeriesStroke(series);
-                    // TODO:  the following hard-coded line needs generalising
-                    Line2D line = new Line2D.Double(-7.0, 0.0, 7.0, 0.0);
-                    result = new LegendItem(label, description, toolTipText, 
-                            urlText, line, stroke, paint);
+                    Paint paint = lookupSeriesPaint(series);
+                    Stroke stroke = lookupSeriesStroke(series);
+                    Shape line = getLegendLine();
+                    result = new LegendItem(label, description,
+                            toolTipText, urlText, line, stroke, paint);
+                    result.setLabelFont(lookupLegendTextFont(series));
+                    Paint labelPaint = lookupLegendTextPaint(series);
+                    if (labelPaint != null) {
+                        result.setLabelPaint(labelPaint);
+                    }
+                    result.setDataset(dataset);
+                    result.setDatasetIndex(datasetIndex);
+                    result.setSeriesKey(dataset.getSeriesKey(series));
+                    result.setSeriesIndex(series);
                 }
             }
 
@@ -887,46 +1161,53 @@ public class XYDifferenceRenderer extends AbstractXYItemRenderer
 
     /**
      * Tests this renderer for equality with an arbitrary object.
-     * 
+     *
      * @param obj  the object (<code>null</code> permitted).
-     * 
+     *
      * @return A boolean.
-     */    
+     */
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
-            return true;   
+            return true;
         }
         if (!(obj instanceof XYDifferenceRenderer)) {
-            return false;   
+            return false;
         }
         if (!super.equals(obj)) {
-            return false;   
+            return false;
         }
         XYDifferenceRenderer that = (XYDifferenceRenderer) obj;
         if (!PaintUtilities.equal(this.positivePaint, that.positivePaint)) {
-            return false;   
+            return false;
         }
         if (!PaintUtilities.equal(this.negativePaint, that.negativePaint)) {
-            return false;   
+            return false;
         }
         if (this.shapesVisible != that.shapesVisible) {
-            return false;   
+            return false;
         }
         if (!ShapeUtilities.equal(this.legendLine, that.legendLine)) {
-            return false;   
+            return false;
+        }
+        if (this.roundXCoordinates != that.roundXCoordinates) {
+            return false;
         }
         return true;
     }
-    
+
     /**
      * Returns a clone of the renderer.
-     * 
+     *
      * @return A clone.
-     * 
+     *
      * @throws CloneNotSupportedException  if the renderer cannot be cloned.
      */
+    @Override
     public Object clone() throws CloneNotSupportedException {
-        return super.clone();
+        XYDifferenceRenderer clone = (XYDifferenceRenderer) super.clone();
+        clone.legendLine = ShapeUtilities.clone(this.legendLine);
+        return clone;
     }
 
     /**
@@ -951,7 +1232,7 @@ public class XYDifferenceRenderer extends AbstractXYItemRenderer
      * @throws IOException  if there is an I/O error.
      * @throws ClassNotFoundException  if there is a classpath problem.
      */
-    private void readObject(ObjectInputStream stream) 
+    private void readObject(ObjectInputStream stream)
         throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         this.positivePaint = SerialUtilities.readPaint(stream);

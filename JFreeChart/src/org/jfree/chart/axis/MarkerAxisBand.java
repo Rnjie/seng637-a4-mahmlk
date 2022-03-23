@@ -2,39 +2,38 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * -------------------
  * MarkerAxisBand.java
  * -------------------
- * (C) Copyright 2000-2005, by Object Refinery Limited.
+ * (C) Copyright 2000-2008, by Object Refinery Limited.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
  * Contributor(s):   -;
  *
- * $Id: MarkerAxisBand.java,v 1.6 2005/05/19 13:58:11 mungady Exp $
- *
- * Changes (from 03-Sep-2002)
- * --------------------------
+ * Changes
+ * -------
  * 03-Sep-2002 : Updated Javadoc comments (DG);
  * 01-Oct-2002 : Fixed errors reported by Checkstyle (DG);
  * 08-Nov-2002 : Moved to new package com.jrefinery.chart.axis (DG);
@@ -72,7 +71,7 @@ public class MarkerAxisBand implements Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = -1729482413886398919L;
-    
+
     /** The axis that the band belongs to. */
     private NumberAxis axis;
 
@@ -169,7 +168,7 @@ public class MarkerAxisBand implements Serializable {
             text, g2.getFontRenderContext()
         );
         g2.drawString(
-            text, (float) x, (float) (bounds.getMaxY() 
+            text, (float) x, (float) (bounds.getMaxY()
                 - this.bottomInnerGap - metrics.getDescent())
         );
     }
@@ -203,7 +202,7 @@ public class MarkerAxisBand implements Serializable {
                 end, dataArea, RectangleEdge.BOTTOM
             );
             Rectangle2D r = new Rectangle2D.Double(
-                s, y + this.topOuterGap, e - s, 
+                s, y + this.topOuterGap, e - s,
                 h - this.topOuterGap - this.bottomOuterGap
             );
 
@@ -224,13 +223,14 @@ public class MarkerAxisBand implements Serializable {
     }
 
     /**
-     * Tests this axis for equality with another object.  Note that the axis 
+     * Tests this axis for equality with another object.  Note that the axis
      * that the band belongs to is ignored in the test.
      *
      * @param obj  the object (<code>null</code> permitted).
      *
      * @return <code>true</code> or <code>false</code>.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
@@ -259,12 +259,13 @@ public class MarkerAxisBand implements Serializable {
         }
         return true;
     }
-    
+
     /**
      * Returns a hash code for the object.
-     * 
+     *
      * @return A hash code.
      */
+    @Override
     public int hashCode() {
         int result = 37;
         result = 19 * result + this.font.hashCode();

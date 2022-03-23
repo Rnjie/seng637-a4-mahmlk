@@ -2,57 +2,60 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2014, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, 
- * USA.  
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * ---------------------------
  * MinMaxCategoryRenderer.java
  * ---------------------------
- * (C) Copyright 2002-2005, by Object Refinery Limited.
+ * (C) Copyright 2002-2014, by Object Refinery Limited.
  *
  * Original Author:  Tomer Peretz;
  * Contributor(s):   David Gilbert (for Object Refinery Limited);
  *                   Christian W. Zuckschwerdt;
- *                   Nicolas Brodu (for Astrium and EADS Corporate Research 
+ *                   Nicolas Brodu (for Astrium and EADS Corporate Research
  *                   Center);
- *
- * $Id: MinMaxCategoryRenderer.java,v 1.8 2005/11/17 11:24:08 mungady Exp $
  *
  * Changes:
  * --------
  * 29-May-2002 : Version 1 (TP);
  * 02-Oct-2002 : Fixed errors reported by Checkstyle (DG);
- * 24-Oct-2002 : Amendments for changes in CategoryDataset interface and 
+ * 24-Oct-2002 : Amendments for changes in CategoryDataset interface and
  *               CategoryToolTipGenerator interface (DG);
  * 05-Nov-2002 : Base dataset is now TableDataset not CategoryDataset (DG);
  * 17-Jan-2003 : Moved plot classes to a separate package (DG);
- * 10-Apr-2003 : Changed CategoryDataset to KeyedValues2DDataset in drawItem() 
+ * 10-Apr-2003 : Changed CategoryDataset to KeyedValues2DDataset in drawItem()
  *               method (DG);
  * 30-Jul-2003 : Modified entity constructor (CZ);
  * 08-Sep-2003 : Implemented Serializable (NB);
  * 29-Oct-2003 : Added workaround for font alignment in PDF output (DG);
  * 05-Nov-2004 : Modified drawItem() signature (DG);
  * 17-Nov-2005 : Added change events and argument checks (DG);
- * 
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 02-Feb-2007 : Removed author tags all over JFreeChart sources (DG);
+ * 09-Mar-2007 : Fixed problem with horizontal rendering (DG);
+ * 28-Sep-2007 : Added equals() method override (DG);
+ * 02-Jul-2013 : Use ParamChecks (DG);
+ *
  */
 
 package org.jfree.chart.renderer.category;
@@ -78,37 +81,40 @@ import javax.swing.Icon;
 
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.entity.CategoryItemEntity;
 import org.jfree.chart.entity.EntityCollection;
 import org.jfree.chart.event.RendererChangeEvent;
-import org.jfree.chart.labels.CategoryToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.util.ParamChecks;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.io.SerialUtilities;
+import org.jfree.util.PaintUtilities;
 
 /**
- * Renderer for drawing min max plot. This renderer draws all the series under 
- * the same category in the same x position using <code>objectIcon</code> and 
- * a line from the maximum value to the minimum value.
- * <p>
- * For use with the {@link org.jfree.chart.plot.CategoryPlot} class.
- *
- * @author Tomer Peretz
+ * Renderer for drawing min max plot. This renderer draws all the series under
+ * the same category in the same x position using <code>objectIcon</code> and
+ * a line from the maximum value to the minimum value. For use with the
+ * {@link CategoryPlot} class. The example shown here is generated by
+ * the <code>MinMaxCategoryPlotDemo1.java</code> program included in the
+ * JFreeChart Demo Collection:
+ * <br><br>
+ * <img src="../../../../../images/MinMaxCategoryRendererSample.png"
+ * alt="MinMaxCategoryRendererSample.png">
  */
 public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
 
     /** For serialization. */
     private static final long serialVersionUID = 2935615937671064911L;
-    
+
     /** A flag indicating whether or not lines are drawn between XY points. */
     private boolean plotLines = false;
 
-    /** 
+    /**
      * The paint of the line between the minimum value and the maximum value.
      */
     private transient Paint groupPaint = Color.black;
 
-    /** 
+    /**
      * The stroke of the line between the minimum value and the maximum value.
      */
     private transient Stroke groupStroke = new BasicStroke(1.0f);
@@ -146,7 +152,7 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
      *
      * @return boolean true if line will be drawn between sequenced categories,
      *         otherwise false.
-     *         
+     *
      * @see #setDrawLines(boolean)
      */
     public boolean isDrawLines() {
@@ -155,19 +161,18 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
 
     /**
      * Sets the flag that controls whether or not lines are drawn to connect
-     * the items within a series and sends a {@link RendererChangeEvent} to 
+     * the items within a series and sends a {@link RendererChangeEvent} to
      * all registered listeners.
      *
      * @param draw  the new value of the flag.
-     * 
+     *
      * @see #isDrawLines()
      */
     public void setDrawLines(boolean draw) {
         if (this.plotLines != draw) {
             this.plotLines = draw;
-            this.notifyListeners(new RendererChangeEvent(this));
+            fireChangeEvent();
         }
-        
     }
 
     /**
@@ -175,7 +180,7 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
      * value items in each category.
      *
      * @return The paint (never <code>null</code>).
-     * 
+     *
      * @see #setGroupPaint(Paint)
      */
     public Paint getGroupPaint() {
@@ -188,15 +193,13 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
      * all registered listeners.
      *
      * @param paint  the paint (<code>null</code> not permitted).
-     * 
+     *
      * @see #getGroupPaint()
      */
     public void setGroupPaint(Paint paint) {
-        if (paint == null) {
-            throw new IllegalArgumentException("Null 'paint' argument.");
-        }
+        ParamChecks.nullNotPermitted(paint, "paint");
         this.groupPaint = paint;
-        notifyListeners(new RendererChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
@@ -204,7 +207,7 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
      * value items in each category.
      *
      * @return The stroke (never <code>null</code>).
-     * 
+     *
      * @see #setGroupStroke(Stroke)
      */
     public Stroke getGroupStroke() {
@@ -212,20 +215,23 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
     }
 
     /**
-     * Sets the stroke of the line between the minimum value and the maximum 
-     * value.
+     * Sets the stroke of the line between the minimum value and the maximum
+     * value and sends a {@link RendererChangeEvent} to all registered
+     * listeners.
      *
-     * @param groupStroke The new stroke
+     * @param stroke the new stroke (<code>null</code> not permitted).
      */
-    public void setGroupStroke(Stroke groupStroke) {
-        this.groupStroke = groupStroke;
+    public void setGroupStroke(Stroke stroke) {
+        ParamChecks.nullNotPermitted(stroke, "stroke");
+        this.groupStroke = stroke;
+        fireChangeEvent();
     }
 
     /**
      * Returns the icon drawn for each data item.
      *
      * @return The icon (never <code>null</code>).
-     * 
+     *
      * @see #setObjectIcon(Icon)
      */
     public Icon getObjectIcon() {
@@ -233,18 +239,17 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
     }
 
     /**
-     * Sets the icon drawn for each data item.
+     * Sets the icon drawn for each data item and sends a
+     * {@link RendererChangeEvent} to all registered listeners.
      *
      * @param icon  the icon.
-     * 
+     *
      * @see #getObjectIcon()
      */
     public void setObjectIcon(Icon icon) {
-        if (icon == null) {
-            throw new IllegalArgumentException("Null 'icon' argument.");
-        }
+        ParamChecks.nullNotPermitted(icon, "icon");
         this.objectIcon = icon;
-        notifyListeners(new RendererChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
@@ -252,7 +257,7 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
      * category.
      *
      * @return The icon (never <code>null</code>).
-     * 
+     *
      * @see #setMaxIcon(Icon)
      */
     public Icon getMaxIcon() {
@@ -265,15 +270,13 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
      * listeners.
      *
      * @param icon  the icon (<code>null</code> not permitted).
-     * 
+     *
      * @see #getMaxIcon()
      */
     public void setMaxIcon(Icon icon) {
-        if (icon == null) {
-            throw new IllegalArgumentException("Null 'icon' argument.");
-        }
+        ParamChecks.nullNotPermitted(icon, "icon");
         this.maxIcon = icon;
-        notifyListeners(new RendererChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
@@ -281,7 +284,7 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
      * category.
      *
      * @return The icon (never <code>null</code>).
-     * 
+     *
      * @see #setMinIcon(Icon)
      */
     public Icon getMinIcon() {
@@ -294,15 +297,13 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
      * listeners.
      *
      * @param icon  the icon (<code>null</code> not permitted).
-     * 
+     *
      * @see #getMinIcon()
      */
     public void setMinIcon(Icon icon) {
-        if (icon == null) {
-            throw new IllegalArgumentException("Null 'icon' argument.");
-        }
+        ParamChecks.nullNotPermitted(icon, "icon");
         this.minIcon = icon;
-        notifyListeners(new RendererChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
@@ -319,6 +320,7 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
      * @param column  the column index (zero-based).
      * @param pass  the pass index.
      */
+    @Override
     public void drawItem(Graphics2D g2, CategoryItemRendererState state,
             Rectangle2D dataArea, CategoryPlot plot, CategoryAxis domainAxis,
             ValueAxis rangeAxis, CategoryDataset dataset, int row, int column,
@@ -328,15 +330,23 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
         Number value = dataset.getValue(row, column);
         if (value != null) {
             // current data point...
-            double x1 = domainAxis.getCategoryMiddle(
-                column, getColumnCount(), dataArea, plot.getDomainAxisEdge());
-            double y1 = rangeAxis.valueToJava2D(
-                value.doubleValue(), dataArea, plot.getRangeAxisEdge());
+            double x1 = domainAxis.getCategoryMiddle(column, getColumnCount(),
+                    dataArea, plot.getDomainAxisEdge());
+            double y1 = rangeAxis.valueToJava2D(value.doubleValue(), dataArea,
+                    plot.getRangeAxisEdge());
+            Shape hotspot = new Rectangle2D.Double(x1 - 4, y1 - 4, 8.0, 8.0);
+
             g2.setPaint(getItemPaint(row, column));
             g2.setStroke(getItemStroke(row, column));
-            Shape shape = null;
-            shape = new Rectangle2D.Double(x1 - 4, y1 - 4, 8.0, 8.0);
-            this.objectIcon.paintIcon(null, g2, (int) x1, (int) y1);
+
+            PlotOrientation orient = plot.getOrientation();
+            if (orient == PlotOrientation.VERTICAL) {
+                this.objectIcon.paintIcon(null, g2, (int) x1, (int) y1);
+            }
+            else {
+                this.objectIcon.paintIcon(null, g2, (int) y1, (int) x1);
+            }
+
             if (this.lastCategory == column) {
                 if (this.min > value.doubleValue()) {
                     this.min = value.doubleValue();
@@ -344,16 +354,26 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
                 if (this.max < value.doubleValue()) {
                     this.max = value.doubleValue();
                 }
+
+                // last series, so we are ready to draw the min and max
                 if (dataset.getRowCount() - 1 == row) {
                     g2.setPaint(this.groupPaint);
                     g2.setStroke(this.groupStroke);
-                    double minY = rangeAxis.valueToJava2D(this.min, dataArea, 
+                    double minY = rangeAxis.valueToJava2D(this.min, dataArea,
                             plot.getRangeAxisEdge());
-                    double maxY = rangeAxis.valueToJava2D(this.max, dataArea, 
+                    double maxY = rangeAxis.valueToJava2D(this.max, dataArea,
                             plot.getRangeAxisEdge());
-                    g2.draw(new Line2D.Double(x1, minY, x1, maxY));
-                    this.minIcon.paintIcon(null, g2, (int) x1, (int) minY);
-                    this.maxIcon.paintIcon(null, g2, (int) x1, (int) maxY);
+
+                    if (orient == PlotOrientation.VERTICAL) {
+                        g2.draw(new Line2D.Double(x1, minY, x1, maxY));
+                        this.minIcon.paintIcon(null, g2, (int) x1, (int) minY);
+                        this.maxIcon.paintIcon(null, g2, (int) x1, (int) maxY);
+                    }
+                    else {
+                        g2.draw(new Line2D.Double(minY, x1, maxY, x1));
+                        this.minIcon.paintIcon(null, g2, (int) minY, (int) x1);
+                        this.maxIcon.paintIcon(null, g2, (int) maxY, (int) x1);
+                    }
                 }
             }
             else {  // reset the min and max
@@ -361,6 +381,7 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
                 this.min = value.doubleValue();
                 this.max = value.doubleValue();
             }
+
             // connect to the previous point
             if (this.plotLines) {
                 if (column != 0) {
@@ -368,37 +389,63 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
                     if (previousValue != null) {
                         // previous data point...
                         double previous = previousValue.doubleValue();
-                        double x0 = domainAxis.getCategoryMiddle(
-                            column - 1, getColumnCount(), dataArea,
-                            plot.getDomainAxisEdge());
-                        double y0 = rangeAxis.valueToJava2D(
-                            previous, dataArea, plot.getRangeAxisEdge());
+                        double x0 = domainAxis.getCategoryMiddle(column - 1,
+                                getColumnCount(), dataArea,
+                                plot.getDomainAxisEdge());
+                        double y0 = rangeAxis.valueToJava2D(previous, dataArea,
+                                plot.getRangeAxisEdge());
                         g2.setPaint(getItemPaint(row, column));
                         g2.setStroke(getItemStroke(row, column));
-                        Line2D line = new Line2D.Double(x0, y0, x1, y1);
+                        Line2D line;
+                        if (orient == PlotOrientation.VERTICAL) {
+                            line = new Line2D.Double(x0, y0, x1, y1);
+                        }
+                        else {
+                            line = new Line2D.Double(y0, x0, y1, x1);
+                        }
                         g2.draw(line);
                     }
                 }
             }
 
-            // collect entity and tool tip information...
-            if (state.getInfo() != null) {
-                EntityCollection entities 
-                    = state.getInfo().getOwner().getEntityCollection();
-                if (entities != null && shape != null) {
-                    String tip = null;
-                    CategoryToolTipGenerator tipster 
-                        = getToolTipGenerator(row, column);
-                    if (tipster != null) {
-                        tip = tipster.generateToolTip(dataset, row, column);
-                    }
-                    CategoryItemEntity entity = new CategoryItemEntity(
-                        shape, tip, null, dataset, row, 
-                        dataset.getColumnKey(column), column);
-                    entities.add(entity);
-                }
+            // add an item entity, if this information is being collected
+            EntityCollection entities = state.getEntityCollection();
+            if (entities != null) {
+                addItemEntity(entities, dataset, row, column, hotspot);
             }
         }
+    }
+
+    /**
+     * Tests this instance for equality with an arbitrary object.  The icon
+     * fields are NOT included in the test, so this implementation is a little
+     * weak.
+     *
+     * @param obj  the object (<code>null</code> permitted).
+     *
+     * @return A boolean.
+     *
+     * @since 1.0.7
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof MinMaxCategoryRenderer)) {
+            return false;
+        }
+        MinMaxCategoryRenderer that = (MinMaxCategoryRenderer) obj;
+        if (this.plotLines != that.plotLines) {
+            return false;
+        }
+        if (!PaintUtilities.equal(this.groupPaint, that.groupPaint)) {
+            return false;
+        }
+        if (!this.groupStroke.equals(that.groupStroke)) {
+            return false;
+        }
+        return super.equals(obj);
     }
 
     /**
@@ -410,40 +457,42 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
      *
      * @return The icon.
      */
-    private Icon getIcon(Shape shape, final Paint fillPaint, 
+    private Icon getIcon(Shape shape, final Paint fillPaint,
                         final Paint outlinePaint) {
 
-      final int width = shape.getBounds().width;
-      final int height = shape.getBounds().height;
-      final GeneralPath path = new GeneralPath(shape);
-      return new Icon() {
-          public void paintIcon(Component c, Graphics g, int x, int y) {
-              Graphics2D g2 = (Graphics2D) g;
-              path.transform(AffineTransform.getTranslateInstance(x, y));
-              if (fillPaint != null) {
-                  g2.setPaint(fillPaint);
-                  g2.fill(path);
-              }
-              if (outlinePaint != null) {
-                  g2.setPaint(outlinePaint);
-                  g2.draw(path);
-              }
-              path.transform(AffineTransform.getTranslateInstance(-x, -y));
-        }
+        final int width = shape.getBounds().width;
+        final int height = shape.getBounds().height;
+        final GeneralPath path = new GeneralPath(shape);
+        return new Icon() {
+            @Override
+            public void paintIcon(Component c, Graphics g, int x, int y) {
+                Graphics2D g2 = (Graphics2D) g;
+                path.transform(AffineTransform.getTranslateInstance(x, y));
+                if (fillPaint != null) {
+                    g2.setPaint(fillPaint);
+                    g2.fill(path);
+                }
+                if (outlinePaint != null) {
+                    g2.setPaint(outlinePaint);
+                    g2.draw(path);
+                }
+                path.transform(AffineTransform.getTranslateInstance(-x, -y));
+            }
 
-        public int getIconWidth() {
-            return width;
-        }
+            @Override
+            public int getIconWidth() {
+                return width;
+            }
 
-        public int getIconHeight() {
-            return height;
-        }
-
-      };
+            @Override
+            public int getIconHeight() {
+                return height;
+            }
+        };
     }
 
     /**
-     * Returns an icon.
+     * Returns an icon from a shape.
      *
      * @param shape  the shape.
      * @param fill  the fill flag.
@@ -451,12 +500,13 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
      *
      * @return The icon.
      */
-    private Icon getIcon(Shape shape, final boolean fill, 
-                         final boolean outline) {
+    private Icon getIcon(Shape shape, final boolean fill,
+            final boolean outline) {
         final int width = shape.getBounds().width;
         final int height = shape.getBounds().height;
         final GeneralPath path = new GeneralPath(shape);
         return new Icon() {
+            @Override
             public void paintIcon(Component c, Graphics g, int x, int y) {
                 Graphics2D g2 = (Graphics2D) g;
                 path.transform(AffineTransform.getTranslateInstance(x, y));
@@ -469,16 +519,18 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
                 path.transform(AffineTransform.getTranslateInstance(-x, -y));
             }
 
+            @Override
             public int getIconWidth() {
                 return width;
             }
 
+            @Override
             public int getIconHeight() {
                 return height;
             }
         };
     }
-    
+
     /**
      * Provides serialization support.
      *
@@ -491,7 +543,7 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
         SerialUtilities.writeStroke(this.groupStroke, stream);
         SerialUtilities.writePaint(this.groupPaint, stream);
     }
-    
+
     /**
      * Provides serialization support.
      *
@@ -500,17 +552,17 @@ public class MinMaxCategoryRenderer extends AbstractCategoryItemRenderer {
      * @throws IOException  if there is an I/O error.
      * @throws ClassNotFoundException  if there is a classpath problem.
      */
-    private void readObject(ObjectInputStream stream) 
+    private void readObject(ObjectInputStream stream)
         throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         this.groupStroke = SerialUtilities.readStroke(stream);
         this.groupPaint = SerialUtilities.readPaint(stream);
-          
-        this.minIcon = getIcon(new Arc2D.Double(-4, -4, 8, 8, 0, 360, 
+
+        this.minIcon = getIcon(new Arc2D.Double(-4, -4, 8, 8, 0, 360,
                 Arc2D.OPEN), null, Color.black);
-        this.maxIcon = getIcon(new Arc2D.Double(-4, -4, 8, 8, 0, 360, 
+        this.maxIcon = getIcon(new Arc2D.Double(-4, -4, 8, 8, 0, 360,
                 Arc2D.OPEN), null, Color.black);
         this.objectIcon = getIcon(new Line2D.Double(-4, 0, 4, 0), false, true);
     }
-    
+
 }

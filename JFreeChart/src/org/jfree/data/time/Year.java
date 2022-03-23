@@ -2,36 +2,35 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * ---------
  * Year.java
  * ---------
- * (C) Copyright 2001-2005, by Object Refinery Limited.
+ * (C) Copyright 2001-2012, by Object Refinery Limited.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
  * Contributor(s):   -;
- *
- * $Id: Year.java,v 1.9 2005/05/19 10:35:27 mungady Exp $
  *
  * Changes
  * -------
@@ -40,18 +39,25 @@
  * 19-Dec-2001 : Added a new constructor as suggested by Paul English (DG);
  * 29-Jan-2002 : Worked on parseYear() method (DG);
  * 14-Feb-2002 : Fixed bug in Year(Date) constructor (DG);
- * 26-Feb-2002 : Changed getStart(), getMiddle() and getEnd() methods to 
+ * 26-Feb-2002 : Changed getStart(), getMiddle() and getEnd() methods to
  *               evaluate with reference to a particular time zone (DG);
  * 19-Mar-2002 : Changed API for TimePeriod classes (DG);
  * 10-Sep-2002 : Added getSerialIndex() method (DG);
  * 04-Oct-2002 : Fixed errors reported by Checkstyle (DG);
  * 10-Jan-2003 : Changed base class and method names (DG);
- * 05-Mar-2003 : Fixed bug in getFirstMillisecond() picked up in JUnit 
+ * 05-Mar-2003 : Fixed bug in getFirstMillisecond() picked up in JUnit
  *               tests (DG);
- * 13-Mar-2003 : Moved to com.jrefinery.data.time package, and implemented 
+ * 13-Mar-2003 : Moved to com.jrefinery.data.time package, and implemented
  *               Serializable (DG);
  * 21-Oct-2003 : Added hashCode() method (DG);
- * 
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 05-Oct-2006 : Updated API docs (DG);
+ * 06-Oct-2006 : Refactored to cache first and last millisecond values (DG);
+ * 16-Sep-2008 : Extended range of valid years, and deprecated
+ *               DEFAULT_TIME_ZONE (DG);
+ * 25-Nov-2008 : Added new constructor with Locale (DG);
+ * 05-Jul-2012 : Removed JRE 1.3.1 code (DG);
+ *
  */
 
 package org.jfree.data.time;
@@ -59,22 +65,40 @@ package org.jfree.data.time;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
-import org.jfree.date.MonthConstants;
-import org.jfree.date.SerialDate;
-
 /**
- * Represents a year in the range 1900 to 9999.  This class is immutable, which
- * is a requirement for all {@link RegularTimePeriod} subclasses.
+ * Represents a year in the range -9999 to 9999.  This class is immutable,
+ * which is a requirement for all {@link RegularTimePeriod} subclasses.
  */
 public class Year extends RegularTimePeriod implements Serializable {
 
+    /**
+     * The minimum year value.
+     *
+     * @since 1.0.11
+     */
+    public static final int MINIMUM_YEAR = -9999;
+
+    /**
+     * The maximum year value.
+     *
+     * @since 1.0.11
+     */
+    public static final int MAXIMUM_YEAR = 9999;
+
     /** For serialization. */
     private static final long serialVersionUID = -7659990929736074836L;
-    
+
     /** The year. */
-    private int year;
+    private short year;
+
+    /** The first millisecond. */
+    private long firstMillisecond;
+
+    /** The last millisecond. */
+    private long lastMillisecond;
 
     /**
      * Creates a new <code>Year</code>, based on the current system date/time.
@@ -89,42 +113,54 @@ public class Year extends RegularTimePeriod implements Serializable {
      * @param year  the year.
      */
     public Year(int year) {
-
-        // check arguments...
-        if ((year < SerialDate.MINIMUM_YEAR_SUPPORTED)
-            || (year > SerialDate.MAXIMUM_YEAR_SUPPORTED)) {
-
+        if ((year < Year.MINIMUM_YEAR) || (year > Year.MAXIMUM_YEAR)) {
             throw new IllegalArgumentException(
                 "Year constructor: year (" + year + ") outside valid range.");
         }
-
-        // initialise...
-        this.year = year;
-
+        this.year = (short) year;
+        peg(Calendar.getInstance());
     }
 
     /**
-     * Creates a new <code>Year</code>, based on a particular instant in time, 
+     * Creates a new <code>Year</code>, based on a particular instant in time,
      * using the default time zone.
      *
-     * @param time  the time.
+     * @param time  the time (<code>null</code> not permitted).
+     *
+     * @see #Year(Date, TimeZone)
      */
     public Year(Date time) {
-        this(time, RegularTimePeriod.DEFAULT_TIME_ZONE);
+        this(time, TimeZone.getDefault());
     }
 
     /**
      * Constructs a year, based on a particular instant in time and a time zone.
      *
-     * @param time  the time.
+     * @param time  the time (<code>null</code> not permitted).
      * @param zone  the time zone.
+     *
+     * @deprecated Since 1.0.12, use {@link #Year(Date, TimeZone, Locale)}
+     *     instead.
      */
     public Year(Date time, TimeZone zone) {
+        this(time, zone, Locale.getDefault());
+    }
 
-        Calendar calendar = Calendar.getInstance(zone);
+    /**
+     * Creates a new <code>Year</code> instance, for the specified time zone
+     * and locale.
+     *
+     * @param time  the current time (<code>null</code> not permitted).
+     * @param zone  the time zone.
+     * @param locale  the locale.
+     *
+     * @since 1.0.12
+     */
+    public Year(Date time, TimeZone zone, Locale locale) {
+        Calendar calendar = Calendar.getInstance(zone, locale);
         calendar.setTime(time);
-        this.year = calendar.get(Calendar.YEAR);
-
+        this.year = (short) calendar.get(Calendar.YEAR);
+        peg(calendar);
     }
 
     /**
@@ -137,13 +173,58 @@ public class Year extends RegularTimePeriod implements Serializable {
     }
 
     /**
+     * Returns the first millisecond of the year.  This will be determined
+     * relative to the time zone specified in the constructor, or in the
+     * calendar instance passed in the most recent call to the
+     * {@link #peg(Calendar)} method.
+     *
+     * @return The first millisecond of the year.
+     *
+     * @see #getLastMillisecond()
+     */
+    @Override
+    public long getFirstMillisecond() {
+        return this.firstMillisecond;
+    }
+
+    /**
+     * Returns the last millisecond of the year.  This will be
+     * determined relative to the time zone specified in the constructor, or
+     * in the calendar instance passed in the most recent call to the
+     * {@link #peg(Calendar)} method.
+     *
+     * @return The last millisecond of the year.
+     *
+     * @see #getFirstMillisecond()
+     */
+    @Override
+    public long getLastMillisecond() {
+        return this.lastMillisecond;
+    }
+
+    /**
+     * Recalculates the start date/time and end date/time for this time period
+     * relative to the supplied calendar (which incorporates a time zone).
+     *
+     * @param calendar  the calendar (<code>null</code> not permitted).
+     *
+     * @since 1.0.3
+     */
+    @Override
+    public void peg(Calendar calendar) {
+        this.firstMillisecond = getFirstMillisecond(calendar);
+        this.lastMillisecond = getLastMillisecond(calendar);
+    }
+
+    /**
      * Returns the year preceding this one.
      *
-     * @return The year preceding this one (or <code>null</code> if the 
-     *         current year is 1900).
+     * @return The year preceding this one (or <code>null</code> if the
+     *         current year is -9999).
      */
+    @Override
     public RegularTimePeriod previous() {
-        if (this.year > SerialDate.MINIMUM_YEAR_SUPPORTED) {
+        if (this.year > Year.MINIMUM_YEAR) {
             return new Year(this.year - 1);
         }
         else {
@@ -157,8 +238,9 @@ public class Year extends RegularTimePeriod implements Serializable {
      * @return The year following this one (or <code>null</code> if the current
      *         year is 9999).
      */
+    @Override
     public RegularTimePeriod next() {
-        if (this.year < SerialDate.MAXIMUM_YEAR_SUPPORTED) {
+        if (this.year < Year.MAXIMUM_YEAR) {
             return new Year(this.year + 1);
         }
         else {
@@ -173,6 +255,7 @@ public class Year extends RegularTimePeriod implements Serializable {
      *
      * @return The serial index number.
      */
+    @Override
     public long getSerialIndex() {
         return this.year;
     }
@@ -181,63 +264,71 @@ public class Year extends RegularTimePeriod implements Serializable {
      * Returns the first millisecond of the year, evaluated using the supplied
      * calendar (which determines the time zone).
      *
-     * @param calendar  the calendar.
+     * @param calendar  the calendar (<code>null</code> not permitted).
      *
      * @return The first millisecond of the year.
+     *
+     * @throws NullPointerException if <code>calendar</code> is
+     *     <code>null</code>.
      */
+    @Override
     public long getFirstMillisecond(Calendar calendar) {
-        Day jan1 = new Day(1, MonthConstants.JANUARY, this.year);
-        return jan1.getFirstMillisecond(calendar);
+        calendar.set(this.year, Calendar.JANUARY, 1, 0, 0, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTimeInMillis();
     }
 
     /**
      * Returns the last millisecond of the year, evaluated using the supplied
      * calendar (which determines the time zone).
      *
-     * @param calendar  the calendar.
+     * @param calendar  the calendar (<code>null</code> not permitted).
      *
      * @return The last millisecond of the year.
+     *
+     * @throws NullPointerException if <code>calendar</code> is
+     *     <code>null</code>.
      */
+    @Override
     public long getLastMillisecond(Calendar calendar) {
-        Day dec31 = new Day(31, MonthConstants.DECEMBER, this.year);
-        return dec31.getLastMillisecond(calendar);
+        calendar.set(this.year, Calendar.DECEMBER, 31, 23, 59, 59);
+        calendar.set(Calendar.MILLISECOND, 999);
+        return calendar.getTimeInMillis();
     }
 
     /**
-     * Tests the equality of this <code>Year</code> object to an arbitrary 
+     * Tests the equality of this <code>Year</code> object to an arbitrary
      * object.  Returns <code>true</code> if the target is a <code>Year</code>
      * instance representing the same year as this object.  In all other cases,
      * returns <code>false</code>.
      *
-     * @param object  the object.
+     * @param obj  the object (<code>null</code> permitted).
      *
-     * @return <code>true</code> if the year of this and the object are the 
+     * @return <code>true</code> if the year of this and the object are the
      *         same.
      */
-    public boolean equals(Object object) {
-        if (object != null) {
-            if (object instanceof Year) {
-                Year target = (Year) object;
-                return (this.year == target.getYear());
-            }
-            else {
-                return false;
-            }
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
         }
-        else {
+        if (!(obj instanceof Year)) {
             return false;
         }
+        Year that = (Year) obj;
+        return (this.year == that.year);
     }
-    
+
     /**
      * Returns a hash code for this object instance.  The approach described by
      * Joshua Bloch in "Effective Java" has been used here:
      * <p>
      * <code>http://developer.java.sun.com/developer/Books/effectivejava
      *     /Chapter3.pdf</code>
-     * 
+     *
      * @return A hash code.
      */
+    @Override
     public int hashCode() {
         int result = 17;
         int c = this.year;
@@ -255,6 +346,7 @@ public class Year extends RegularTimePeriod implements Serializable {
      *
      * @return negative == before, zero == same, positive == after.
      */
+    @Override
     public int compareTo(Object o1) {
 
         int result;
@@ -289,6 +381,7 @@ public class Year extends RegularTimePeriod implements Serializable {
      *
      * @return A string representing the year.
      */
+    @Override
     public String toString() {
         return Integer.toString(this.year);
     }
@@ -300,7 +393,7 @@ public class Year extends RegularTimePeriod implements Serializable {
      *
      * @param s  a string representing the year.
      *
-     * @return <code>null</code> if the string is not parseable, the year 
+     * @return <code>null</code> if the string is not parseable, the year
      *         otherwise.
      */
     public static Year parseYear(String s) {

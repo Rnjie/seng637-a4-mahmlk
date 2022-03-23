@@ -2,46 +2,45 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * --------------
  * TickUnits.java
  * --------------
- * (C) Copyright 2001-2005, by Object Refinery Limited.
+ * (C) Copyright 2001-2008, by Object Refinery Limited.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
  * Contributor(s):   -;
  *
- * $Id: TickUnits.java,v 1.5 2005/10/20 07:57:52 mungady Exp $
- *
  * Changes
  * -------
  * 23-Nov-2001 : Version 1 (DG);
- * 18-Feb-2002 : Fixed bug in getNearestTickUnit (thanks to Mario Inchiosa for 
+ * 18-Feb-2002 : Fixed bug in getNearestTickUnit (thanks to Mario Inchiosa for
  *               reporting this, SourceForge bug id 518073) (DG);
- * 25-Feb-2002 : Moved createStandardTickUnits() method from NumberAxis, and 
+ * 25-Feb-2002 : Moved createStandardTickUnits() method from NumberAxis, and
  *               added createIntegerTickUnits() method (DG);
  * 01-May-2002 : Updated for changes to the TickUnit class (DG);
- * 18-Sep-2002 : Added standardTickUnit methods which take a Locale 
+ * 18-Sep-2002 : Added standardTickUnit methods which take a Locale
  *               instance (AS);
  * 26-Sep-2002 : Fixed errors reported by Checkstyle (DG);
  * 08-Nov-2002 : Moved to new package com.jrefinery.chart.axis (DG);
@@ -49,9 +48,9 @@
  * 13-Aug-2003 : Implemented Cloneable (DG);
  * 23-Sep-2003 : Implemented TickUnitSource interface (DG);
  * 03-Dec-2003 : Adding null values now throws exceptions (TM);
- * 11-Jan-2005 : Removed deprecated methods in preparation for 1.0.0 
+ * 11-Jan-2005 : Removed deprecated methods in preparation for 1.0.0
  *               release (DG);
- * 
+ *
  */
 
 package org.jfree.chart.axis;
@@ -63,14 +62,14 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * A collection of tick units, used by the {@link DateAxis} and 
+ * A collection of tick units, used by the {@link DateAxis} and
  * {@link NumberAxis} classes.
  */
 public class TickUnits implements TickUnitSource, Cloneable, Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = 1134174035901467545L;
-    
+
     /** Storage for the tick units. */
     private List tickUnits;
 
@@ -82,20 +81,17 @@ public class TickUnits implements TickUnitSource, Cloneable, Serializable {
     }
 
     /**
-     * Adds a tick unit to the collection.
-     * <P>
-     * The tick units are maintained in ascending order.
+     * Adds a tick unit to the collection.  The tick units are maintained in
+     * ascending order.
      *
-     * @param unit  the tick unit to add.
+     * @param unit  the tick unit to add (<code>null</code> not permitted).
      */
     public void add(TickUnit unit) {
-
         if (unit == null) {
             throw new NullPointerException("Null 'unit' argument.");
         }
         this.tickUnits.add(unit);
         Collections.sort(this.tickUnits);
-
     }
 
     /**
@@ -115,7 +111,7 @@ public class TickUnits implements TickUnitSource, Cloneable, Serializable {
      * This method is required for the XML writer.
      *
      * @param pos the position in the list.
-     * 
+     *
      * @return The tickunit.
      */
     public TickUnit get(int pos) {
@@ -129,8 +125,8 @@ public class TickUnits implements TickUnitSource, Cloneable, Serializable {
      *
      * @return A tick unit that is larger than the supplied unit.
      */
+    @Override
     public TickUnit getLargerTickUnit(TickUnit unit) {
-
         int index = Collections.binarySearch(this.tickUnits, unit);
         if (index >= 0) {
             index = index + 1;
@@ -139,10 +135,8 @@ public class TickUnits implements TickUnitSource, Cloneable, Serializable {
             index = -index;
         }
 
-        return (TickUnit) this.tickUnits.get(
-            Math.min(index, this.tickUnits.size() - 1)
-        );
-
+        return (TickUnit) this.tickUnits.get(Math.min(index,
+                this.tickUnits.size() - 1));
     }
 
     /**
@@ -153,19 +147,17 @@ public class TickUnits implements TickUnitSource, Cloneable, Serializable {
      *
      * @return A unit from the collection.
      */
+    @Override
     public TickUnit getCeilingTickUnit(TickUnit unit) {
-
         int index = Collections.binarySearch(this.tickUnits, unit);
         if (index >= 0) {
             return (TickUnit) this.tickUnits.get(index);
         }
         else {
             index = -(index + 1);
-            return (TickUnit) this.tickUnits.get(
-                Math.min(index, this.tickUnits.size() - 1)
-            );
+            return (TickUnit) this.tickUnits.get(Math.min(index,
+                    this.tickUnits.size() - 1));
         }
-
     }
 
     /**
@@ -176,8 +168,9 @@ public class TickUnits implements TickUnitSource, Cloneable, Serializable {
      *
      * @return A unit from the collection.
      */
+    @Override
     public TickUnit getCeilingTickUnit(double size) {
-        return getCeilingTickUnit(new NumberTickUnit(size, 
+        return getCeilingTickUnit(new NumberTickUnit(size,
                 NumberFormat.getInstance()));
     }
 
@@ -186,9 +179,10 @@ public class TickUnits implements TickUnitSource, Cloneable, Serializable {
      *
      * @return A clone.
      *
-     * @throws CloneNotSupportedException if an item in the collection does not 
+     * @throws CloneNotSupportedException if an item in the collection does not
      *         support cloning.
      */
+    @Override
     public Object clone() throws CloneNotSupportedException {
         TickUnits clone = (TickUnits) super.clone();
         clone.tickUnits = new java.util.ArrayList(this.tickUnits);
@@ -198,22 +192,20 @@ public class TickUnits implements TickUnitSource, Cloneable, Serializable {
     /**
      * Tests an object for equality with this instance.
      *
-     * @param object  the object to test.
+     * @param obj  the object to test (<code>null</code> permitted).
      *
      * @return A boolean.
      */
-    public boolean equals(Object object) {
-        if (object == null) {
-            return false;
-        }
-        if (object == this) {
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
             return true;
         }
-        if (object instanceof TickUnits) {
-            TickUnits tu = (TickUnits) object;
-            return tu.tickUnits.equals(this.tickUnits);
+        if (!(obj instanceof TickUnits)) {
+            return false;
         }
-        return false;
+        TickUnits that = (TickUnits) obj;
+        return that.tickUnits.equals(this.tickUnits);
     }
 
 }

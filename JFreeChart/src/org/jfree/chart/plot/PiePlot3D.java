@@ -2,31 +2,32 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.]
  *
  * --------------
  * PiePlot3D.java
  * --------------
- * (C) Copyright 2000-2004, by Object Refinery and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery and Contributors.
  *
  * Original Author:  Tomer Peretz;
  * Contributor(s):   Richard Atkinson;
@@ -35,20 +36,20 @@
  *                   Christian W. Zuckschwerdt;
  *                   Arnaud Lelievre;
  *                   Dave Crane;
- *
- * $Id: PiePlot3D.java,v 1.11 2005/06/17 10:21:12 mungady Exp $
+ *                   Martin Hoeller;
+ *                   DaveLaw (dave ATT davelaw DOTT de);
  *
  * Changes
  * -------
  * 21-Jun-2002 : Version 1;
- * 31-Jul-2002 : Modified to use startAngle and direction, drawing modified so 
+ * 31-Jul-2002 : Modified to use startAngle and direction, drawing modified so
  *               that charts render with foreground alpha < 1.0 (DG);
- * 05-Aug-2002 : Small modification to draw method to support URLs for HTML 
+ * 05-Aug-2002 : Small modification to draw method to support URLs for HTML
  *               image maps (RA);
  * 26-Sep-2002 : Fixed errors reported by Checkstyle (DG);
- * 18-Oct-2002 : Added drawing bug fix sent in by Xun Kang, and made a couple 
+ * 18-Oct-2002 : Added drawing bug fix sent in by Xun Kang, and made a couple
  *               of other related fixes (DG);
- * 30-Oct-2002 : Changed the PieDataset interface. Fixed another drawing 
+ * 30-Oct-2002 : Changed the PieDataset interface. Fixed another drawing
  *               bug (DG);
  * 12-Nov-2002 : Fixed null pointer exception for zero or negative values (DG);
  * 07-Mar-2003 : Modified to pass pieIndex on to PieSectionEntity (DG);
@@ -57,19 +58,34 @@
  * 30-Jul-2003 : Modified entity constructor (CZ);
  * 29-Aug-2003 : Small changes for API updates in PiePlot class (DG);
  * 02-Sep-2003 : Fixed bug where the 'no data' message is not displayed (DG);
- * 08-Sep-2003 : Added internationalization via use of properties 
- *               resourceBundle (RFE 690236) (AL); 
+ * 08-Sep-2003 : Added internationalization via use of properties
+ *               resourceBundle (RFE 690236) (AL);
  * 29-Oct-2003 : Added workaround for font alignment in PDF output (DG);
  * 20-Nov-2003 : Fixed bug 845289 (sides not showing) (DG);
  * 25-Nov-2003 : Added patch (845095) to fix outline paint issues (DG);
  * 10-Mar-2004 : Numerous changes to enhance labelling (DG);
  * 31-Mar-2004 : Adjusted plot area when label generator is null (DG);
- * 08-Apr-2004 : Added flag to PiePlot class to control the treatment of null 
+ * 08-Apr-2004 : Added flag to PiePlot class to control the treatment of null
  *               values (DG);
  *               Added pieIndex to PieSectionEntity (DG);
  * 15-Nov-2004 : Removed creation of default tool tip generator (DG);
  * 16-Jun-2005 : Added default constructor (DG);
- * 
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 27-Sep-2006 : Updated draw() method for new lookup methods (DG);
+ * 22-Mar-2007 : Added equals() override (DG);
+ * 18-Jun-2007 : Added handling for simple label option (DG);
+ * 04-Oct-2007 : Added option to darken sides of plot - thanks to Alex Moots
+ *               (see patch 1805262) (DG);
+ * 21-Nov-2007 : Changed default depth factor, fixed labelling bugs and added
+ *               debug code - see debug flags in PiePlot class (DG);
+ * 20-Mar-2008 : Fixed bug 1920854 - multiple redraws of the section
+ *               labels (DG);
+ * 19-May-2009 : Fixed FindBugs warnings, patch by Michal Wozniak (DG);
+ * 10-Jul-2009 : Added drop shaow support (DG);
+ * 10-Oct-2011 : Localization fix: bug #3353913 (MH);
+ * 18-Oct-2011 : Fix tooltip offset with shadow generator (DG);
+ * 11-Jun-2012 : Utilise new PaintAlpha class (patch 3204823 from DaveLaw) (DG);
+ *
  */
 
 package org.jfree.chart.plot;
@@ -89,6 +105,7 @@ import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -96,7 +113,9 @@ import java.util.List;
 
 import org.jfree.chart.entity.EntityCollection;
 import org.jfree.chart.entity.PieSectionEntity;
+import org.jfree.chart.event.PlotChangeEvent;
 import org.jfree.chart.labels.PieToolTipGenerator;
+import org.jfree.chart.util.PaintAlpha;
 import org.jfree.data.general.DatasetUtilities;
 import org.jfree.data.general.PieDataset;
 import org.jfree.ui.RectangleInsets;
@@ -112,19 +131,28 @@ public class PiePlot3D extends PiePlot implements Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = 3408984188945161432L;
-    
+
     /** The factor of the depth of the pie from the plot height */
-    private double depthFactor = 0.2;
+    private double depthFactor = 0.12;
+
+    /**
+     * A flag that controls whether or not the sides of the pie chart
+     * are rendered using a darker colour.
+     *
+     *  @since 1.0.7.
+     */
+    private boolean darkerSides = false;  // default preserves previous
+                                          // behaviour
 
     /**
      * Creates a new instance with no dataset.
      */
     public PiePlot3D() {
-        this(null);   
+        this(null);
     }
-    
+
     /**
-     * Creates a pie chart with a three dimensional effect using the specified 
+     * Creates a pie chart with a three dimensional effect using the specified
      * dataset.
      *
      * @param dataset  the dataset (<code>null</code> permitted).
@@ -135,79 +163,129 @@ public class PiePlot3D extends PiePlot implements Serializable {
     }
 
     /**
-     * Sets the pie depth as a percentage of the height of the plot area.
-     *
-     * @param factor  the depth factor (for example, 0.20 is twenty percent).
-     */
-    public void setDepthFactor(double factor) {
-        this.depthFactor = factor;
-    }
-
-    /**
-     * The depth factor for the chart.
+     * Returns the depth factor for the chart.
      *
      * @return The depth factor.
+     *
+     * @see #setDepthFactor(double)
      */
-    public double getDepthFactor () {
+    public double getDepthFactor() {
         return this.depthFactor;
     }
 
     /**
-     * Draws the plot on a Java 2D graphics device (such as the screen or a 
-     * printer).  This method is called by the 
-     * {@link org.jfree.chart.JFreeChart} class, you don't normally need 
+     * Sets the pie depth as a percentage of the height of the plot area, and
+     * sends a {@link PlotChangeEvent} to all registered listeners.
+     *
+     * @param factor  the depth factor (for example, 0.20 is twenty percent).
+     *
+     * @see #getDepthFactor()
+     */
+    public void setDepthFactor(double factor) {
+        this.depthFactor = factor;
+        fireChangeEvent();
+    }
+
+    /**
+     * Returns a flag that controls whether or not the sides of the pie chart
+     * are rendered using a darker colour.
+     *
+     * @return A boolean.
+     *
+     * @see #setDarkerSides(boolean)
+     *
+     * @since 1.0.7
+     */
+    public boolean getDarkerSides() {
+        return this.darkerSides;
+    }
+
+    /**
+     * Sets a flag that controls whether or not the sides of the pie chart
+     * are rendered using a darker colour, and sends a {@link PlotChangeEvent}
+     * to all registered listeners.
+     *
+     * @param darker true to darken the sides, false to use the default
+     *         behaviour.
+     *
+     * @see #getDarkerSides()
+     *
+     * @since 1.0.7.
+     */
+    public void setDarkerSides(boolean darker) {
+        this.darkerSides = darker;
+        fireChangeEvent();
+    }
+
+    /**
+     * Draws the plot on a Java 2D graphics device (such as the screen or a
+     * printer).  This method is called by the
+     * {@link org.jfree.chart.JFreeChart} class, you don't normally need
      * to call it yourself.
      *
      * @param g2  the graphics device.
-     * @param area  the area within which the plot should be drawn.
-     * @param anchor  the anchor (<code>null</code> permitted).
+     * @param plotArea  the area within which the plot should be drawn.
+     * @param anchor  the anchor point.
      * @param parentState  the state from the parent plot, if there is one.
-     * @param info  collects info about the drawing 
+     * @param info  collects info about the drawing
      *              (<code>null</code> permitted).
      */
-    public void draw(Graphics2D g2, Rectangle2D area, 
-                     Point2D anchor,
-                     PlotState parentState,
-                     PlotRenderingInfo info) {
+    @Override
+    public void draw(Graphics2D g2, Rectangle2D plotArea, Point2D anchor,
+                     PlotState parentState, PlotRenderingInfo info) {
 
-        // adjust for outer margin...
-        RectangleInsets margin = getMargin();
-        margin.trim(area);
+        // adjust for insets...
+        RectangleInsets insets = getInsets();
+        insets.trim(plotArea);
 
-        Rectangle2D originalPlotArea = (Rectangle2D) area.clone();
+        Rectangle2D originalPlotArea = (Rectangle2D) plotArea.clone();
         if (info != null) {
-            info.setPlotArea(area);
-            info.setDataArea(area);
+            info.setPlotArea(plotArea);
+            info.setDataArea(plotArea);
         }
 
-        drawBackground(g2, area);
-        drawBorder(g2, area);
-        getBorder().getInsets().trim(area);
+        drawBackground(g2, plotArea);
 
         Shape savedClip = g2.getClip();
-        g2.clip(area);
-        RectangleInsets padding = getPadding();
-        padding.trim(area);
+        g2.clip(plotArea);
 
+        Graphics2D savedG2 = g2;
+        BufferedImage dataImage = null;
+        if (getShadowGenerator() != null) {
+            dataImage = new BufferedImage((int) plotArea.getWidth(),
+                (int) plotArea.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            g2 = dataImage.createGraphics();
+            g2.translate(-plotArea.getX(), -plotArea.getY());
+            g2.setRenderingHints(savedG2.getRenderingHints());
+            originalPlotArea = (Rectangle2D) plotArea.clone();
+        }
         // adjust the plot area by the interior spacing value
-        //double gapPercent = getInteriorGap();
+        double gapPercent = getInteriorGap();
         double labelPercent = 0.0;
         if (getLabelGenerator() != null) {
-            labelPercent = getLabelGap() + getMaximumLabelWidth() 
-                           + getLabelLinkMargin();   
+            labelPercent = getLabelGap() + getMaximumLabelWidth();
         }
-//        double gapHorizontal = plotArea.getWidth() 
-//                               * (gapPercent + labelPercent);
-//        double gapVertical = plotArea.getHeight() * gapPercent;
+        double gapHorizontal = plotArea.getWidth() * (gapPercent
+                + labelPercent) * 2.0;
+        double gapVertical = plotArea.getHeight() * gapPercent * 2.0;
 
-        double gapHorizontal = area.getWidth() 
-            * (0.0 + labelPercent);
-        double gapVertical = area.getHeight() * 0.0;
-        double linkX = area.getX() + gapHorizontal / 2;
-        double linkY = area.getY() + gapVertical / 2;
-        double linkW = area.getWidth() - gapHorizontal;
-        double linkH = area.getHeight() - gapVertical;
-        
+        if (DEBUG_DRAW_INTERIOR) {
+            double hGap = plotArea.getWidth() * getInteriorGap();
+            double vGap = plotArea.getHeight() * getInteriorGap();
+            double igx1 = plotArea.getX() + hGap;
+            double igx2 = plotArea.getMaxX() - hGap;
+            double igy1 = plotArea.getY() + vGap;
+            double igy2 = plotArea.getMaxY() - vGap;
+            g2.setPaint(Color.lightGray);
+            g2.draw(new Rectangle2D.Double(igx1, igy1, igx2 - igx1,
+                    igy2 - igy1));
+        }
+
+        double linkX = plotArea.getX() + gapHorizontal / 2;
+        double linkY = plotArea.getY() + gapVertical / 2;
+        double linkW = plotArea.getWidth() - gapHorizontal;
+        double linkH = plotArea.getHeight() - gapVertical;
+
         // make the link area a square if the pie chart is to be circular...
         if (isCircular()) { // is circular?
             double min = Math.min(linkW, linkH) / 2;
@@ -216,39 +294,51 @@ public class PiePlot3D extends PiePlot implements Serializable {
             linkW = 2 * min;
             linkH = 2 * min;
         }
-        
-        PiePlotState state = initialise(g2, area, this, null, info);
-        // the explode area defines the max circle/ellipse for the exploded pie 
+
+        PiePlotState state = initialise(g2, plotArea, this, null, info);
+
+        // the link area defines the dog leg points for the linking lines to
+        // the labels
+        Rectangle2D linkAreaXX = new Rectangle2D.Double(linkX, linkY, linkW,
+                linkH * (1 - this.depthFactor));
+        state.setLinkArea(linkAreaXX);
+
+        if (DEBUG_DRAW_LINK_AREA) {
+            g2.setPaint(Color.blue);
+            g2.draw(linkAreaXX);
+            g2.setPaint(Color.yellow);
+            g2.draw(new Ellipse2D.Double(linkAreaXX.getX(), linkAreaXX.getY(),
+                    linkAreaXX.getWidth(), linkAreaXX.getHeight()));
+        }
+
+        // the explode area defines the max circle/ellipse for the exploded pie
         // sections.
         // it is defined by shrinking the linkArea by the linkMargin factor.
         double hh = linkW * getLabelLinkMargin();
         double vv = linkH * getLabelLinkMargin();
-        Rectangle2D explodeArea = new Rectangle2D.Double(
-            linkX + hh / 2.0, linkY + vv / 2.0, linkW - hh, linkH - vv
-        );
-       
+        Rectangle2D explodeArea = new Rectangle2D.Double(linkX + hh / 2.0,
+                linkY + vv / 2.0, linkW - hh, linkH - vv);
+
         state.setExplodedPieArea(explodeArea);
-        
+
         // the pie area defines the circle/ellipse for regular pie sections.
-        // it is defined by shrinking the explodeArea by the explodeMargin 
-        // factor. 
+        // it is defined by shrinking the explodeArea by the explodeMargin
+        // factor.
         double maximumExplodePercent = getMaximumExplodePercent();
         double percent = maximumExplodePercent / (1.0 + maximumExplodePercent);
-        
+
         double h1 = explodeArea.getWidth() * percent;
         double v1 = explodeArea.getHeight() * percent;
-        Rectangle2D pieArea = new Rectangle2D.Double(
-            explodeArea.getX() + h1 / 2.0, explodeArea.getY() + v1 / 2.0,
-            explodeArea.getWidth() - h1, explodeArea.getHeight() - v1
-        );
+        Rectangle2D pieArea = new Rectangle2D.Double(explodeArea.getX()
+                + h1 / 2.0, explodeArea.getY() + v1 / 2.0,
+                explodeArea.getWidth() - h1, explodeArea.getHeight() - v1);
 
-        int depth = (int) (pieArea.getHeight() * this.depthFactor);
-        // the link area defines the dog-leg point for the linking lines to 
+        // the link area defines the dog-leg point for the linking lines to
         // the labels
-        Rectangle2D linkArea = new Rectangle2D.Double(
-            linkX, linkY, linkW, linkH - depth
-        );
-        state.setLinkArea(linkArea);   
+        int depth = (int) (pieArea.getHeight() * this.depthFactor);
+        Rectangle2D linkArea = new Rectangle2D.Double(linkX, linkY, linkW,
+                linkH - depth);
+        state.setLinkArea(linkArea);
 
         state.setPieArea(pieArea);
         state.setPieCenterX(pieArea.getCenterX());
@@ -256,44 +346,41 @@ public class PiePlot3D extends PiePlot implements Serializable {
         state.setPieWRadius(pieArea.getWidth() / 2.0);
         state.setPieHRadius((pieArea.getHeight() - depth) / 2.0);
 
-        drawBackground(g2, area);
         // get the data source - return if null;
         PieDataset dataset = getDataset();
         if (DatasetUtilities.isEmptyOrNull(getDataset())) {
-            drawNoDataMessage(g2, area);
+            drawNoDataMessage(g2, plotArea);
             g2.setClip(savedClip);
+            drawOutline(g2, plotArea);
             return;
         }
 
         // if too any elements
-        if (dataset.getKeys().size() > area.getWidth()) {
-            String text = "Too many elements";
+        if (dataset.getKeys().size() > plotArea.getWidth()) {
+            String text = localizationResources.getString("Too_many_elements");
             Font sfont = new Font("dialog", Font.BOLD, 10);
             g2.setFont(sfont);
             FontMetrics fm = g2.getFontMetrics(sfont);
             int stringWidth = fm.stringWidth(text);
 
-            g2.drawString(
-                text, 
-                (int) (area.getX() + (area.getWidth() - stringWidth) / 2),
-                (int) (area.getY() + (area.getHeight() / 2))
-            );
+            g2.drawString(text, (int) (plotArea.getX() + (plotArea.getWidth()
+                    - stringWidth) / 2), (int) (plotArea.getY()
+                    + (plotArea.getHeight() / 2)));
             return;
         }
         // if we are drawing a perfect circle, we need to readjust the top left
         // coordinates of the drawing area for the arcs to arrive at this
         // effect.
         if (isCircular()) {
-            double min = Math.min(area.getWidth(), area.getHeight()) / 2;
-            area = new Rectangle2D.Double(
-                area.getCenterX() - min, area.getCenterY() - min, 
-                2 * min, 2 * min
-            );
+            double min = Math.min(plotArea.getWidth(),
+                    plotArea.getHeight()) / 2;
+            plotArea = new Rectangle2D.Double(plotArea.getCenterX() - min,
+                    plotArea.getCenterY() - min, 2 * min, 2 * min);
         }
         // get a list of keys...
         List sectionKeys = dataset.getKeys();
 
-        if (sectionKeys.size() == 0) {
+        if (sectionKeys.isEmpty()) {
             return;
         }
 
@@ -303,7 +390,7 @@ public class PiePlot3D extends PiePlot implements Serializable {
 
         //g2.clip(clipArea);
         Composite originalComposite = g2.getComposite();
-        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
                 getForegroundAlpha()));
 
         double totalValue = DatasetUtilities.calculatePieDatasetTotal(dataset);
@@ -334,18 +421,14 @@ public class PiePlot3D extends PiePlot implements Serializable {
             }
             double startAngle = getStartAngle();
             double direction = getDirection().getFactor();
-            double angle1 = startAngle + (direction * (runningTotal * 360)) 
-            / totalValue;
-            double angle2 = startAngle + (direction * (runningTotal + value) 
+            double angle1 = startAngle + (direction * (runningTotal * 360))
+                    / totalValue;
+            double angle2 = startAngle + (direction * (runningTotal + value)
                     * 360) / totalValue;
             if (Math.abs(angle2 - angle1) > getMinimumArcAngleToDraw()) {
-                arcList.add(
-                    new Arc2D.Double(
-                        arcX, arcY + depth, pieArea.getWidth(), 
-                        pieArea.getHeight() - depth,
-                        angle1, angle2 - angle1, Arc2D.PIE
-                    )
-                );
+                arcList.add(new Arc2D.Double(arcX, arcY + depth,
+                        pieArea.getWidth(), pieArea.getHeight() - depth,
+                        angle1, angle2 - angle1, Arc2D.PIE));
             }
             else {
                 arcList.add(null);
@@ -355,25 +438,18 @@ public class PiePlot3D extends PiePlot implements Serializable {
 
         Shape oldClip = g2.getClip();
 
-        Ellipse2D top = new Ellipse2D.Double(
-            pieArea.getX(), pieArea.getY(), pieArea.getWidth(), 
-            pieArea.getHeight() - depth
-        );
+        Ellipse2D top = new Ellipse2D.Double(pieArea.getX(), pieArea.getY(),
+                pieArea.getWidth(), pieArea.getHeight() - depth);
 
-        Ellipse2D bottom = new Ellipse2D.Double(
-            pieArea.getX(), pieArea.getY() + depth, pieArea.getWidth(), 
-            pieArea.getHeight() - depth
-        );
+        Ellipse2D bottom = new Ellipse2D.Double(pieArea.getX(), pieArea.getY()
+                + depth, pieArea.getWidth(), pieArea.getHeight() - depth);
 
-        Rectangle2D lower = new Rectangle2D.Double(
-            top.getX(), top.getCenterY(), pieArea.getWidth(), 
-            bottom.getMaxY() - top.getCenterY()
-        );
+        Rectangle2D lower = new Rectangle2D.Double(top.getX(),
+                top.getCenterY(), pieArea.getWidth(), bottom.getMaxY()
+                - top.getCenterY());
 
-        Rectangle2D upper = new Rectangle2D.Double(
-            pieArea.getX(), top.getY(), pieArea.getWidth(),
-            bottom.getCenterY() - top.getY()
-        );
+        Rectangle2D upper = new Rectangle2D.Double(pieArea.getX(), top.getY(),
+                pieArea.getWidth(), bottom.getCenterY() - top.getY());
 
         Area a = new Area(top);
         a.add(new Area(lower));
@@ -391,22 +467,18 @@ public class PiePlot3D extends PiePlot implements Serializable {
         // draw the bottom circle
         int[] xs;
         int[] ys;
-        outlinePaint = getSectionOutlinePaint(0);
-        arc = new Arc2D.Double(
-            arcX, arcY + depth, pieArea.getWidth(), pieArea.getHeight() - depth,
-            0, 360, Arc2D.PIE
-        );
 
         int categoryCount = arcList.size();
-        for (int categoryIndex = 0; categoryIndex < categoryCount; 
-             categoryIndex++) {
+        for (int categoryIndex = 0; categoryIndex < categoryCount;
+                 categoryIndex++) {
             arc = (Arc2D.Double) arcList.get(categoryIndex);
             if (arc == null) {
                 continue;
             }
-            paint = getSectionPaint(categoryIndex);
-            outlinePaint = getSectionOutlinePaint(categoryIndex);
-            outlineStroke = getSectionOutlineStroke(categoryIndex);
+            Comparable key = getSectionKey(categoryIndex);
+            paint = lookupSectionPaint(key);
+            outlinePaint = lookupSectionOutlinePaint(key);
+            outlineStroke = lookupSectionOutlineStroke(key);
             g2.setPaint(paint);
             g2.fill(arc);
             g2.setPaint(outlinePaint);
@@ -417,14 +489,10 @@ public class PiePlot3D extends PiePlot implements Serializable {
             Point2D p1 = arc.getStartPoint();
 
             // draw the height
-            xs = new int[] {
-                (int) arc.getCenterX(), (int) arc.getCenterX(),
-                (int) p1.getX(), (int) p1.getX() 
-            };
-            ys = new int[] {
-                (int) arc.getCenterY(), (int) arc.getCenterY() - depth,
-                (int) p1.getY() - depth, (int) p1.getY() 
-            };
+            xs = new int[] {(int) arc.getCenterX(), (int) arc.getCenterX(),
+                    (int) p1.getX(), (int) p1.getX()};
+            ys = new int[] {(int) arc.getCenterY(), (int) arc.getCenterY()
+                    - depth, (int) p1.getY() - depth, (int) p1.getY()};
             Polygon polygon = new Polygon(xs, ys, 4);
             g2.setPaint(java.awt.Color.lightGray);
             g2.fill(polygon);
@@ -445,14 +513,12 @@ public class PiePlot3D extends PiePlot implements Serializable {
         while (iterator.hasNext()) {
             Arc2D segment = (Arc2D) iterator.next();
             if (segment != null) {
-                paint = getSectionPaint(cat);
-                outlinePaint = getSectionOutlinePaint(cat);
-                outlineStroke = getSectionOutlineStroke(cat);
-                drawSide(
-                    g2, pieArea, segment, front, back, paint, 
-                    outlinePaint, outlineStroke, 
-                    false, true
-                );
+                Comparable key = getSectionKey(cat);
+                paint = lookupSectionPaint(key);
+                outlinePaint = lookupSectionOutlinePaint(key);
+                outlineStroke = lookupSectionOutlineStroke(key);
+                drawSide(g2, pieArea, segment, front, back, paint,
+                        outlinePaint, outlineStroke, false, true);
             }
             cat++;
         }
@@ -463,14 +529,12 @@ public class PiePlot3D extends PiePlot implements Serializable {
         while (iterator.hasNext()) {
             Arc2D segment = (Arc2D) iterator.next();
             if (segment != null) {
-                paint = getSectionPaint(cat);
-                outlinePaint = getSectionOutlinePaint(cat);
-                outlineStroke = getSectionOutlineStroke(cat);
-                drawSide(
-                    g2, pieArea, segment, front, back, paint, 
-                    outlinePaint, outlineStroke, 
-                    true, false
-                );
+                Comparable key = getSectionKey(cat);
+                paint = lookupSectionPaint(key);
+                outlinePaint = lookupSectionOutlinePaint(key);
+                outlineStroke = lookupSectionOutlineStroke(key);
+                drawSide(g2, pieArea, segment, front, back, paint,
+                        outlinePaint, outlineStroke, true, false);
             }
             cat++;
         }
@@ -479,20 +543,20 @@ public class PiePlot3D extends PiePlot implements Serializable {
 
         // draw the sections at the top of the pie (and set up tooltips)...
         Arc2D upperArc;
-        for (int sectionIndex = 0; sectionIndex < categoryCount; 
-             sectionIndex++) {
+        for (int sectionIndex = 0; sectionIndex < categoryCount;
+                 sectionIndex++) {
             arc = (Arc2D.Double) arcList.get(sectionIndex);
             if (arc == null) {
                 continue;
             }
-            upperArc = new Arc2D.Double(
-                arcX, arcY, pieArea.getWidth(), pieArea.getHeight() - depth,
-                arc.getAngleStart(), arc.getAngleExtent(), Arc2D.PIE
-            );
-            
-            paint = getSectionPaint(sectionIndex);
-            outlinePaint = getSectionOutlinePaint(sectionIndex);
-            outlineStroke = getSectionOutlineStroke(sectionIndex);
+            upperArc = new Arc2D.Double(arcX, arcY, pieArea.getWidth(),
+                    pieArea.getHeight() - depth, arc.getAngleStart(),
+                    arc.getAngleExtent(), Arc2D.PIE);
+
+            Comparable currentKey = (Comparable) sectionKeys.get(sectionIndex);
+            paint = lookupSectionPaint(currentKey, true);
+            outlinePaint = lookupSectionOutlinePaint(currentKey);
+            outlineStroke = lookupSectionOutlineStroke(currentKey);
             g2.setPaint(paint);
             g2.fill(upperArc);
             g2.setStroke(outlineStroke);
@@ -500,15 +564,14 @@ public class PiePlot3D extends PiePlot implements Serializable {
             g2.draw(upperArc);
 
            // add a tooltip for the section...
-            Comparable currentKey = (Comparable) sectionKeys.get(sectionIndex);
             if (info != null) {
-                EntityCollection entities 
-                    = info.getOwner().getEntityCollection();
+                EntityCollection entities
+                        = info.getOwner().getEntityCollection();
                 if (entities != null) {
                     String tip = null;
                     PieToolTipGenerator tipster = getToolTipGenerator();
                     if (tipster != null) {
-                        // @mgs: using the method's return value was missing 
+                        // @mgs: using the method's return value was missing
                         tip = tipster.generateToolTip(dataset, currentKey);
                     }
                     String url = null;
@@ -517,23 +580,42 @@ public class PiePlot3D extends PiePlot implements Serializable {
                                 getPieIndex());
                     }
                     PieSectionEntity entity = new PieSectionEntity(
-                        upperArc, dataset, getPieIndex(), sectionIndex, 
-                        currentKey, tip, url
-                    );
+                            upperArc, dataset, getPieIndex(), sectionIndex,
+                            currentKey, tip, url);
                     entities.add(entity);
                 }
             }
-            List keys = dataset.getKeys();
-            Rectangle2D adjustedPlotArea = new Rectangle2D.Double(
-                originalPlotArea.getX(), originalPlotArea.getY(), 
-                originalPlotArea.getWidth(), 
-                originalPlotArea.getHeight() - depth
-            );
-            drawLabels(g2, keys, totalValue, adjustedPlotArea, linkArea, state);
+        }
+
+        List keys = dataset.getKeys();
+        Rectangle2D adjustedPlotArea = new Rectangle2D.Double(
+                originalPlotArea.getX(), originalPlotArea.getY(),
+                originalPlotArea.getWidth(), originalPlotArea.getHeight()
+                - depth);
+        if (getSimpleLabels()) {
+            drawSimpleLabels(g2, keys, totalValue, adjustedPlotArea,
+                    linkArea, state);
+        }
+        else {
+            drawLabels(g2, keys, totalValue, adjustedPlotArea, linkArea,
+                    state);
+        }
+
+        if (getShadowGenerator() != null) {
+            BufferedImage shadowImage
+                    = getShadowGenerator().createDropShadow(dataImage);
+            g2 = savedG2;
+            g2.drawImage(shadowImage, (int) plotArea.getX()
+                    + getShadowGenerator().calculateOffsetX(),
+                    (int) plotArea.getY()
+                    + getShadowGenerator().calculateOffsetY(), null);
+            g2.drawImage(dataImage, (int) plotArea.getX(),
+                    (int) plotArea.getY(), null);
         }
 
         g2.setClip(savedClip);
         g2.setComposite(originalComposite);
+        drawOutline(g2, originalPlotArea);
 
     }
 
@@ -552,22 +634,26 @@ public class PiePlot3D extends PiePlot implements Serializable {
      * @param drawBack  draw the back?
      */
     protected void drawSide(Graphics2D g2,
-                            Rectangle2D plotArea, 
-                            Arc2D arc, 
-                            Area front, 
+                            Rectangle2D plotArea,
+                            Arc2D arc,
+                            Area front,
                             Area back,
-                            Paint paint, 
+                            Paint paint,
                             Paint outlinePaint,
                             Stroke outlineStroke,
-                            boolean drawFront, 
+                            boolean drawFront,
                             boolean drawBack) {
+
+        if (getDarkerSides()) {
+             paint = PaintAlpha.darker(paint);
+        }
 
         double start = arc.getAngleStart();
         double extent = arc.getAngleExtent();
         double end = start + extent;
 
         g2.setStroke(outlineStroke);
-        
+
         // for CLOCKWISE charts, the extent will be negative...
         if (extent < 0.0) {
 
@@ -575,17 +661,14 @@ public class PiePlot3D extends PiePlot implements Serializable {
 
                 if (!isAngleAtBack(end)) {
 
-                    if (extent > -180.0) {  // the segment is entirely at the 
+                    if (extent > -180.0) {  // the segment is entirely at the
                                             // front of the chart
                         if (drawFront) {
-                            Area side = new Area(
-                                new Rectangle2D.Double(
+                            Area side = new Area(new Rectangle2D.Double(
                                     arc.getEndPoint().getX(), plotArea.getY(),
-                                    arc.getStartPoint().getX() 
+                                    arc.getStartPoint().getX()
                                     - arc.getEndPoint().getX(),
-                                    plotArea.getHeight()
-                                )
-                            );
+                                    plotArea.getHeight()));
                             side.intersect(front);
                             g2.setPaint(paint);
                             g2.fill(side);
@@ -593,25 +676,19 @@ public class PiePlot3D extends PiePlot implements Serializable {
                             g2.draw(side);
                         }
                     }
-                    else {  // the segment starts at the front, and wraps all 
+                    else {  // the segment starts at the front, and wraps all
                             // the way around
                             // the back and finishes at the front again
-                        Area side1 = new Area(
-                            new Rectangle2D.Double(
+                        Area side1 = new Area(new Rectangle2D.Double(
                                 plotArea.getX(), plotArea.getY(),
-                                arc.getStartPoint().getX() - plotArea.getX(), 
-                                plotArea.getHeight()
-                            )
-                        );
+                                arc.getStartPoint().getX() - plotArea.getX(),
+                                plotArea.getHeight()));
                         side1.intersect(front);
 
-                        Area side2 = new Area(
-                            new Rectangle2D.Double(
+                        Area side2 = new Area(new Rectangle2D.Double(
                                 arc.getEndPoint().getX(), plotArea.getY(),
                                 plotArea.getMaxX() - arc.getEndPoint().getX(),
-                                plotArea.getHeight()
-                            )
-                        );
+                                plotArea.getHeight()));
 
                         side2.intersect(front);
                         g2.setPaint(paint);
@@ -636,17 +713,14 @@ public class PiePlot3D extends PiePlot implements Serializable {
 
                     }
                 }
-                else {  // starts at the front, finishes at the back (going 
+                else {  // starts at the front, finishes at the back (going
                         // around the left side)
 
                     if (drawBack) {
-                        Area side2 = new Area(
-                            new Rectangle2D.Double(
+                        Area side2 = new Area(new Rectangle2D.Double(
                                 plotArea.getX(), plotArea.getY(),
-                                arc.getEndPoint().getX() - plotArea.getX(), 
-                                plotArea.getHeight()
-                            )
-                        );
+                                arc.getEndPoint().getX() - plotArea.getX(),
+                                plotArea.getHeight()));
                         side2.intersect(back);
                         g2.setPaint(paint);
                         g2.fill(side2);
@@ -655,13 +729,10 @@ public class PiePlot3D extends PiePlot implements Serializable {
                     }
 
                     if (drawFront) {
-                        Area side1 = new Area(
-                            new Rectangle2D.Double(
+                        Area side1 = new Area(new Rectangle2D.Double(
                                 plotArea.getX(), plotArea.getY(),
                                 arc.getStartPoint().getX() - plotArea.getX(),
-                                plotArea.getHeight()
-                            )
-                        );
+                                plotArea.getHeight()));
                         side1.intersect(front);
                         g2.setPaint(paint);
                         g2.fill(side1);
@@ -670,20 +741,17 @@ public class PiePlot3D extends PiePlot implements Serializable {
                     }
                 }
             }
-            else {  // the segment starts at the back (still extending 
+            else {  // the segment starts at the back (still extending
                     // CLOCKWISE)
 
                 if (!isAngleAtFront(end)) {
                     if (extent > -180.0) {  // whole segment stays at the back
                         if (drawBack) {
-                            Area side = new Area(
-                                new Rectangle2D.Double(
+                            Area side = new Area(new Rectangle2D.Double(
                                     arc.getStartPoint().getX(), plotArea.getY(),
-                                    arc.getEndPoint().getX() 
+                                    arc.getEndPoint().getX()
                                     - arc.getStartPoint().getX(),
-                                    plotArea.getHeight()
-                                )
-                            );
+                                    plotArea.getHeight()));
                             side.intersect(back);
                             g2.setPaint(paint);
                             g2.fill(side);
@@ -691,24 +759,18 @@ public class PiePlot3D extends PiePlot implements Serializable {
                             g2.draw(side);
                         }
                     }
-                    else {  // starts at the back, wraps around front, and 
+                    else {  // starts at the back, wraps around front, and
                             // finishes at back again
-                        Area side1 = new Area(
-                            new Rectangle2D.Double(
+                        Area side1 = new Area(new Rectangle2D.Double(
                                 arc.getStartPoint().getX(), plotArea.getY(),
                                 plotArea.getMaxX() - arc.getStartPoint().getX(),
-                                plotArea.getHeight()
-                            )
-                        );
+                                plotArea.getHeight()));
                         side1.intersect(back);
 
-                        Area side2 = new Area(
-                            new Rectangle2D.Double(
+                        Area side2 = new Area(new Rectangle2D.Double(
                                 plotArea.getX(), plotArea.getY(),
                                 arc.getEndPoint().getX() - plotArea.getX(),
-                                plotArea.getHeight()
-                            )
-                        );
+                                plotArea.getHeight()));
 
                         side2.intersect(back);
 
@@ -737,13 +799,10 @@ public class PiePlot3D extends PiePlot implements Serializable {
                 else {  // starts at back, finishes at front (CLOCKWISE)
 
                     if (drawBack) {
-                        Area side1 = new Area(
-                            new Rectangle2D.Double(
+                        Area side1 = new Area(new Rectangle2D.Double(
                                 arc.getStartPoint().getX(), plotArea.getY(),
                                 plotArea.getMaxX() - arc.getStartPoint().getX(),
-                                plotArea.getHeight()
-                            )
-                        );
+                                plotArea.getHeight()));
                         side1.intersect(back);
                         g2.setPaint(paint);
                         g2.fill(side1);
@@ -752,13 +811,10 @@ public class PiePlot3D extends PiePlot implements Serializable {
                     }
 
                     if (drawFront) {
-                        Area side2 = new Area(
-                            new Rectangle2D.Double(
+                        Area side2 = new Area(new Rectangle2D.Double(
                                 arc.getEndPoint().getX(), plotArea.getY(),
                                 plotArea.getMaxX() - arc.getEndPoint().getX(),
-                                plotArea.getHeight()
-                            )
-                        );
+                                plotArea.getHeight()));
                         side2.intersect(front);
                         g2.setPaint(paint);
                         g2.fill(side2);
@@ -777,14 +833,11 @@ public class PiePlot3D extends PiePlot implements Serializable {
 
                     if (extent < 180.0) {  // segment only occupies the front
                         if (drawFront) {
-                            Area side = new Area(
-                                new Rectangle2D.Double(
+                            Area side = new Area(new Rectangle2D.Double(
                                     arc.getStartPoint().getX(), plotArea.getY(),
-                                    arc.getEndPoint().getX() 
+                                    arc.getEndPoint().getX()
                                     - arc.getStartPoint().getX(),
-                                    plotArea.getHeight()
-                                )
-                            );
+                                    plotArea.getHeight()));
                             side.intersect(front);
                             g2.setPaint(paint);
                             g2.fill(side);
@@ -793,22 +846,16 @@ public class PiePlot3D extends PiePlot implements Serializable {
                         }
                     }
                     else {  // segments wraps right around the back...
-                        Area side1 = new Area(
-                            new Rectangle2D.Double(
+                        Area side1 = new Area(new Rectangle2D.Double(
                                 arc.getStartPoint().getX(), plotArea.getY(),
                                 plotArea.getMaxX() - arc.getStartPoint().getX(),
-                                plotArea.getHeight()
-                            )
-                        );
+                                plotArea.getHeight()));
                         side1.intersect(front);
 
-                        Area side2 = new Area(
-                            new Rectangle2D.Double(
+                        Area side2 = new Area(new Rectangle2D.Double(
                                 plotArea.getX(), plotArea.getY(),
                                 arc.getEndPoint().getX() - plotArea.getX(),
-                                plotArea.getHeight()
-                            )
-                        );
+                                plotArea.getHeight()));
                         side2.intersect(front);
 
                         g2.setPaint(paint);
@@ -835,13 +882,10 @@ public class PiePlot3D extends PiePlot implements Serializable {
                 }
                 else {  // segments starts at front and finishes at back...
                     if (drawBack) {
-                        Area side2 = new Area(
-                            new Rectangle2D.Double(
+                        Area side2 = new Area(new Rectangle2D.Double(
                                 arc.getEndPoint().getX(), plotArea.getY(),
                                 plotArea.getMaxX() - arc.getEndPoint().getX(),
-                                plotArea.getHeight()
-                            )
-                        );
+                                plotArea.getHeight()));
                         side2.intersect(back);
                         g2.setPaint(paint);
                         g2.fill(side2);
@@ -850,13 +894,10 @@ public class PiePlot3D extends PiePlot implements Serializable {
                     }
 
                     if (drawFront) {
-                        Area side1 = new Area(
-                            new Rectangle2D.Double(
+                        Area side1 = new Area(new Rectangle2D.Double(
                                 arc.getStartPoint().getX(), plotArea.getY(),
                                 plotArea.getMaxX() - arc.getStartPoint().getX(),
-                                plotArea.getHeight()
-                            )
-                        );
+                                plotArea.getHeight()));
                         side1.intersect(front);
                         g2.setPaint(paint);
                         g2.fill(side1);
@@ -870,14 +911,11 @@ public class PiePlot3D extends PiePlot implements Serializable {
                 if (!isAngleAtFront(end)) {
                     if (extent < 180.0) {  // and finishes at back
                         if (drawBack) {
-                            Area side = new Area(
-                                new Rectangle2D.Double(
+                            Area side = new Area(new Rectangle2D.Double(
                                     arc.getEndPoint().getX(), plotArea.getY(),
-                                    arc.getStartPoint().getX() 
+                                    arc.getStartPoint().getX()
                                     - arc.getEndPoint().getX(),
-                                    plotArea.getHeight()
-                                )
-                            );
+                                    plotArea.getHeight()));
                             side.intersect(back);
                             g2.setPaint(paint);
                             g2.fill(side);
@@ -885,24 +923,18 @@ public class PiePlot3D extends PiePlot implements Serializable {
                             g2.draw(side);
                         }
                     }
-                    else {  // starts at back and wraps right around to the 
+                    else {  // starts at back and wraps right around to the
                             // back again
-                        Area side1 = new Area(
-                            new Rectangle2D.Double(
+                        Area side1 = new Area(new Rectangle2D.Double(
                                 arc.getStartPoint().getX(), plotArea.getY(),
                                 plotArea.getX() - arc.getStartPoint().getX(),
-                                plotArea.getHeight()
-                            )
-                        );
+                                plotArea.getHeight()));
                         side1.intersect(back);
 
-                        Area side2 = new Area(
-                            new Rectangle2D.Double(
+                        Area side2 = new Area(new Rectangle2D.Double(
                                 arc.getEndPoint().getX(), plotArea.getY(),
                                 plotArea.getMaxX() - arc.getEndPoint().getX(),
-                                plotArea.getHeight()
-                            )
-                        );
+                                plotArea.getHeight()));
                         side2.intersect(back);
 
                         g2.setPaint(paint);
@@ -927,16 +959,13 @@ public class PiePlot3D extends PiePlot implements Serializable {
 
                     }
                 }
-                else {  // starts at the back and finishes at the front 
+                else {  // starts at the back and finishes at the front
                         // (wrapping the left side)
                     if (drawBack) {
-                        Area side1 = new Area(
-                            new Rectangle2D.Double(
+                        Area side1 = new Area(new Rectangle2D.Double(
                                 plotArea.getX(), plotArea.getY(),
                                 arc.getStartPoint().getX() - plotArea.getX(),
-                                plotArea.getHeight()
-                            )
-                        );
+                                plotArea.getHeight()));
                         side1.intersect(back);
                         g2.setPaint(paint);
                         g2.fill(side1);
@@ -945,13 +974,10 @@ public class PiePlot3D extends PiePlot implements Serializable {
                     }
 
                     if (drawFront) {
-                        Area side2 = new Area(
-                            new Rectangle2D.Double(
+                        Area side2 = new Area(new Rectangle2D.Double(
                                 plotArea.getX(), plotArea.getY(),
                                 arc.getEndPoint().getX() - plotArea.getX(),
-                                plotArea.getHeight()
-                            )
-                        );
+                                plotArea.getHeight()));
                         side2.intersect(front);
                         g2.setPaint(paint);
                         g2.fill(side2);
@@ -970,13 +996,14 @@ public class PiePlot3D extends PiePlot implements Serializable {
      *
      * @return <i>Pie 3D Plot</i>.
      */
-    public String getPlotType () {
+    @Override
+    public String getPlotType() {
         return localizationResources.getString("Pie_3D_Plot");
     }
 
     /**
-     * A utility method that returns true if the angle represents a point at 
-     * the front of the 3D pie chart.  0 - 180 degrees is the back, 180 - 360 
+     * A utility method that returns true if the angle represents a point at
+     * the front of the 3D pie chart.  0 - 180 degrees is the back, 180 - 360
      * is the front.
      *
      * @param angle  the angle.
@@ -988,8 +1015,8 @@ public class PiePlot3D extends PiePlot implements Serializable {
     }
 
     /**
-     * A utility method that returns true if the angle represents a point at 
-     * the back of the 3D pie chart.  0 - 180 degrees is the back, 180 - 360 
+     * A utility method that returns true if the angle represents a point at
+     * the back of the 3D pie chart.  0 - 180 degrees is the back, 180 - 360
      * is the front.
      *
      * @param angle  the angle.
@@ -998,6 +1025,31 @@ public class PiePlot3D extends PiePlot implements Serializable {
      */
     private boolean isAngleAtBack(double angle) {
         return (Math.sin(Math.toRadians(angle)) > 0.0);
+    }
+
+    /**
+     * Tests this plot for equality with an arbitrary object.
+     *
+     * @param obj  the object (<code>null</code> permitted).
+     *
+     * @return A boolean.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof PiePlot3D)) {
+            return false;
+        }
+        PiePlot3D that = (PiePlot3D) obj;
+        if (this.depthFactor != that.depthFactor) {
+            return false;
+        }
+        if (this.darkerSides != that.darkerSides) {
+            return false;
+        }
+        return super.equals(obj);
     }
 
 }

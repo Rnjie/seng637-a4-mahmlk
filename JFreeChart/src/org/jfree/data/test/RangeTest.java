@@ -674,8 +674,14 @@ public class RangeTest {
 	}
 	@Test
 	public void test_LowerBound() {
+		// Setup
 		exampleRange = new Range(-3, 10);
-		assertEquals(-3, exampleRange.getLowerBound(), 0);
+		double expectedLowerBound = -3; 
+		
+		// Function Call
+		double actualLowerBound = exampleRange.getLowerBound();
+		
+		assertEquals(expectedLowerBound, actualLowerBound, 0);
 	}
 	
 	@Test

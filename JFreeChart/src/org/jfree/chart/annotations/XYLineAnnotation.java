@@ -2,48 +2,51 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * ---------------------
  * XYLineAnnotation.java
  * ---------------------
- * (C) Copyright 2003-2005, by Object Refinery Limited.
+ * (C) Copyright 2003-2013, by Object Refinery Limited.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
- * Contributor(s):   -;
- *
- * $Id: XYLineAnnotation.java,v 1.8 2005/06/17 09:02:25 mungady Exp $
+ * Contributor(s):   Peter Kolb (see patch 2809117);
  *
  * Changes:
  * --------
  * 02-Apr-2003 : Version 1 (DG);
- * 19-Aug-2003 : Added equals method, implemented Cloneable, and applied 
+ * 19-Aug-2003 : Added equals method, implemented Cloneable, and applied
  *               serialization fixes (DG);
  * 21-Jan-2004 : Update for renamed method in ValueAxis (DG);
  * 14-Apr-2004 : Fixed draw() method to handle plot orientation correctly (DG);
- * 29-Sep-2004 : Added support for tool tips and URLS, now extends 
+ * 29-Sep-2004 : Added support for tool tips and URLS, now extends
  *               AbstractXYAnnotation (DG);
  * 04-Oct-2004 : Renamed ShapeUtils --> ShapeUtilities (DG);
- * 
+ * 08-Jun-2005 : Fixed equals() method to handle GradientPaint() (DG);
+ * 05-Nov-2008 : Added workaround for JRE bug 6574155, see JFreeChart bug
+ *               2221495 (DG);
+ * 02-Jul-2013 : Use ParamChecks (DG);
+ *
  */
 
 package org.jfree.chart.annotations;
@@ -65,6 +68,8 @@ import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.util.LineUtilities;
+import org.jfree.chart.util.ParamChecks;
 import org.jfree.io.SerialUtilities;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.util.ObjectUtilities;
@@ -76,12 +81,11 @@ import org.jfree.util.ShapeUtilities;
  * A simple line annotation that can be placed on an {@link XYPlot}.
  */
 public class XYLineAnnotation extends AbstractXYAnnotation
-                              implements Cloneable, PublicCloneable, 
-                                         Serializable {
+        implements Cloneable, PublicCloneable, Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = -80535465244091334L;
-    
+
     /** The x-coordinate. */
     private double x1;
 
@@ -101,10 +105,10 @@ public class XYLineAnnotation extends AbstractXYAnnotation
     private transient Paint paint;
 
     /**
-     * Creates a new annotation that draws a line from (x1, y1) to (x2, y2) 
-     * where the coordinates are measured in data space (that is, against the 
+     * Creates a new annotation that draws a line from (x1, y1) to (x2, y2)
+     * where the coordinates are measured in data space (that is, against the
      * plot's axes).
-     * 
+     *
      * @param x1  the x-coordinate for the start of the line.
      * @param y1  the y-coordinate for the start of the line.
      * @param x2  the x-coordinate for the end of the line.
@@ -113,10 +117,10 @@ public class XYLineAnnotation extends AbstractXYAnnotation
     public XYLineAnnotation(double x1, double y1, double x2, double y2) {
         this(x1, y1, x2, y2, new BasicStroke(1.0f), Color.black);
     }
-    
+
     /**
-     * Creates a new annotation that draws a line from (x1, y1) to (x2, y2) 
-     * where the coordinates are measured in data space (that is, against the 
+     * Creates a new annotation that draws a line from (x1, y1) to (x2, y2)
+     * where the coordinates are measured in data space (that is, against the
      * plot's axes).
      *
      * @param x1  the x-coordinate for the start of the line.
@@ -129,12 +133,9 @@ public class XYLineAnnotation extends AbstractXYAnnotation
     public XYLineAnnotation(double x1, double y1, double x2, double y2,
                             Stroke stroke, Paint paint) {
 
-        if (stroke == null) {
-            throw new IllegalArgumentException("Null 'stroke' argument.");   
-        }
-        if (paint == null) {
-            throw new IllegalArgumentException("Null 'paint' argument.");   
-        }
+        super();
+        ParamChecks.nullNotPermitted(stroke, "stroke");
+        ParamChecks.nullNotPermitted(paint, "paint");
         this.x1 = x1;
         this.y1 = y1;
         this.x2 = x2;
@@ -145,7 +146,7 @@ public class XYLineAnnotation extends AbstractXYAnnotation
     }
 
     /**
-     * Draws the annotation.  This method is called by the {@link XYPlot} 
+     * Draws the annotation.  This method is called by the {@link XYPlot}
      * class, you won't normally need to call it yourself.
      *
      * @param g2  the graphics device.
@@ -157,72 +158,67 @@ public class XYLineAnnotation extends AbstractXYAnnotation
      * @param info  if supplied, this info object will be populated with
      *              entity information.
      */
+    @Override
     public void draw(Graphics2D g2, XYPlot plot, Rectangle2D dataArea,
-                     ValueAxis domainAxis, ValueAxis rangeAxis, 
+                     ValueAxis domainAxis, ValueAxis rangeAxis,
                      int rendererIndex,
                      PlotRenderingInfo info) {
 
         PlotOrientation orientation = plot.getOrientation();
         RectangleEdge domainEdge = Plot.resolveDomainAxisLocation(
-            plot.getDomainAxisLocation(), orientation
-        );
+                plot.getDomainAxisLocation(), orientation);
         RectangleEdge rangeEdge = Plot.resolveRangeAxisLocation(
-            plot.getRangeAxisLocation(), orientation
-        );
+                plot.getRangeAxisLocation(), orientation);
         float j2DX1 = 0.0f;
         float j2DX2 = 0.0f;
         float j2DY1 = 0.0f;
         float j2DY2 = 0.0f;
         if (orientation == PlotOrientation.VERTICAL) {
-            j2DX1 = (float) domainAxis.valueToJava2D(
-                this.x1, dataArea, domainEdge
-            );
-            j2DY1 = (float) rangeAxis.valueToJava2D(
-                this.y1, dataArea, rangeEdge
-            );
-            j2DX2 = (float) domainAxis.valueToJava2D(
-                this.x2, dataArea, domainEdge
-            );
-            j2DY2 = (float) rangeAxis.valueToJava2D(
-                this.y2, dataArea, rangeEdge
-            );
+            j2DX1 = (float) domainAxis.valueToJava2D(this.x1, dataArea,
+                    domainEdge);
+            j2DY1 = (float) rangeAxis.valueToJava2D(this.y1, dataArea,
+                    rangeEdge);
+            j2DX2 = (float) domainAxis.valueToJava2D(this.x2, dataArea,
+                    domainEdge);
+            j2DY2 = (float) rangeAxis.valueToJava2D(this.y2, dataArea,
+                    rangeEdge);
         }
         else if (orientation == PlotOrientation.HORIZONTAL) {
-            j2DY1 = (float) domainAxis.valueToJava2D(
-                this.x1, dataArea, domainEdge
-            );
-            j2DX1 = (float) rangeAxis.valueToJava2D(
-                this.y1, dataArea, rangeEdge
-            );
-            j2DY2 = (float) domainAxis.valueToJava2D(
-                this.x2, dataArea, domainEdge
-            );
-            j2DX2 = (float) rangeAxis.valueToJava2D(
-                this.y2, dataArea, rangeEdge
-            );                
+            j2DY1 = (float) domainAxis.valueToJava2D(this.x1, dataArea,
+                    domainEdge);
+            j2DX1 = (float) rangeAxis.valueToJava2D(this.y1, dataArea,
+                    rangeEdge);
+            j2DY2 = (float) domainAxis.valueToJava2D(this.x2, dataArea,
+                    domainEdge);
+            j2DX2 = (float) rangeAxis.valueToJava2D(this.y2, dataArea,
+                    rangeEdge);
         }
         g2.setPaint(this.paint);
         g2.setStroke(this.stroke);
         Line2D line = new Line2D.Float(j2DX1, j2DY1, j2DX2, j2DY2);
-        g2.draw(line);
+        // line is clipped to avoid JRE bug 6574155, for more info
+        // see JFreeChart bug 2221495
+        boolean visible = LineUtilities.clipLine(line, dataArea);
+        if (visible) {
+            g2.draw(line);
+        }
 
         String toolTip = getToolTipText();
         String url = getURL();
         if (toolTip != null || url != null) {
-            addEntity(
-                info, ShapeUtilities.createLineRegion(line, 1.0f), 
-                rendererIndex, toolTip, url
-            );
+            addEntity(info, ShapeUtilities.createLineRegion(line, 1.0f),
+                    rendererIndex, toolTip, url);
         }
     }
 
     /**
      * Tests this object for equality with an arbitrary object.
-     * 
+     *
      * @param obj  the object to test against (<code>null</code> permitted).
-     * 
+     *
      * @return <code>true</code> or <code>false</code>.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
@@ -255,12 +251,13 @@ public class XYLineAnnotation extends AbstractXYAnnotation
         // seems to be the same...
         return true;
     }
-    
+
     /**
      * Returns a hash code.
-     * 
+     *
      * @return A hash code.
      */
+    @Override
     public int hashCode() {
         int result;
         long temp;
@@ -277,15 +274,16 @@ public class XYLineAnnotation extends AbstractXYAnnotation
 
     /**
      * Returns a clone of the annotation.
-     * 
+     *
      * @return A clone.
-     * 
+     *
      * @throws CloneNotSupportedException  if the annotation can't be cloned.
      */
+    @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
-    
+
     /**
      * Provides serialization support.
      *
@@ -294,11 +292,9 @@ public class XYLineAnnotation extends AbstractXYAnnotation
      * @throws IOException  if there is an I/O error.
      */
     private void writeObject(ObjectOutputStream stream) throws IOException {
-
         stream.defaultWriteObject();
         SerialUtilities.writePaint(this.paint, stream);
         SerialUtilities.writeStroke(this.stroke, stream);
-
     }
 
     /**
@@ -309,7 +305,7 @@ public class XYLineAnnotation extends AbstractXYAnnotation
      * @throws IOException  if there is an I/O error.
      * @throws ClassNotFoundException  if there is a classpath problem.
      */
-    private void readObject(ObjectInputStream stream) 
+    private void readObject(ObjectInputStream stream)
         throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         this.paint = SerialUtilities.readPaint(stream);

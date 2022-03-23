@@ -2,45 +2,45 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * -------------
  * TickUnit.java
  * -------------
- * (C) Copyright 2001-2005, by Object Refinery Limited.
+ * (C) Copyright 2001-2008, by Object Refinery Limited.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
  * Contributor(s):   -;
  *
- * $Id: TickUnit.java,v 1.5 2005/10/27 14:12:16 mungady Exp $
- *
- * Changes (from 19-Dec-2001)
- * --------------------------
+ * Changes
+ * -------
  * 19-Dec-2001 : Added standard header (DG);
  * 01-May-2002 : Changed the unit size from Number to double (DG);
  * 26-Sep-2002 : Fixed errors reported by Checkstyle (DG);
  * 08-Nov-2002 : Moved to new package com.jrefinery.chart.axis (DG);
  * 26-Mar-2003 : Implemented Serializable (DG);
  * 05-Sep-2005 : Implemented hashCode(), thanks to Thomas Morgner (DG);
+ * 02-Aug-2007 : Added minorTickCount attribute (DG);
  *
  */
 
@@ -64,9 +64,16 @@ public abstract class TickUnit implements Comparable, Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = 510179855057013974L;
-    
+
     /** The size of the tick unit. */
     private double size;
+
+    /**
+     * The number of minor ticks.
+     *
+     * @since 1.0.7
+     */
+    private int minorTickCount;
 
     /**
      * Constructs a new tick unit.
@@ -78,12 +85,36 @@ public abstract class TickUnit implements Comparable, Serializable {
     }
 
     /**
+     * Constructs a new tick unit.
+     *
+     * @param size  the tick unit size.
+     * @param minorTickCount  the minor tick count.
+     *
+     * @since 1.0.7
+     */
+    public TickUnit(double size, int minorTickCount) {
+        this.size = size;
+        this.minorTickCount = minorTickCount;
+    }
+
+    /**
      * Returns the size of the tick unit.
      *
      * @return The size of the tick unit.
      */
     public double getSize() {
         return this.size;
+    }
+
+    /**
+     * Returns the minor tick count.
+     *
+     * @return The minor tick count.
+     *
+     * @since 1.0.7
+     */
+    public int getMinorTickCount() {
+        return this.minorTickCount;
     }
 
     /**
@@ -108,6 +139,7 @@ public abstract class TickUnit implements Comparable, Serializable {
      *      <code>0</code> if both have the same size and <code>-1</code> this
      *      size is less than the others.
      */
+    @Override
     public int compareTo(Object object) {
 
         if (object instanceof TickUnit) {
@@ -135,29 +167,34 @@ public abstract class TickUnit implements Comparable, Serializable {
      *
      * @return <code>true</code> or <code>false</code>.
      */
+    @Override
     public boolean equals(Object obj) {
-
-        if (obj == null) {
-            return false;
-        }
         if (obj == this) {
             return true;
         }
-        if (obj instanceof TickUnit) {
-            TickUnit tu = (TickUnit) obj;
-            return this.size == tu.size;
+        if (!(obj instanceof TickUnit)) {
+            return false;
         }
-        return false;
-
+        TickUnit that = (TickUnit) obj;
+        if (this.size != that.size) {
+            return false;
+        }
+        if (this.minorTickCount != that.minorTickCount) {
+            return false;
+        }
+        return true;
     }
 
     /**
      * Returns a hash code for this instance.
-     * 
+     *
      * @return A hash code.
      */
+    @Override
     public int hashCode() {
-        final long temp = size != +0.0d ? Double.doubleToLongBits(size) : 0L;
+        long temp = this.size != +0.0d ? Double.doubleToLongBits(this.size)
+                : 0L;
         return (int) (temp ^ (temp >>> 32));
     }
+
 }

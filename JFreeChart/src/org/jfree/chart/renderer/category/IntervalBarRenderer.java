@@ -2,37 +2,37 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2014, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * ------------------------
  * IntervalBarRenderer.java
  * ------------------------
- * (C) Copyright 2002-2005, by Jeremy Bowman.
+ * (C) Copyright 2002-2014, by Jeremy Bowman.
  *
  * Original Author:  Jeremy Bowman;
  * Contributor(s):   David Gilbert (for Object Refinery Limited);
  *                   Christian W. Zuckschwerdt;
- *
- * $Id: IntervalBarRenderer.java,v 1.6 2005/05/19 14:01:46 mungady Exp $
+ *                   Peter Kolb (patch 2497611, 2791407);
  *
  * Changes
  * -------
@@ -41,7 +41,7 @@
  * 29-May-2002 : Added constructors (DG);
  * 26-Jun-2002 : Added axis to initialise method (DG);
  * 20-Sep-2002 : Added basic support for chart entities (DG);
- * 24-Oct-2002 : Amendments for changes in CategoryDataset interface and 
+ * 24-Oct-2002 : Amendments for changes in CategoryDataset interface and
  *               CategoryToolTipGenerator interface (DG);
  * 05-Nov-2002 : Base dataset is now TableDataset not CategoryDataset (DG);
  * 25-Mar-2003 : Implemented Serializable (DG);
@@ -50,57 +50,72 @@
  * 08-Sep-2003 : Added checks for null values (DG);
  * 07-Oct-2003 : Added renderer state (DG);
  * 21-Oct-2003 : Bar width moved into renderer state (DG);
- * 23-Dec-2003 : Removed the deprecated MultiIntervalCategoryDataset 
+ * 23-Dec-2003 : Removed the deprecated MultiIntervalCategoryDataset
  *               interface (DG);
  * 05-Nov-2004 : Modified drawItem() signature (DG);
- * 20-Apr-2005 : Renamed CategoryLabelGenerator 
+ * 20-Apr-2005 : Renamed CategoryLabelGenerator
  *               --> CategoryItemLabelGenerator (DG);
- * 
+ * 02-Feb-2007 : Removed author tags all over JFreeChart sources (DG);
+ * 24-Jun-2008 : Added new barPainter mechanism (DG);
+ * 07-Oct-2008 : Override equals() method to fix minor bug (DG);
+ * 14-Jan-2009 : Added support for seriesVisible flags (PK);
+ * 16-May-2009 : The findRangeBounds() method needs to include the dataset
+ *               interval (DG);
+ * 19-May-2009 : Fixed FindBugs warnings, patch by Michal Wozniak (DG);
+ * 30-Oct-2011 : Fixed alignment when setMaximumBarWidth is applied (DG);
  */
 
 package org.jfree.chart.renderer.category;
 
 import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
-import java.io.Serializable;
 
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.entity.CategoryItemEntity;
 import org.jfree.chart.entity.EntityCollection;
 import org.jfree.chart.labels.CategoryItemLabelGenerator;
-import org.jfree.chart.labels.CategoryToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.Range;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.IntervalCategoryDataset;
 import org.jfree.ui.RectangleEdge;
-import org.jfree.util.PublicCloneable;
 
 /**
  * A renderer that handles the drawing of bars for a bar plot where
- * each bar has a high and low value.
- * <p>
- * For use with the {@link CategoryPlot} class.
- *
- * @author Jeremy Bowman
+ * each bar has a high and low value.  This renderer is for use with the
+ * {@link CategoryPlot} class.  The example shown here is generated by the
+ * <code>IntervalBarChartDemo1.java</code> program included in the JFreeChart
+ * Demo Collection:
+ * <br><br>
+ * <img src="../../../../../images/IntervalBarRendererSample.png"
+ * alt="IntervalBarRendererSample.png">
  */
-public class IntervalBarRenderer extends BarRenderer
-                                 implements CategoryItemRenderer, 
-                                            Cloneable, 
-                                            PublicCloneable, 
-                                            Serializable {
+public class IntervalBarRenderer extends BarRenderer {
 
     /** For serialization. */
     private static final long serialVersionUID = -5068857361615528725L;
-    
+
     /**
      * Constructs a new renderer.
      */
     public IntervalBarRenderer() {
         super();
+    }
+
+    /**
+     * Returns the range of values from the specified dataset.  For this
+     * renderer, this is equivalent to calling
+     * <code>findRangeBounds(dataset, true)</code>.
+     *
+     * @param dataset  the dataset (<code>null</code> permitted).
+     *
+     * @return The range (or <code>null</code> if the dataset is
+     *         <code>null</code> or empty).
+     */
+    @Override
+    public Range findRangeBounds(CategoryDataset dataset) {
+        return findRangeBounds(dataset, true);
     }
 
     /**
@@ -117,33 +132,24 @@ public class IntervalBarRenderer extends BarRenderer
      * @param column  the column index (zero-based).
      * @param pass  the pass index.
      */
-    public void drawItem(Graphics2D g2,
-                         CategoryItemRendererState state,
-                         Rectangle2D dataArea,
-                         CategoryPlot plot,
-                         CategoryAxis domainAxis,
-                         ValueAxis rangeAxis,
-                         CategoryDataset dataset,
-                         int row,
-                         int column,
-                         int pass) {
+    @Override
+    public void drawItem(Graphics2D g2, CategoryItemRendererState state,
+            Rectangle2D dataArea, CategoryPlot plot, CategoryAxis domainAxis,
+            ValueAxis rangeAxis, CategoryDataset dataset, int row, int column,
+            int pass) {
 
          if (dataset instanceof IntervalCategoryDataset) {
              IntervalCategoryDataset d = (IntervalCategoryDataset) dataset;
-             drawInterval(
-                 g2, state, dataArea, plot, domainAxis, rangeAxis, 
-                 d, row, column
-             );
+             drawInterval(g2, state, dataArea, plot, domainAxis, rangeAxis,
+                     d, row, column);
          }
          else {
-             super.drawItem(
-                 g2, state, dataArea, plot, domainAxis, rangeAxis, 
-                 dataset, row, column, pass
-             );
-         } 
-         
+             super.drawItem(g2, state, dataArea, plot, domainAxis, rangeAxis,
+                     dataset, row, column, pass);
+         }
+
      }
-                          
+
      /**
       * Draws a single interval.
       *
@@ -167,25 +173,24 @@ public class IntervalBarRenderer extends BarRenderer
                                  int row,
                                  int column) {
 
-        int seriesCount = getRowCount();
-        int categoryCount = getColumnCount();
+        int visibleRow = state.getVisibleSeriesIndex(row);
+        if (visibleRow < 0) {
+            return;
+        }
 
         PlotOrientation orientation = plot.getOrientation();
-        
         double rectX = 0.0;
         double rectY = 0.0;
 
-        RectangleEdge domainAxisLocation = plot.getDomainAxisEdge();
         RectangleEdge rangeAxisLocation = plot.getRangeAxisEdge();
-        
+
         // Y0
         Number value0 = dataset.getEndValue(row, column);
         if (value0 == null) {
             return;
         }
-        double java2dValue0 = rangeAxis.valueToJava2D(
-            value0.doubleValue(), dataArea, rangeAxisLocation
-        );
+        double java2dValue0 = rangeAxis.valueToJava2D(value0.doubleValue(),
+                dataArea, rangeAxisLocation);
 
         // Y1
         Number value1 = dataset.getStartValue(row, column);
@@ -193,16 +198,12 @@ public class IntervalBarRenderer extends BarRenderer
             return;
         }
         double java2dValue1 = rangeAxis.valueToJava2D(
-            value1.doubleValue(), dataArea, rangeAxisLocation
-        );
+                value1.doubleValue(), dataArea, rangeAxisLocation);
 
         if (java2dValue1 < java2dValue0) {
             double temp = java2dValue1;
             java2dValue1 = java2dValue0;
             java2dValue0 = temp;
-            Number tempNum = value1;
-            value1 = value0;
-            value0 = tempNum;
         }
 
         // BAR WIDTH
@@ -211,95 +212,63 @@ public class IntervalBarRenderer extends BarRenderer
         // BAR HEIGHT
         double rectHeight = Math.abs(java2dValue1 - java2dValue0);
 
+        RectangleEdge barBase = RectangleEdge.LEFT;
         if (orientation == PlotOrientation.HORIZONTAL) {
             // BAR Y
-            rectY = domainAxis.getCategoryStart(
-                column, getColumnCount(), dataArea, domainAxisLocation
-            );
-            if (seriesCount > 1) {
-                double seriesGap = dataArea.getHeight() * getItemMargin()
-                                   / (categoryCount * (seriesCount - 1));
-                rectY = rectY + row * (state.getBarWidth() + seriesGap);
-            }
-            else {
-                rectY = rectY + row * state.getBarWidth();
-            }
-            
             rectX = java2dValue0;
-
+            rectY = calculateBarW0(getPlot(), orientation, dataArea, 
+                    domainAxis, state, visibleRow, column);
             rectHeight = state.getBarWidth();
             rectWidth = Math.abs(java2dValue1 - java2dValue0);
-
+            barBase = RectangleEdge.LEFT;
         }
         else if (orientation == PlotOrientation.VERTICAL) {
             // BAR X
-            rectX = domainAxis.getCategoryStart(
-                column, getColumnCount(), dataArea, domainAxisLocation
-            );
-
-            if (seriesCount > 1) {
-                double seriesGap = dataArea.getWidth() * getItemMargin()
-                                   / (categoryCount * (seriesCount - 1));
-                rectX = rectX + row * (state.getBarWidth() + seriesGap);
-            }
-            else {
-                rectX = rectX + row * state.getBarWidth();
-            }
-
+            rectX = calculateBarW0(getPlot(), orientation, dataArea, 
+                    domainAxis, state, visibleRow, column);
             rectY = java2dValue0;
+            barBase = RectangleEdge.BOTTOM;
+        }
+        Rectangle2D bar = new Rectangle2D.Double(rectX, rectY, rectWidth,
+                rectHeight);
+        BarPainter painter = getBarPainter();
+        if (getShadowsVisible()) {
+            painter.paintBarShadow(g2, this, row, column, bar, barBase, false);
+        }
+        getBarPainter().paintBar(g2, this, row, column, bar, barBase);
 
-        }
-        Rectangle2D bar = new Rectangle2D.Double(
-            rectX, rectY, rectWidth, rectHeight
-        );
-        Paint seriesPaint = getItemPaint(row, column);
-        g2.setPaint(seriesPaint);
-        g2.fill(bar);
-        
-        // draw the outline...
-        if (state.getBarWidth() > BAR_OUTLINE_WIDTH_THRESHOLD) {
-            Stroke stroke = getItemOutlineStroke(row, column);
-            Paint paint = getItemOutlinePaint(row, column);
-            if (stroke != null && paint != null) {
-                g2.setStroke(stroke);
-                g2.setPaint(paint);
-                g2.draw(bar);
-            }
-        }
-        
-        CategoryItemLabelGenerator generator 
-            = getItemLabelGenerator(row, column);
+        CategoryItemLabelGenerator generator = getItemLabelGenerator(row,
+                column);
         if (generator != null && isItemLabelVisible(row, column)) {
-            drawItemLabel(
-                g2, dataset, row, column, plot, generator, bar, false
-            );
-        }        
-
-        // collect entity and tool tip information...
-        if (state.getInfo() != null) {
-            EntityCollection entities 
-                = state.getInfo().getOwner().getEntityCollection();
-            if (entities != null) {
-                String tip = null;
-                CategoryToolTipGenerator tipster 
-                    = getToolTipGenerator(row, column);
-                if (tipster != null) {
-                    tip = tipster.generateToolTip(dataset, row, column);
-                }
-                String url = null;
-                if (getItemURLGenerator(row, column) != null) {
-                    url = getItemURLGenerator(row, column).generateURL(
-                        dataset, row, column
-                    );
-                }
-                CategoryItemEntity entity = new CategoryItemEntity(
-                    bar, tip, url, dataset, row, 
-                    dataset.getColumnKey(column), column
-                );
-                entities.add(entity);
-            }
+            drawItemLabel(g2, dataset, row, column, plot, generator, bar,
+                    false);
         }
 
+        // add an item entity, if this information is being collected
+        EntityCollection entities = state.getEntityCollection();
+        if (entities != null) {
+            addItemEntity(entities, dataset, row, column, bar);
+        }
+
+    }
+
+    /**
+     * Tests this renderer for equality with an arbitrary object.
+     *
+     * @param obj  the object (<code>null</code> permitted).
+     *
+     * @return A boolean.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof IntervalBarRenderer)) {
+            return false;
+        }
+        // there are no fields to check
+        return super.equals(obj);
     }
 
 }

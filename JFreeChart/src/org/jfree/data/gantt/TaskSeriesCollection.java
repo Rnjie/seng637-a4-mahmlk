@@ -2,50 +2,50 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2006, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, 
- * USA.  
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * -------------------------
  * TaskSeriesCollection.java
  * -------------------------
- * (C) Copyright 2002-2006, by Object Refinery Limited.
+ * (C) Copyright 2002-2013, by Object Refinery Limited.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
  * Contributor(s):   Thomas Schuster;
- *
- * $Id: TaskSeriesCollection.java,v 1.11 2006/01/18 16:31:49 mungady Exp $
  *
  * Changes
  * -------
  * 06-Jun-2002 : Version 1 (DG);
  * 07-Oct-2002 : Fixed errors reported by Checkstyle (DG);
- * 24-Oct-2002 : Amendments for changes in CategoryDataset interface and 
+ * 24-Oct-2002 : Amendments for changes in CategoryDataset interface and
  *               CategoryToolTipGenerator interface (DG);
  * 10-Jan-2003 : Renamed GanttSeriesCollection --> TaskSeriesCollection (DG);
  * 04-Sep-2003 : Fixed bug 800324 (DG);
  * 16-Sep-2003 : Implemented GanttCategoryDataset (DG);
  * 12-Jan-2005 : Fixed bug 1099331 (DG);
- * 18-Jan-2006 : Added new methods getSeries(int) and 
+ * 18-Jan-2006 : Added new methods getSeries(int) and
  *               getSeries(Comparable) (DG);
+ * 09-May-2008 : Fixed cloning bug (DG);
+ * 03-Jul-2013 : Use ParamChecks (DG);
  *
  */
 
@@ -54,6 +54,7 @@ package org.jfree.data.gantt;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
+import org.jfree.chart.util.ParamChecks;
 
 import org.jfree.data.general.AbstractSeriesDataset;
 import org.jfree.data.general.SeriesChangeEvent;
@@ -62,20 +63,19 @@ import org.jfree.util.ObjectUtilities;
 import org.jfree.util.PublicCloneable;
 
 /**
- * A collection of {@link TaskSeries} objects.  This class provides one 
+ * A collection of {@link TaskSeries} objects.  This class provides one
  * implementation of the {@link GanttCategoryDataset} interface.
  */
 public class TaskSeriesCollection extends AbstractSeriesDataset
-                                  implements GanttCategoryDataset,
-                                             Cloneable, PublicCloneable, 
-                                             Serializable {
+        implements GanttCategoryDataset, Cloneable, PublicCloneable,
+                   Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = -2065799050738449903L;
 
-    /** 
-     * Storage for aggregate task keys (the task description is used as the 
-     * key). 
+    /**
+     * Storage for aggregate task keys (the task description is used as the
+     * key).
      */
     private List keys;
 
@@ -89,14 +89,14 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
         this.keys = new java.util.ArrayList();
         this.data = new java.util.ArrayList();
     }
-    
+
     /**
      * Returns a series from the collection.
      *
      * @param key  the series key (<code>null</code> not permitted).
      *
      * @return The series.
-     * 
+     *
      * @since 1.0.1
      */
     public TaskSeries getSeries(Comparable key) {
@@ -117,7 +117,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      * @param series  the series index (zero-based).
      *
      * @return The series.
-     * 
+     *
      * @since 1.0.1
      */
     public TaskSeries getSeries(int series) {
@@ -132,6 +132,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The series count.
      */
+    @Override
     public int getSeriesCount() {
         return getRowCount();
     }
@@ -143,6 +144,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The name of a series.
      */
+    @Override
     public Comparable getSeriesKey(int series) {
         TaskSeries ts = (TaskSeries) this.data.get(series);
         return ts.getKey();
@@ -153,6 +155,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The series count.
      */
+    @Override
     public int getRowCount() {
         return this.data.size();
     }
@@ -162,6 +165,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The row keys.
      */
+    @Override
     public List getRowKeys() {
         return this.data;
     }
@@ -171,6 +175,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The column count.
      */
+    @Override
     public int getColumnCount() {
         return this.keys.size();
     }
@@ -180,6 +185,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The category list.
      */
+    @Override
     public List getColumnKeys() {
         return this.keys;
     }
@@ -191,6 +197,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The column key.
      */
+    @Override
     public Comparable getColumnKey(int index) {
         return (Comparable) this.keys.get(index);
     }
@@ -198,11 +205,13 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
     /**
      * Returns the column index for a column key.
      *
-     * @param columnKey  the columnKey.
+     * @param columnKey  the column key (<code>null</code> not permitted).
      *
      * @return The column index.
      */
+    @Override
     public int getColumnIndex(Comparable columnKey) {
+        ParamChecks.nullNotPermitted(columnKey, "columnKey");
         return this.keys.indexOf(columnKey);
     }
 
@@ -213,6 +222,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The index.
      */
+    @Override
     public int getRowIndex(Comparable rowKey) {
         int result = -1;
         int count = this.data.size();
@@ -233,22 +243,21 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The key.
      */
+    @Override
     public Comparable getRowKey(int index) {
         TaskSeries series = (TaskSeries) this.data.get(index);
         return series.getKey();
     }
 
     /**
-     * Adds a series to the dataset and sends a 
-     * {@link org.jfree.data.general.DatasetChangeEvent} to all registered 
+     * Adds a series to the dataset and sends a
+     * {@link org.jfree.data.general.DatasetChangeEvent} to all registered
      * listeners.
      *
      * @param series  the series (<code>null</code> not permitted).
      */
     public void add(TaskSeries series) {
-        if (series == null) {
-            throw new IllegalArgumentException("Null 'series' argument.");
-        }
+        ParamChecks.nullNotPermitted(series, "series");
         this.data.add(series);
         series.addChangeListener(this);
 
@@ -266,16 +275,14 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
     }
 
     /**
-     * Removes a series from the collection and sends 
+     * Removes a series from the collection and sends
      * a {@link org.jfree.data.general.DatasetChangeEvent}
      * to all registered listeners.
      *
      * @param series  the series.
      */
     public void remove(TaskSeries series) {
-        if (series == null) {
-            throw new IllegalArgumentException("Null 'series' argument.");
-        }
+        ParamChecks.nullNotPermitted(series, "series");
         if (this.data.contains(series)) {
             series.removeChangeListener(this);
             this.data.remove(series);
@@ -284,14 +291,14 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
     }
 
     /**
-     * Removes a series from the collection and sends 
+     * Removes a series from the collection and sends
      * a {@link org.jfree.data.general.DatasetChangeEvent}
      * to all registered listeners.
      *
      * @param series  the series (zero based index).
      */
     public void remove(int series) {
-        if ((series < 0) || (series > getSeriesCount())) {
+        if ((series < 0) || (series >= getSeriesCount())) {
             throw new IllegalArgumentException(
                 "TaskSeriesCollection.remove(): index outside valid range.");
         }
@@ -305,13 +312,13 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
     }
 
     /**
-     * Removes all the series from the collection and sends 
+     * Removes all the series from the collection and sends
      * a {@link org.jfree.data.general.DatasetChangeEvent}
      * to all registered listeners.
      */
     public void removeAll() {
 
-        // deregister the collection as a change listener to each series in 
+        // deregister the collection as a change listener to each series in
         // the collection.
         Iterator iterator = this.data.iterator();
         while (iterator.hasNext()) {
@@ -333,6 +340,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The item value.
      */
+    @Override
     public Number getValue(Comparable rowKey, Comparable columnKey) {
         return getStartValue(rowKey, columnKey);
     }
@@ -345,6 +353,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The start value.
      */
+    @Override
     public Number getValue(int row, int column) {
         return getStartValue(row, column);
     }
@@ -358,6 +367,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The start value (possibly <code>null</code>).
      */
+    @Override
     public Number getStartValue(Comparable rowKey, Comparable columnKey) {
         Number result = null;
         int row = getRowIndex(rowKey);
@@ -380,6 +390,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The start value.
      */
+    @Override
     public Number getStartValue(int row, int column) {
         Comparable rowKey = getRowKey(row);
         Comparable columnKey = getColumnKey(column);
@@ -395,6 +406,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The end value (possibly <code>null</code>).
      */
+    @Override
     public Number getEndValue(Comparable rowKey, Comparable columnKey) {
         Number result = null;
         int row = getRowIndex(rowKey);
@@ -417,6 +429,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The end value.
      */
+    @Override
     public Number getEndValue(int row, int column) {
         Comparable rowKey = getRowKey(row);
         Comparable columnKey = getColumnKey(column);
@@ -431,6 +444,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The percent complete (possibly <code>null</code>).
      */
+    @Override
     public Number getPercentComplete(int row, int column) {
         Comparable rowKey = getRowKey(row);
         Comparable columnKey = getColumnKey(column);
@@ -445,6 +459,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The percent complete.
      */
+    @Override
     public Number getPercentComplete(Comparable rowKey, Comparable columnKey) {
         Number result = null;
         int row = getRowIndex(rowKey);
@@ -464,6 +479,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The sub-interval count.
      */
+    @Override
     public int getSubIntervalCount(int row, int column) {
         Comparable rowKey = getRowKey(row);
         Comparable columnKey = getColumnKey(column);
@@ -478,6 +494,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The sub-interval count.
      */
+    @Override
     public int getSubIntervalCount(Comparable rowKey, Comparable columnKey) {
         int result = 0;
         int row = getRowIndex(rowKey);
@@ -498,6 +515,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The start value (possibly <code>null</code>).
      */
+    @Override
     public Number getStartValue(int row, int column, int subinterval) {
         Comparable rowKey = getRowKey(row);
         Comparable columnKey = getColumnKey(column);
@@ -513,7 +531,8 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The start value (possibly <code>null</code>).
      */
-    public Number getStartValue(Comparable rowKey, Comparable columnKey, 
+    @Override
+    public Number getStartValue(Comparable rowKey, Comparable columnKey,
                                 int subinterval) {
         Number result = null;
         int row = getRowIndex(rowKey);
@@ -538,6 +557,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The end value (possibly <code>null</code>).
      */
+    @Override
     public Number getEndValue(int row, int column, int subinterval) {
         Comparable rowKey = getRowKey(row);
         Comparable columnKey = getColumnKey(column);
@@ -553,7 +573,8 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The end value (possibly <code>null</code>).
      */
-    public Number getEndValue(Comparable rowKey, Comparable columnKey, 
+    @Override
+    public Number getEndValue(Comparable rowKey, Comparable columnKey,
                               int subinterval) {
         Number result = null;
         int row = getRowIndex(rowKey);
@@ -578,6 +599,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @return The percent complete value (possibly <code>null</code>).
      */
+    @Override
     public Number getPercentComplete(int row, int column, int subinterval) {
         Comparable rowKey = getRowKey(row);
         Comparable columnKey = getColumnKey(column);
@@ -591,9 +613,10 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      * @param columnKey  the column key.
      * @param subinterval  the sub-interval.
      *
-     * @return The precent complete value (possibly <code>null</code>).
+     * @return The percent complete value (possibly <code>null</code>).
      */
-    public Number getPercentComplete(Comparable rowKey, Comparable columnKey, 
+    @Override
+    public Number getPercentComplete(Comparable rowKey, Comparable columnKey,
                                      int subinterval) {
         Number result = null;
         int row = getRowIndex(rowKey);
@@ -613,6 +636,7 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
      *
      * @param event  information about the change.
      */
+    @Override
     public void seriesChanged(SeriesChangeEvent event) {
         refreshKeys();
         fireDatasetChanged();
@@ -639,14 +663,15 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
         }
 
     }
-    
+
     /**
      * Tests this instance for equality with an arbitrary object.
-     * 
+     *
      * @param obj  the object (<code>null</code> permitted).
-     * 
+     *
      * @return A boolean.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
@@ -659,6 +684,22 @@ public class TaskSeriesCollection extends AbstractSeriesDataset
             return false;
         }
         return true;
+    }
+
+    /**
+     * Returns an independent copy of this dataset.
+     *
+     * @return A clone of the dataset.
+     *
+     * @throws CloneNotSupportedException if there is some problem cloning
+     *     the dataset.
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        TaskSeriesCollection clone = (TaskSeriesCollection) super.clone();
+        clone.data = (List) ObjectUtilities.deepClone(this.data);
+        clone.keys = new java.util.ArrayList(this.keys);
+        return clone;
     }
 
 }

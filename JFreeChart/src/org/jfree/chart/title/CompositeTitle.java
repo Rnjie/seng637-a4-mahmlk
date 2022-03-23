@@ -2,36 +2,35 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * -------------------
  * CompositeTitle.java
  * -------------------
- * (C) Copyright 2005, by David Gilbert and Contributors.
+ * (C) Copyright 2005-2013, by David Gilbert and Contributors.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
- * Contributor(s):   -;
- *
- * $Id: CompositeTitle.java,v 1.17 2005/11/16 16:36:22 mungady Exp $
+ * Contributor(s):   Eric Penfold (patch 2006826);
  *
  * Changes
  * -------
@@ -40,208 +39,212 @@
  * 04-Feb-2005 : Implemented MAXIMUM_WIDTH in calculateSize (DG);
  * 20-Apr-2005 : Added new draw() method (DG);
  * 03-May-2005 : Implemented equals() method (DG);
+ * 02-Jul-2008 : Applied patch 2006826 by Eric Penfold, to enable chart
+ *               entities to be generated (DG);
+ * 09-Jul-2008 : Added backgroundPaint field (DG);
+ * 03-Jul-2013 : Use ParamChecks (DG);
  *
  */
 
 package org.jfree.chart.title;
 
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-import org.jfree.chart.block.ArrangeParams;
-import org.jfree.chart.block.ArrangeResult;
 import org.jfree.chart.block.BlockContainer;
 import org.jfree.chart.block.BorderArrangement;
 import org.jfree.chart.block.RectangleConstraint;
+import org.jfree.chart.event.TitleChangeEvent;
+import org.jfree.chart.util.ParamChecks;
+import org.jfree.io.SerialUtilities;
 import org.jfree.ui.Size2D;
+import org.jfree.util.PaintUtilities;
 
 /**
  * A title that contains multiple titles within a {@link BlockContainer}.
  */
 public class CompositeTitle extends Title implements Cloneable, Serializable {
-    
+
     /** For serialization. */
     private static final long serialVersionUID = -6770854036232562290L;
-    
+
+    /**
+     * The background paint.
+     *
+     * @since 1.0.11
+     */
+    private transient Paint backgroundPaint;
+
     /** A container for the individual titles. */
     private BlockContainer container;
-    
+
     /**
      * Creates a new composite title with a default border arrangement.
      */
     public CompositeTitle() {
-        this(new BlockContainer(new BorderArrangement()));   
+        this(new BlockContainer(new BorderArrangement()));
     }
-    
+
     /**
-     * Creates a new title using the specified container. 
-     * 
+     * Creates a new title using the specified container.
+     *
      * @param container  the container (<code>null</code> not permitted).
      */
     public CompositeTitle(BlockContainer container) {
-        if (container == null) {
-            throw new IllegalArgumentException("Null 'container' argument.");
-        }
+        ParamChecks.nullNotPermitted(container, "container");
         this.container = container;
+        this.backgroundPaint = null;
     }
-    
+
+    /**
+     * Returns the background paint.
+     *
+     * @return The paint (possibly <code>null</code>).
+     *
+     * @since 1.0.11
+     */
+    public Paint getBackgroundPaint() {
+        return this.backgroundPaint;
+    }
+
+    /**
+     * Sets the background paint and sends a {@link TitleChangeEvent} to all
+     * registered listeners.  If you set this attribute to <code>null</code>,
+     * no background is painted (which makes the title background transparent).
+     *
+     * @param paint  the background paint (<code>null</code> permitted).
+     *
+     * @since 1.0.11
+     */
+    public void setBackgroundPaint(Paint paint) {
+        this.backgroundPaint = paint;
+        notifyListeners(new TitleChangeEvent(this));
+    }
+
     /**
      * Returns the container holding the titles.
-     * 
+     *
      * @return The title container (never <code>null</code>).
      */
     public BlockContainer getContainer() {
         return this.container;
     }
-    
+
     /**
      * Sets the title container.
-     * 
+     *
      * @param container  the container (<code>null</code> not permitted).
      */
     public void setTitleContainer(BlockContainer container) {
-        if (container == null) {
-            throw new IllegalArgumentException("Null 'container' argument.");
-        }
-        this.container = container;    
+        ParamChecks.nullNotPermitted(container, "container");
+        this.container = container;
     }
-    
+
     /**
-     * Arranges the contents of the block, within the given constraints, and 
+     * Arranges the contents of the block, within the given constraints, and
      * returns the block size.
-     * 
+     *
      * @param g2  the graphics device.
      * @param constraint  the constraint (<code>null</code> not permitted).
-     * @param params  layout parameters (<code>null</code> not permitted).
-     * 
-     * @return The layout result.
+     *
+     * @return The block size (in Java2D units, never <code>null</code>).
      */
-    public ArrangeResult arrange(Graphics2D g2, RectangleConstraint constraint, 
-                                 ArrangeParams params) {
+    @Override
+    public Size2D arrange(Graphics2D g2, RectangleConstraint constraint) {
         RectangleConstraint contentConstraint = toContentConstraint(constraint);
-        ArrangeResult r = this.container.arrange(g2, contentConstraint, params);
-        Size2D contentSize = r.getSize();
-        r.setSize(calculateTotalWidth(contentSize.getWidth()), 
+        Size2D contentSize = this.container.arrange(g2, contentConstraint);
+        return new Size2D(calculateTotalWidth(contentSize.getWidth()),
                 calculateTotalHeight(contentSize.getHeight()));
-        return r;
-    }
-    
-    /**
-     * Arranges the title with a fixed width and height.
-     * 
-     * @param g2  the graphics device.
-     * @param fixedWidth  the fixed (content) width.
-     * @param fixedHeight  the fixed (content) height.
-     * @param params  the layout parameters (<code>null</code> not permitted).
-     * 
-     * @return The layout result.
-     */
-    protected ArrangeResult arrangeFF(Graphics2D g2, double fixedWidth, 
-                               double fixedHeight, ArrangeParams params) {
-        // the overridden arrange() method ensures that this is never called.
-        throw new RuntimeException("Not required.");    
-    }
-    
-    /**
-     * Arranges the block with a fixed width and no height constraint, 
-     * returning the size of the content.
-     * 
-     * @param g2  the graphics device.
-     * @param fixedWidth  the fixed width.
-     * @param params  the layout parameters (<code>null</code> not permitted).
-     * 
-     * @return The layout result.
-     */
-    protected ArrangeResult arrangeFN(Graphics2D g2, double fixedWidth, 
-            ArrangeParams params) {
-        // the overridden arrange() method ensures that this is never called.
-        throw new RuntimeException("Not required.");    
     }
 
     /**
-     * Arranges the block with no width constraint and a fixed height, 
-     * returning the size of the content.
-     * 
-     * @param g2  the graphics device.
-     * @param fixedHeight  the fixed height.
-     * @param params  the layout parameters (<code>null</code> not permitted).
-     * 
-     * @return The layout result.
-     */
-    protected ArrangeResult arrangeNF(Graphics2D g2, double fixedHeight, 
-            ArrangeParams params) {
-        // the overridden arrange() method ensures that this is never called.
-        throw new RuntimeException("Not required.");    
-    }
-
-    /**
-     * Calculates the size of the title content (excludes margin, border and 
-     * padding) if there is no constraint.  This is either the natural size
-     * of the text, or the block size if this has been specified manually.
-     * 
-     * @param g2  the graphics device.
-     * @param params  the layout parameters (<code>null</code> not permitted).
-     * 
-     * @return The layout result.
-     */
-    protected ArrangeResult arrangeNN(Graphics2D g2, ArrangeParams params) {
-        // the overridden arrange() method ensures that this is never called.
-        throw new RuntimeException("Not required.");    
-    }
-
-    /**
-     * Draws the title on a Java 2D graphics device (such as the screen or a 
+     * Draws the title on a Java 2D graphics device (such as the screen or a
      * printer).
      *
      * @param g2  the graphics device.
      * @param area  the area allocated for the title.
      */
+    @Override
     public void draw(Graphics2D g2, Rectangle2D area) {
-        area = (Rectangle2D) area.clone();
-        area = trimMargin(area);
-        drawBorder(g2, area);
-        area = trimBorder(area);
-        area = trimPadding(area);
-        this.container.draw(g2, area);
+        draw(g2, area, null);
     }
-    
+
     /**
      * Draws the block within the specified area.
-     * 
+     *
      * @param g2  the graphics device.
      * @param area  the area.
      * @param params  ignored (<code>null</code> permitted).
-     * 
+     *
      * @return Always <code>null</code>.
      */
+    @Override
     public Object draw(Graphics2D g2, Rectangle2D area, Object params) {
-        draw(g2, area);
-        return null;
+        area = trimMargin(area);
+        drawBorder(g2, area);
+        area = trimBorder(area);
+        if (this.backgroundPaint != null) {
+            g2.setPaint(this.backgroundPaint);
+            g2.fill(area);
+        }
+        area = trimPadding(area);
+        return this.container.draw(g2, area, params);
     }
-    
+
     /**
      * Tests this title for equality with an arbitrary object.
-     * 
+     *
      * @param obj  the object (<code>null</code> permitted).
-     * 
+     *
      * @return A boolean.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
-            return true;   
+            return true;
         }
         if (!(obj instanceof CompositeTitle)) {
-            return false;   
-        }
-        if (!super.equals(obj)) {
-            return false;   
+            return false;
         }
         CompositeTitle that = (CompositeTitle) obj;
         if (!this.container.equals(that.container)) {
-            return false;   
+            return false;
         }
-        return true;
+        if (!PaintUtilities.equal(this.backgroundPaint, that.backgroundPaint)) {
+            return false;
+        }
+        return super.equals(obj);
+    }
+
+    /**
+     * Provides serialization support.
+     *
+     * @param stream  the output stream.
+     *
+     * @throws IOException  if there is an I/O error.
+     */
+    private void writeObject(ObjectOutputStream stream) throws IOException {
+        stream.defaultWriteObject();
+        SerialUtilities.writePaint(this.backgroundPaint, stream);
+    }
+
+    /**
+     * Provides serialization support.
+     *
+     * @param stream  the input stream.
+     *
+     * @throws IOException  if there is an I/O error.
+     * @throws ClassNotFoundException  if there is a classpath problem.
+     */
+    private void readObject(ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
+        stream.defaultReadObject();
+        this.backgroundPaint = SerialUtilities.readPaint(stream);
     }
 
 }

@@ -2,61 +2,58 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * ---------------------------
  * NormalizedMatrixSeries.java
  * ---------------------------
- * (C) Copyright 2003-2005, by Barak Naveh and Contributors.
+ * (C) Copyright 2003-2008, by Barak Naveh and Contributors.
  *
- * Original Author:  Barak Naveh;;
+ * Original Author:  Barak Naveh;
  * Contributor(s):   David Gilbert (for Object Refinery Limited);
- *
- * $Id: NormalizedMatrixSeries.java,v 1.3 2005/03/15 12:42:44 mungady Exp $
  *
  * Changes
  * -------
  * 10-Jul-2003 : Version 1 contributed by Barak Naveh (DG);
+ * 02-Feb-2007 : Removed author tags all over JFreeChart sources (DG);
  *
  */
- 
-package org.jfree.data.xy;
 
+package org.jfree.data.xy;
 
 /**
  * Represents a dense normalized matrix M[i,j] where each Mij item of the
  * matrix has a value (default is 0). When a matrix item is observed using
  * <code>getItem</code> method, it is normalized, that is, divided by the
  * total sum of all items. It can be also be scaled by setting a scale factor.
- *
- * @author Barak Naveh
  */
 public class NormalizedMatrixSeries extends MatrixSeries {
-    
+
     /** The default scale factor. */
     public static final double DEFAULT_SCALE_FACTOR = 1.0;
 
     /**
-     * A factor that multiplies each item in this series when observed using 
+     * A factor that multiplies each item in this series when observed using
      * getItem method.
      */
     private double m_scaleFactor = DEFAULT_SCALE_FACTOR;
@@ -85,13 +82,14 @@ public class NormalizedMatrixSeries extends MatrixSeries {
 
     /**
      * Returns an item.
-     * 
+     *
      * @param itemIndex  the index.
-     * 
+     *
      * @return The value.
-     * 
+     *
      * @see org.jfree.data.xy.MatrixSeries#getItem(int)
      */
+    @Override
     public Number getItem(int itemIndex) {
         int i = getItemRow(itemIndex);
         int j = getItemColumn(itemIndex);
@@ -112,6 +110,7 @@ public class NormalizedMatrixSeries extends MatrixSeries {
      */
     public void setScaleFactor(double factor) {
         this.m_scaleFactor = factor;
+        // FIXME: this should generate a series change event
     }
 
 
@@ -127,8 +126,15 @@ public class NormalizedMatrixSeries extends MatrixSeries {
 
 
     /**
-     * @see org.jfree.data.xy.MatrixSeries#update(int, int, double)
+     * Updates the value of the specified item in this matrix series.
+     *
+     * @param i the row of the item.
+     * @param j the column of the item.
+     * @param mij the new value for the item.
+     *
+     * @see #get(int, int)
      */
+    @Override
     public void update(int i, int j, double mij) {
         this.m_totalSum -= get(i, j);
         this.m_totalSum += mij;
@@ -139,6 +145,7 @@ public class NormalizedMatrixSeries extends MatrixSeries {
     /**
      * @see org.jfree.data.xy.MatrixSeries#zeroAll()
      */
+    @Override
     public void zeroAll() {
         this.m_totalSum = 0;
         super.zeroAll();

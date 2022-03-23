@@ -2,36 +2,35 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * ---------------------
  * ChartChangeEvent.java
  * ---------------------
- * (C) Copyright 2000-2005, by Object Refinery Limited.
+ * (C) Copyright 2000-2008, by Object Refinery Limited.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
  * Contributor(s):   -;
- *
- * $Id: ChartChangeEvent.java,v 1.3 2005/02/18 17:30:47 mungady Exp $
  *
  * Changes (from 24-Aug-2001)
  * --------------------------
@@ -63,7 +62,7 @@ public class ChartChangeEvent extends EventObject {
     /**
      * Creates a new chart change event.
      *
-     * @param source  the source of the event (could be the chart, a title, 
+     * @param source  the source of the event (could be the chart, a title,
      *                an axis etc.)
      */
     public ChartChangeEvent(Object source) {
@@ -73,7 +72,7 @@ public class ChartChangeEvent extends EventObject {
     /**
      * Creates a new chart change event.
      *
-     * @param source  the source of the event (could be the chart, a title, an 
+     * @param source  the source of the event (could be the chart, a title, an
      *                axis etc.)
      * @param chart  the chart that generated the event.
      */
@@ -89,7 +88,7 @@ public class ChartChangeEvent extends EventObject {
      * @param chart  the chart that generated the event.
      * @param type  the type of event.
      */
-    public ChartChangeEvent(Object source, JFreeChart chart, 
+    public ChartChangeEvent(Object source, JFreeChart chart,
                             ChartChangeEventType type) {
         super(source);
         this.chart = chart;

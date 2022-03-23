@@ -2,46 +2,49 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * -----------------
  * ChartDeleter.java
  * -----------------
-  * (C) Copyright 2002-2004, by Richard Atkinson and Contributors.
+  * (C) Copyright 2002-2013, by Richard Atkinson and Contributors.
  *
  * Original Author:  Richard Atkinson;
  * Contributor(s):   -;
- *
- * $Id: ChartDeleter.java,v 1.2 2005/03/09 14:07:16 mungady Exp $
  *
  * Changes
  * -------
  * 19-Aug-2002 : Version 1;
  * 17-Oct-2002 : Fixed errors reported by Checkstyle (DG);
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 02-Feb-2007 : Removed author tags all over JFreeChart sources (DG);
  *
  */
+
 package org.jfree.chart.servlet;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -51,10 +54,8 @@ import javax.servlet.http.HttpSessionBindingListener;
 /**
  * Used for deleting charts from the temporary directory when the users session
  * expires.
- *
- * @author Richard Atkinson
  */
-public class ChartDeleter implements HttpSessionBindingListener {
+public class ChartDeleter implements HttpSessionBindingListener, Serializable {
 
     /** The chart names. */
     private List chartNames = new java.util.ArrayList();
@@ -69,7 +70,7 @@ public class ChartDeleter implements HttpSessionBindingListener {
     /**
      * Add a chart to be deleted when the session expires
      *
-     * @param filename  the name of the chart in the temporary directory to be 
+     * @param filename  the name of the chart in the temporary directory to be
      *                  deleted.
      */
     public void addChart(String filename) {
@@ -81,7 +82,7 @@ public class ChartDeleter implements HttpSessionBindingListener {
      *
      * @param filename  the name of the chart in the temporary directory.
      *
-     * @return A boolean value indicating whether the chart is present in the 
+     * @return A boolean value indicating whether the chart is present in the
      *         list.
      */
     public boolean isChartAvailable(String filename) {
@@ -93,8 +94,9 @@ public class ChartDeleter implements HttpSessionBindingListener {
      *
      * @param event  the session bind event.
      */
+    @Override
     public void valueBound(HttpSessionBindingEvent event) {
-        return;
+        // nothing to do
     }
 
     /**
@@ -104,8 +106,8 @@ public class ChartDeleter implements HttpSessionBindingListener {
      *
      * @param event  the session unbind event.
      */
+    @Override
     public void valueUnbound(HttpSessionBindingEvent event) {
-
         Iterator iter = this.chartNames.listIterator();
         while (iter.hasNext()) {
             String filename = (String) iter.next();
@@ -116,8 +118,6 @@ public class ChartDeleter implements HttpSessionBindingListener {
                 file.delete();
             }
         }
-        return;
-
     }
 
 }

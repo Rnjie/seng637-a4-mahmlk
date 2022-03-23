@@ -1,0 +1,58 @@
+{
+  "id": "8e971da7-a564-4f31-bc99-6735b6832586",
+  "version": "2.0",
+  "name": "Indigo_GUI_test",
+  "url": "https://www.chapters.indigo.ca",
+  "tests": [{
+    "id": "6b2c654e-6997-4e36-88db-4f58eb7d41b9",
+    "name": "cart_empty_message",
+    "commands": [{
+      "id": "e21489a0-1a0e-4723-bd9a-17511cc4a0dc",
+      "comment": "",
+      "command": "open",
+      "target": "/en-ca/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "1a0d65c3-6956-477e-b2df-c503ac9fb75d",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1676x1393",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "e70271e6-07c8-4f97-b9ef-60fbf7bdc55a",
+      "comment": "",
+      "command": "click",
+      "target": "css=.common-shopping-cart",
+      "targets": [
+        ["css=.common-icon-count", "css:finder"],
+        ["xpath=//div[@id='react_9waZ3nx8gk2aRFWy1Hl75Q']/div/div/div/nav/div[2]/div[2]/nav/div[3]/a/div/div/div", "xpath:idRelative"],
+        ["xpath=//a/div/div/div", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "b23a89b1-fc86-4114-a051-588136a79a8f",
+      "comment": "",
+      "command": "assertText",
+      "target": "css=.cart-page-default__title",
+      "targets": [
+        ["css=.cart-page-default__title", "css:finder"],
+        ["xpath=//div[@id='cartpageInstanceId34']/div/section/section/h2", "xpath:idRelative"],
+        ["xpath=//h2", "xpath:position"],
+        ["xpath=//h2[contains(.,'Your Shopping Cart is Empty')]", "xpath:innerText"]
+      ],
+      "value": "Your Shopping Cart is Empty"
+    }]
+  }],
+  "suites": [{
+    "id": "acf90ec4-15b6-4d52-95f3-75a891dc42aa",
+    "name": "Default Suite",
+    "persistSession": false,
+    "parallel": false,
+    "timeout": 300,
+    "tests": []
+  }],
+  "urls": ["https://www.chapters.indigo.ca/"],
+  "plugins": []
+}

@@ -2,36 +2,35 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * ------------------------
  * AreaRendererEndType.java
  * ------------------------
- * (C) Copyright 2004, 2005, by Object Refinery Limited.
+ * (C) Copyright 2004-2008, by Object Refinery Limited.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
  * Contributor(s):   -;
- *
- * $Id: AreaRendererEndType.java,v 1.4 2005/05/19 14:01:49 mungady Exp $
  *
  * Changes:
  * --------
@@ -51,27 +50,24 @@ public final class AreaRendererEndType implements Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = -1774146392916359839L;
-    
-    /** 
-     * The area tapers from the first or last value down to zero. 
+
+    /**
+     * The area tapers from the first or last value down to zero.
      */
     public static final AreaRendererEndType TAPER = new AreaRendererEndType(
-        "AreaRendererEndType.TAPER"
-    );
+            "AreaRendererEndType.TAPER");
 
-    /** 
-     * The area is truncated at the first or last value. 
+    /**
+     * The area is truncated at the first or last value.
      */
     public static final AreaRendererEndType TRUNCATE = new AreaRendererEndType(
-        "AreaRendererEndType.TRUNCATE"
-    );
-    
-    /** 
-     * The area is levelled at the first or last value. 
+            "AreaRendererEndType.TRUNCATE");
+
+    /**
+     * The area is levelled at the first or last value.
      */
     public static final AreaRendererEndType LEVEL = new AreaRendererEndType(
-        "AreaRendererEndType.LEVEL"
-    );
+            "AreaRendererEndType.LEVEL");
 
     /** The name. */
     private String name;
@@ -90,41 +86,39 @@ public final class AreaRendererEndType implements Serializable {
      *
      * @return The string.
      */
+    @Override
     public String toString() {
         return this.name;
     }
 
     /**
-     * Returns <code>true</code> if this object is equal to the specified 
+     * Returns <code>true</code> if this object is equal to the specified
      * object, and <code>false</code> otherwise.
      *
-     * @param o  the other object.
+     * @param obj  the object (<code>null</code> permitted).
      *
      * @return A boolean.
      */
-    public boolean equals(Object o) {
-
-        if (this == o) {
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
-        if (!(o instanceof AreaRendererEndType)) {
+        if (!(obj instanceof AreaRendererEndType)) {
             return false;
         }
-
-        AreaRendererEndType t = (AreaRendererEndType) o;
-        if (!this.name.equals(t.toString())) {
+        AreaRendererEndType that = (AreaRendererEndType) obj;
+        if (!this.name.equals(that.toString())) {
             return false;
         }
-
         return true;
-
     }
-    
+
     /**
      * Ensures that serialization returns the unique instances.
-     * 
+     *
      * @return The object.
-     * 
+     *
      * @throws ObjectStreamException if there is a problem.
      */
     private Object readResolve() throws ObjectStreamException {

@@ -2,36 +2,35 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * -----------------------
  * TimeSeriesDataItem.java
  * -----------------------
- * (C) Copyright 2001-2005, by Object Refinery Limited.
+ * (C) Copyright 2001-2013, by Object Refinery Limited.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
  * Contributor(s):   -;
- *
- * $Id: TimeSeriesDataItem.java,v 1.5 2005/05/19 10:35:27 mungady Exp $
  *
  * Changes
  * -------
@@ -42,11 +41,17 @@
  * 07-Oct-2002 : Fixed errors reported by Checkstyle (DG);
  * 13-Mar-2003 : Renamed TimeSeriesDataPair --> TimeSeriesDataItem, moved to
  *               com.jrefinery.data.time package, implemented Serializable (DG)
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 09-Jun-2009 : Tidied up equals() (DG);
+ * 03-Jul-2013 : Use ParamChecks (DG);
+ * 
  */
 
 package org.jfree.data.time;
 
 import java.io.Serializable;
+import org.jfree.chart.util.ParamChecks;
+import org.jfree.util.ObjectUtilities;
 
 /**
  * Represents one data item in a time series.
@@ -69,7 +74,7 @@ import java.io.Serializable;
  * often be sorted within a list, and allowing the time period to be changed
  * could destroy the sort order.
  * <P>
- * Implements the <code>Comparable</code> interface so that standard Java 
+ * Implements the <code>Comparable</code> interface so that standard Java
  * sorting can be used to keep the data items in order.
  *
  */
@@ -77,7 +82,7 @@ public class TimeSeriesDataItem implements Cloneable, Comparable, Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = -2235346966016401302L;
-    
+
     /** The time period. */
     private RegularTimePeriod period;
 
@@ -91,9 +96,7 @@ public class TimeSeriesDataItem implements Cloneable, Comparable, Serializable {
      * @param value  the value (<code>null</code> permitted).
      */
     public TimeSeriesDataItem(RegularTimePeriod period, Number value) {
-        if (period == null) {
-            throw new IllegalArgumentException("Null 'period' argument.");   
-        }
+        ParamChecks.nullNotPermitted(period, "period");
         this.period = period;
         this.value = value;
     }
@@ -121,6 +124,8 @@ public class TimeSeriesDataItem implements Cloneable, Comparable, Serializable {
      * Returns the value.
      *
      * @return The value (<code>null</code> possible).
+     *
+     * @see #setValue(java.lang.Number)
      */
     public Number getValue() {
         return this.value;
@@ -130,6 +135,8 @@ public class TimeSeriesDataItem implements Cloneable, Comparable, Serializable {
      * Sets the value for this data item.
      *
      * @param value  the value (<code>null</code> permitted).
+     *
+     * @see #getValue()
      */
     public void setValue(Number value) {
         this.value = value;
@@ -138,44 +145,34 @@ public class TimeSeriesDataItem implements Cloneable, Comparable, Serializable {
     /**
      * Tests this object for equality with an arbitrary object.
      *
-     * @param o  the other object.
+     * @param obj  the other object (<code>null</code> permitted).
      *
      * @return A boolean.
      */
-    public boolean equals(Object o) {
-        if (this == o) {
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
-        if (!(o instanceof TimeSeriesDataItem)) {
+        if (!(obj instanceof TimeSeriesDataItem)) {
             return false;
         }
-        TimeSeriesDataItem timeSeriesDataItem = (TimeSeriesDataItem) o;
-        if (this.period != null) {
-            if (!this.period.equals(timeSeriesDataItem.period)) {
-                return false;
-            }
-        }
-        else if (timeSeriesDataItem.period != null) {
-           return false;
-        }
-        
-        if (this.value != null) {
-            if (!this.value.equals(timeSeriesDataItem.value)) {
-                return false;
-            }
-        }
-        else if (timeSeriesDataItem.value != null) {
+        TimeSeriesDataItem that = (TimeSeriesDataItem) obj;
+        if (!ObjectUtilities.equal(this.period, that.period)) {
             return false;
         }
-
+        if (!ObjectUtilities.equal(this.value, that.value)) {
+            return false;
+        }
         return true;
     }
 
     /**
      * Returns a hash code.
-     * 
+     *
      * @return A hash code.
      */
+    @Override
     public int hashCode() {
         int result;
         result = (this.period != null ? this.period.hashCode() : 0);
@@ -192,9 +189,10 @@ public class TimeSeriesDataItem implements Cloneable, Comparable, Serializable {
      *
      * @param o1  The object being compared to.
      *
-     * @return An integer indicating the order of the data item object 
+     * @return An integer indicating the order of the data item object
      *         relative to another object.
      */
+    @Override
     public int compareTo(Object o1) {
 
         int result;
@@ -218,11 +216,12 @@ public class TimeSeriesDataItem implements Cloneable, Comparable, Serializable {
     }
 
     /**
-     * Clones the data item.  Note: there is no need to clone the period or 
+     * Clones the data item.  Note: there is no need to clone the period or
      * value since they are immutable classes.
      *
      * @return A clone of the data item.
      */
+    @Override
     public Object clone() {
         Object clone = null;
         try {

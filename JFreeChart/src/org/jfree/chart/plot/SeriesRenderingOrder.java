@@ -2,7 +2,7 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
@@ -16,24 +16,26 @@
  * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this library; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc.
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * --------------------------
  * SeriesRenderingOrder.java
  * --------------------------
- * (C) Copyright 2005, by Object Refinery Limited.
+ * (C) Copyright 2005-2008, by Object Refinery Limited.
  *
  * Original Author:  Eric Thomas (www.isti.com);
- * Contributor(s):   -;
+ * Contributor(s):   David Gilbert (for Object Refinery Limited);
  *
  * Changes:
  * --------
  * 21-Apr-2005 : Version 1 contributed by Eric Thomas (ET);
+ * 21-Nov-2007 : Implemented hashCode() (DG);
  *
  */
 
@@ -50,20 +52,20 @@ public final class SeriesRenderingOrder implements Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = 209336477448807735L;
-    
+
     /**
      * Render series in the order 0, 1, 2, ..., N-1, where N is the number
      * of series.
      */
     public static final SeriesRenderingOrder FORWARD
-        = new SeriesRenderingOrder("SeriesRenderingOrder.FORWARD");
+            = new SeriesRenderingOrder("SeriesRenderingOrder.FORWARD");
 
     /**
      * Render series in the order N-1, N-2, ..., 2, 1, 0, where N is the
      * number of series.
      */
     public static final SeriesRenderingOrder REVERSE
-        = new SeriesRenderingOrder("SeriesRenderingOrder.REVERSE");
+            = new SeriesRenderingOrder("SeriesRenderingOrder.REVERSE");
 
     /** The name. */
     private String name;
@@ -82,6 +84,7 @@ public final class SeriesRenderingOrder implements Serializable {
      *
      * @return The string (never <code>null</code>).
      */
+    @Override
     public String toString() {
         return this.name;
     }
@@ -90,26 +93,33 @@ public final class SeriesRenderingOrder implements Serializable {
      * Returns <code>true</code> if this object is equal to the specified
      * object, and <code>false</code> otherwise.
      *
-     * @param obj  the other object.
+     * @param obj  the object (<code>null</code> permitted).
      *
      * @return A boolean.
      */
+    @Override
     public boolean equals(Object obj) {
-
         if (this == obj) {
             return true;
         }
         if (!(obj instanceof SeriesRenderingOrder)) {
             return false;
         }
-
         SeriesRenderingOrder order = (SeriesRenderingOrder) obj;
         if (!this.name.equals(order.toString())) {
             return false;
         }
-
         return true;
+    }
 
+    /**
+     * Returns a hash code for this instance.
+     *
+     * @return A hash code.
+     */
+    @Override
+    public int hashCode() {
+        return this.name.hashCode();
     }
 
     /**

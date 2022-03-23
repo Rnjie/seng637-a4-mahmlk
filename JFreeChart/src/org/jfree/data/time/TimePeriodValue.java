@@ -2,46 +2,49 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * --------------------
  * TimePeriodValue.java
  * --------------------
- * (C) Copyright 2003-2005, by Object Refinery Limited.
+ * (C) Copyright 2003-2013, by Object Refinery Limited.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
  * Contributor(s):   -;
  *
- * $Id: TimePeriodValue.java,v 1.4 2005/05/19 10:35:27 mungady Exp $
- *
  * Changes
  * -------
  * 22-Apr-2003 : Version 1 (DG);
+ * 03-Oct-2006 : Added null argument check to constructor (DG);
+ * 07-Apr-2008 : Added a toString() override for debugging (DG);
+ * 02-Jul-2013 : Use ParamChecks (DG);
  *
  */
 
 package org.jfree.data.time;
 
 import java.io.Serializable;
+import org.jfree.chart.util.ParamChecks;
 
 /**
  * Represents a time period and an associated value.
@@ -50,7 +53,7 @@ public class TimePeriodValue implements Cloneable, Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = 3390443360845711275L;
-    
+
     /** The time period. */
     private TimePeriod period;
 
@@ -60,19 +63,26 @@ public class TimePeriodValue implements Cloneable, Serializable {
     /**
      * Constructs a new data item.
      *
-     * @param period  the time period.
+     * @param period  the time period (<code>null</code> not permitted).
      * @param value  the value associated with the time period.
+     *
+     * @throws IllegalArgumentException if <code>period</code> is
+     *     <code>null</code>.
      */
     public TimePeriodValue(TimePeriod period, Number value) {
+        ParamChecks.nullNotPermitted(period, "period");
         this.period = period;
         this.value = value;
     }
 
     /**
-     * Constructs a new data pair.
+     * Constructs a new data item.
      *
-     * @param period  the time period.
+     * @param period  the time period (<code>null</code> not permitted).
      * @param value  the value associated with the time period.
+     *
+     * @throws IllegalArgumentException if <code>period</code> is
+     *     <code>null</code>.
      */
     public TimePeriodValue(TimePeriod period, double value) {
         this(period, new Double(value));
@@ -81,7 +91,7 @@ public class TimePeriodValue implements Cloneable, Serializable {
     /**
      * Returns the time period.
      *
-     * @return The time period.
+     * @return The time period (never <code>null</code>).
      */
     public TimePeriod getPeriod() {
         return this.period;
@@ -91,6 +101,8 @@ public class TimePeriodValue implements Cloneable, Serializable {
      * Returns the value.
      *
      * @return The value (possibly <code>null</code>).
+     *
+     * @see #setValue(Number)
      */
     public Number getValue() {
         return this.value;
@@ -100,6 +112,8 @@ public class TimePeriodValue implements Cloneable, Serializable {
      * Sets the value for this data item.
      *
      * @param value  the new value (<code>null</code> permitted).
+     *
+     * @see #getValue()
      */
     public void setValue(Number value) {
         this.value = value;
@@ -112,6 +126,7 @@ public class TimePeriodValue implements Cloneable, Serializable {
      *
      * @return A boolean.
      */
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -122,11 +137,11 @@ public class TimePeriodValue implements Cloneable, Serializable {
 
         TimePeriodValue timePeriodValue = (TimePeriodValue) obj;
 
-        if (this.period != null ? !this.period.equals(timePeriodValue.period) 
+        if (this.period != null ? !this.period.equals(timePeriodValue.period)
                 : timePeriodValue.period != null) {
             return false;
         }
-        if (this.value != null ? !this.value.equals(timePeriodValue.value) 
+        if (this.value != null ? !this.value.equals(timePeriodValue.value)
                 : timePeriodValue.value != null) {
             return false;
         }
@@ -139,6 +154,7 @@ public class TimePeriodValue implements Cloneable, Serializable {
      *
      * @return The hashcode
      */
+    @Override
     public int hashCode() {
         int result;
         result = (this.period != null ? this.period.hashCode() : 0);
@@ -149,21 +165,32 @@ public class TimePeriodValue implements Cloneable, Serializable {
     /**
      * Clones the object.
      * <P>
-     * Note: no need to clone the period or value since they are immutable 
+     * Note: no need to clone the period or value since they are immutable
      * classes.
      *
      * @return A clone.
      */
+    @Override
     public Object clone() {
         Object clone = null;
         try {
             clone = super.clone();
         }
         catch (CloneNotSupportedException e) { // won't get here...
-            System.err.println("Operation not supported.");
+            throw new RuntimeException(e);
         }
         return clone;
+    }
 
+    /**
+     * Returns a string representing this instance, primarily for use in
+     * debugging.
+     *
+     * @return A string.
+     */
+    @Override
+    public String toString() {
+        return "TimePeriodValue[" + getPeriod() + "," + getValue() + "]";
     }
 
 }

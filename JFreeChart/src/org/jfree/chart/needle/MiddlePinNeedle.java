@@ -2,37 +2,36 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
- * --------------
- * PinNeedle.java
- * --------------
- * (C) Copyright 2002-2005, by the Australian Antarctic Division and 
+ * --------------------
+ * MiddlePinNeedle.java
+ * --------------------
+ * (C) Copyright 2002-2008, by the Australian Antarctic Division and
  *                          Contributors.
  *
  * Original Author:  Bryan Scott (for the Australian Antarctic Division);
  * Contributor(s):   David Gilbert (for Object Refinery Limited);
- *
- * $Id: MiddlePinNeedle.java,v 1.5 2005/06/17 09:21:45 mungady Exp $
  *
  * Changes:
  * --------
@@ -40,7 +39,7 @@
  * 27-Mar-2003 : Implemented Serializable (DG);
  * 09-Sep-2003 : Added equals() method (DG);
  * 08-Jun-2005 : Implemented Cloneable (DG);
- * 
+ * 22-Nov-2007 : Implemented hashCode() (DG);
  *
  */
 
@@ -56,15 +55,13 @@ import java.io.Serializable;
 
 /**
  * A needle that is drawn as a pin shape.
- *
- * @author Bryan Scott
  */
-public class MiddlePinNeedle extends MeterNeedle 
+public class MiddlePinNeedle extends MeterNeedle
                              implements Cloneable, Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = 6237073996403125310L;
-    
+
     /**
      * Draws the needle.
      *
@@ -73,7 +70,8 @@ public class MiddlePinNeedle extends MeterNeedle
      * @param rotate  the rotation point.
      * @param angle  the angle.
      */
-    protected void drawNeedle(Graphics2D g2, Rectangle2D plotArea, 
+    @Override
+    protected void drawNeedle(Graphics2D g2, Rectangle2D plotArea,
                               Point2D rotate, double angle) {
 
         Area shape;
@@ -119,6 +117,7 @@ public class MiddlePinNeedle extends MeterNeedle
      *
      * @return A boolean.
      */
+    @Override
     public boolean equals(Object object) {
         if (object == null) {
             return false;
@@ -131,14 +130,28 @@ public class MiddlePinNeedle extends MeterNeedle
         }
         return false;
     }
-    
+
+    /**
+     * Returns a hash code for this instance.
+     *
+     * @return A hash code.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
     /**
      * Returns a clone of this needle.
-     * 
+     *
      * @return A clone.
+     *
+     * @throws CloneNotSupportedException if the <code>MiddlePinNeedle</code>
+     *     cannot be cloned (in theory, this should not happen).
      */
+    @Override
     public Object clone() throws CloneNotSupportedException {
-        return super.clone();   
+        return super.clone();
     }
 
 }

@@ -2,43 +2,42 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * --------------------
  * FlowArrangement.java
  * --------------------
- * (C) Copyright 2004, 2005, by Object Refinery Limited.
+ * (C) Copyright 2004-2008, by Object Refinery Limited.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
  * Contributor(s):   -;
- *
- * $Id: FlowArrangement.java,v 1.17 2005/11/16 17:06:54 mungady Exp $
  *
  * Changes:
  * --------
  * 22-Oct-2004 : Version 1 (DG);
  * 04-Feb-2005 : Implemented equals() and made serializable (DG);
  * 08-Feb-2005 : Updated for changes in RectangleConstraint (DG);
- * 
+ *
  */
 
 package org.jfree.chart.block;
@@ -60,138 +59,134 @@ public class FlowArrangement implements Arrangement, Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = 4543632485478613800L;
-    
+
     /** The horizontal alignment of blocks. */
     private HorizontalAlignment horizontalAlignment;
-    
+
     /** The vertical alignment of blocks within each row. */
     private VerticalAlignment verticalAlignment;
-    
+
     /** The horizontal gap between items within rows. */
     private double horizontalGap;
-    
+
     /** The vertical gap between rows. */
     private double verticalGap;
-    
+
     /**
      * Creates a new instance.
      */
-    public FlowArrangement() {   
+    public FlowArrangement() {
         this(HorizontalAlignment.CENTER, VerticalAlignment.CENTER, 2.0, 2.0);
     }
-     
+
     /**
      * Creates a new instance.
-     * 
+     *
      * @param hAlign  the horizontal alignment (currently ignored).
      * @param vAlign  the vertical alignment (currently ignored).
      * @param hGap  the horizontal gap.
      * @param vGap  the vertical gap.
      */
     public FlowArrangement(HorizontalAlignment hAlign, VerticalAlignment vAlign,
-                           double hGap, double vGap) {   
+                           double hGap, double vGap) {
         this.horizontalAlignment = hAlign;
         this.verticalAlignment = vAlign;
         this.horizontalGap = hGap;
         this.verticalGap = vGap;
     }
-    
+
     /**
-     * Adds a block to be managed by this instance.  This method is usually 
-     * called by the {@link BlockContainer}, you shouldn't need to call it 
+     * Adds a block to be managed by this instance.  This method is usually
+     * called by the {@link BlockContainer}, you shouldn't need to call it
      * directly.
-     * 
+     *
      * @param block  the block.
      * @param key  a key that controls the position of the block.
      */
+    @Override
     public void add(Block block, Object key) {
-        // since the flow layout is relatively straightforward, 
+        // since the flow layout is relatively straightforward,
         // no information needs to be recorded here
     }
-    
+
     /**
-     * Calculates and sets the bounds of all the items in the specified 
+     * Calculates and sets the bounds of all the items in the specified
      * container, subject to the given constraint.  The <code>Graphics2D</code>
-     * can be used by some items (particularly items containing text) to 
+     * can be used by some items (particularly items containing text) to
      * calculate sizing parameters.
-     * 
+     *
      * @param container  the container whose items are being arranged.
      * @param constraint  the size constraint.
      * @param g2  the graphics device.
-     * @param params  the layout parameters (<code>null</code> not permitted).
-     * 
-     * @return The size of the container's content.
+     *
+     * @return The size of the container after arrangement of the contents.
      */
-    public ArrangeResult arrange(BlockContainer container, Graphics2D g2,
-                                 RectangleConstraint constraint, 
-                                 ArrangeParams params) {
-        
-        // here the incoming constraint is the *content* constraint for the
-        // container
+    @Override
+    public Size2D arrange(BlockContainer container, Graphics2D g2,
+                          RectangleConstraint constraint) {
+
         LengthConstraintType w = constraint.getWidthConstraintType();
         LengthConstraintType h = constraint.getHeightConstraintType();
         if (w == LengthConstraintType.NONE) {
             if (h == LengthConstraintType.NONE) {
-                return arrangeNN(container, g2, params);  
+                return arrangeNN(container, g2);
             }
             else if (h == LengthConstraintType.FIXED) {
-                return arrangeNF(container, g2, constraint, params);  
+                return arrangeNF(container, g2, constraint);
             }
             else if (h == LengthConstraintType.RANGE) {
-                throw new RuntimeException("Not implemented.");  
+                throw new RuntimeException("Not implemented.");
             }
         }
         else if (w == LengthConstraintType.FIXED) {
             if (h == LengthConstraintType.NONE) {
-                return arrangeFN(container, g2, constraint, params);  
+                return arrangeFN(container, g2, constraint);
             }
             else if (h == LengthConstraintType.FIXED) {
-                return arrangeFF(container, g2, constraint, params);  
+                return arrangeFF(container, g2, constraint);
             }
             else if (h == LengthConstraintType.RANGE) {
-                return arrangeFR(container, g2, constraint, params);  
+                return arrangeFR(container, g2, constraint);
             }
         }
         else if (w == LengthConstraintType.RANGE) {
             if (h == LengthConstraintType.NONE) {
-                return arrangeRN(container, g2, constraint, params);  
+                return arrangeRN(container, g2, constraint);
             }
             else if (h == LengthConstraintType.FIXED) {
-                return arrangeRF(container, g2, constraint, params);  
+                return arrangeRF(container, g2, constraint);
             }
             else if (h == LengthConstraintType.RANGE) {
-                return arrangeRR(container, g2, constraint, params);   
+                return arrangeRR(container, g2, constraint);
             }
         }
         throw new RuntimeException("Unrecognised constraint type.");
-        
+
     }
 
     /**
-     * Arranges the blocks in the container with a fixed width and no height 
+     * Arranges the blocks in the container with a fixed width and no height
      * constraint.
-     * 
+     *
      * @param container  the container.
-     * @param g2  the graphics device.
      * @param constraint  the constraint.
-     * @param params  optional parameters.
-     * 
+     * @param g2  the graphics device.
+     *
      * @return The size.
      */
-    protected ArrangeResult arrangeFN(BlockContainer container, Graphics2D g2,
-                                      RectangleConstraint constraint, 
-                                      ArrangeParams params) {
-        
+    protected Size2D arrangeFN(BlockContainer container, Graphics2D g2,
+                               RectangleConstraint constraint) {
+
         List blocks = container.getBlocks();
         double width = constraint.getWidth();
-        
+
         double x = 0.0;
         double y = 0.0;
         double maxHeight = 0.0;
         List itemsInRow = new ArrayList();
         for (int i = 0; i < blocks.size(); i++) {
             Block block = (Block) blocks.get(i);
-            Size2D size = block.arrange(g2, params);
+            Size2D size = block.arrange(g2, RectangleConstraint.NONE);
             if (x + size.width <= width) {
                 itemsInRow.add(block);
                 block.setBounds(
@@ -227,157 +222,139 @@ public class FlowArrangement implements Arrangement, Serializable {
                 }
             }
         }
-        return new ArrangeResult(new Size2D(constraint.getWidth(), 
-                y + maxHeight), null);  
+        return new Size2D(constraint.getWidth(), y + maxHeight);
     }
-    
+
     /**
      * Arranges the blocks in the container with a fixed width and a range
      * constraint on the height.
-     * 
+     *
      * @param container  the container.
-     * @param g2  the graphics device.
      * @param constraint  the constraint.
-     * @param params  optional parameters.
-     * 
+     * @param g2  the graphics device.
+     *
      * @return The size following the arrangement.
      */
-    protected ArrangeResult arrangeFR(BlockContainer container, Graphics2D g2,
-                                      RectangleConstraint constraint, 
-                                      ArrangeParams params) {
+    protected Size2D arrangeFR(BlockContainer container, Graphics2D g2,
+                               RectangleConstraint constraint) {
 
-        ArrangeResult r = arrangeFN(container, g2, constraint, params);
-        Size2D s = r.getSize();
+        Size2D s = arrangeFN(container, g2, constraint);
         if (constraint.getHeightRange().contains(s.height)) {
-            return r;   
+            return s;
         }
         else {
             RectangleConstraint c = constraint.toFixedHeight(
                 constraint.getHeightRange().constrain(s.getHeight())
             );
-            return arrangeFF(container, g2, c, params);
+            return arrangeFF(container, g2, c);
         }
     }
 
     /**
      * Arranges the blocks in the container with the overall height and width
      * specified as fixed constraints.
-     * 
+     *
      * @param container  the container.
-     * @param g2  the graphics device.
      * @param constraint  the constraint.
-     * @param params  optional parameters.
-     * 
+     * @param g2  the graphics device.
+     *
      * @return The size following the arrangement.
      */
-    protected ArrangeResult arrangeFF(BlockContainer container, Graphics2D g2,
-                                      RectangleConstraint constraint, 
-                                      ArrangeParams params) {
+    protected Size2D arrangeFF(BlockContainer container, Graphics2D g2,
+                               RectangleConstraint constraint) {
 
         // TODO: implement this properly
-        return arrangeFN(container, g2, constraint, params);
+        return arrangeFN(container, g2, constraint);
     }
 
     /**
-     * Arranges the blocks with the overall width and height to fit within 
+     * Arranges the blocks with the overall width and height to fit within
      * specified ranges.
-     * 
+     *
      * @param container  the container.
-     * @param g2  the graphics device.
      * @param constraint  the constraint.
-     * @param params  optional parameters.
-     * 
+     * @param g2  the graphics device.
+     *
      * @return The size after the arrangement.
      */
-    protected ArrangeResult arrangeRR(BlockContainer container, Graphics2D g2,
-                                      RectangleConstraint constraint, 
-                                      ArrangeParams params) {
+    protected Size2D arrangeRR(BlockContainer container, Graphics2D g2,
+                               RectangleConstraint constraint) {
 
         // first arrange without constraints, and see if this fits within
         // the required ranges...
-        ArrangeResult r1 = arrangeNN(container, g2, params);
-        Size2D s1 = r1.getSize();
+        Size2D s1 = arrangeNN(container, g2);
         if (constraint.getWidthRange().contains(s1.width)) {
-            return r1;  // TODO: we didn't check the height yet
+            return s1;  // TODO: we didn't check the height yet
         }
         else {
             RectangleConstraint c = constraint.toFixedWidth(
                 constraint.getWidthRange().getUpperBound()
             );
-            return arrangeFR(container, g2, c, params);
+            return arrangeFR(container, g2, c);
         }
     }
-    
+
     /**
      * Arranges the blocks in the container with a range constraint on the
      * width and a fixed height.
-     * 
+     *
      * @param container  the container.
-     * @param g2  the graphics device.
      * @param constraint  the constraint.
-     * @param params  optional parameters.
-     * 
+     * @param g2  the graphics device.
+     *
      * @return The size following the arrangement.
      */
-    protected ArrangeResult arrangeRF(BlockContainer container, Graphics2D g2,
-                                      RectangleConstraint constraint, 
-                                      ArrangeParams params) {
+    protected Size2D arrangeRF(BlockContainer container, Graphics2D g2,
+                               RectangleConstraint constraint) {
 
-        ArrangeResult r = arrangeNF(container, g2, constraint, params);
-        Size2D s = r.getSize();
+        Size2D s = arrangeNF(container, g2, constraint);
         if (constraint.getWidthRange().contains(s.width)) {
-            return r;   
+            return s;
         }
         else {
             RectangleConstraint c = constraint.toFixedWidth(
                 constraint.getWidthRange().constrain(s.getWidth())
             );
-            return arrangeFF(container, g2, c, params);
+            return arrangeFF(container, g2, c);
         }
     }
 
     /**
-     * Arranges the block with a range constraint on the width, and no 
+     * Arranges the block with a range constraint on the width, and no
      * constraint on the height.
-     * 
+     *
      * @param container  the container.
-     * @param g2  the graphics device.
      * @param constraint  the constraint.
-     * @param params  optional parameters.
-     * 
+     * @param g2  the graphics device.
+     *
      * @return The size following the arrangement.
      */
-    protected ArrangeResult arrangeRN(BlockContainer container, Graphics2D g2,
-                                      RectangleConstraint constraint, 
-                                      ArrangeParams params) {
+    protected Size2D arrangeRN(BlockContainer container, Graphics2D g2,
+                               RectangleConstraint constraint) {
         // first arrange without constraints, then see if the width fits
         // within the required range...if not, call arrangeFN() at max width
-        ArrangeResult r1 = arrangeNN(container, g2, null);
-        Size2D s1 = r1.getSize();
+        Size2D s1 = arrangeNN(container, g2);
         if (constraint.getWidthRange().contains(s1.width)) {
-            return r1;   
+            return s1;
         }
         else {
             RectangleConstraint c = constraint.toFixedWidth(
                 constraint.getWidthRange().getUpperBound()
             );
-            return arrangeFN(container, g2, c, params);
+            return arrangeFN(container, g2, c);
         }
     }
-    
+
     /**
      * Arranges the blocks without any constraints.  This puts all blocks
      * into a single row.
-     * 
+     *
      * @param container  the container.
      * @param g2  the graphics device.
-     * @param params  optional parameters.
-     * 
-     * @return The result of the arrangement (including the size of the 
-     *         contained blocks).
+     *
+     * @return The size after the arrangement.
      */
-    protected ArrangeResult arrangeNN(BlockContainer container, Graphics2D g2, 
-                                      ArrangeParams params) {
+    protected Size2D arrangeNN(BlockContainer container, Graphics2D g2) {
         double x = 0.0;
         double width = 0.0;
         double maxHeight = 0.0;
@@ -387,7 +364,7 @@ public class FlowArrangement implements Arrangement, Serializable {
             Size2D[] sizes = new Size2D[blocks.size()];
             for (int i = 0; i < blocks.size(); i++) {
                 Block block = (Block) blocks.get(i);
-                sizes[i] = block.arrange(g2, params);
+                sizes[i] = block.arrange(g2, RectangleConstraint.NONE);
                 width = width + sizes[i].getWidth();
                 maxHeight = Math.max(sizes[i].height, maxHeight);
                 block.setBounds(
@@ -398,62 +375,62 @@ public class FlowArrangement implements Arrangement, Serializable {
                 x = x + sizes[i].width + this.horizontalGap;
             }
             if (blockCount > 1) {
-                width = width + this.horizontalGap * (blockCount - 1);   
+                width = width + this.horizontalGap * (blockCount - 1);
             }
             if (this.verticalAlignment != VerticalAlignment.TOP) {
                 for (int i = 0; i < blocks.size(); i++) {
-                    Block b = (Block) blocks.get(i);
+                    //Block b = (Block) blocks.get(i);
                     if (this.verticalAlignment == VerticalAlignment.CENTER) {
                         //TODO: shift block down by half
                     }
-                    else if (this.verticalAlignment 
+                    else if (this.verticalAlignment
                             == VerticalAlignment.BOTTOM) {
                         //TODO: shift block down to bottom
                     }
-                }            
+                }
             }
         }
-        return new ArrangeResult(new Size2D(width, maxHeight), null);
+        return new Size2D(width, maxHeight);
     }
-    
+
     /**
-     * Arranges the blocks with no width constraint and a fixed height 
+     * Arranges the blocks with no width constraint and a fixed height
      * constraint.  This puts all blocks into a single row.
-     * 
+     *
      * @param container  the container.
-     * @param g2  the graphics device.
      * @param constraint  the constraint.
-     * @param params  optional parameters.
-     * 
+     * @param g2  the graphics device.
+     *
      * @return The size after the arrangement.
      */
-    protected ArrangeResult arrangeNF(BlockContainer container, Graphics2D g2,
-                                      RectangleConstraint constraint, 
-                                      ArrangeParams params) {
+    protected Size2D arrangeNF(BlockContainer container, Graphics2D g2,
+                               RectangleConstraint constraint) {
         // TODO: for now we are ignoring the height constraint
-        return arrangeNN(container, g2, params);
+        return arrangeNN(container, g2);
     }
-    
+
     /**
      * Clears any cached information.
      */
+    @Override
     public void clear() {
         // no action required.
     }
-    
+
     /**
      * Tests this instance for equality with an arbitrary object.
-     * 
+     *
      * @param obj  the object (<code>null</code> permitted).
-     * 
+     *
      * @return A boolean.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
-            return true;   
+            return true;
         }
         if (!(obj instanceof FlowArrangement)) {
-            return false;   
+            return false;
         }
         FlowArrangement that = (FlowArrangement) obj;
         if (this.horizontalAlignment != that.horizontalAlignment) {
@@ -463,12 +440,12 @@ public class FlowArrangement implements Arrangement, Serializable {
             return false;
         }
         if (this.horizontalGap != that.horizontalGap) {
-            return false;   
+            return false;
         }
         if (this.verticalGap != that.verticalGap) {
-            return false;   
+            return false;
         }
         return true;
     }
-    
+
 }

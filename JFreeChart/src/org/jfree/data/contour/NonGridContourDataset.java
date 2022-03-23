@@ -2,59 +2,66 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * --------------------------
  * NonGridContourDataset.java
  * --------------------------
- * (C) Copyright 2002-2005, by David M. O'Donnell.
+ * (C) Copyright 2002-2008, by David M. O'Donnell.
  *
  * Original Author:  David M. O'Donnell;
  * Contributor(s):   David Gilbert (for Object Refinery Limited);
  *
- * $Id: NonGridContourDataset.java,v 1.3 2005/02/24 10:11:25 mungady Exp $
- *
  * Changes (from 24-Jul-2003)
  * --------------------------
  * 24-Jul-2003 : Added standard header (DG);
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 31-Jan-2007 : Deprecated (DG);
  *
  */
 
 package org.jfree.data.contour;
 
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYBlockRenderer;
 import org.jfree.data.Range;
 
 /**
- * A convenience class that extends the {@link DefaultContourDataset} to 
+ * A convenience class that extends the {@link DefaultContourDataset} to
  * accommodate non-grid data.
+ *
+ * @deprecated This class is no longer supported (as of version 1.0.4).  If
+ *     you are creating contour plots, please try to use {@link XYPlot} and
+ *     {@link XYBlockRenderer}.
  */
 public class NonGridContourDataset extends DefaultContourDataset {
 
     /** Default number of x values. */
     static final int DEFAULT_NUM_X = 50;
-    
+
     /** Default number of y values. */
     static final int DEFAULT_NUM_Y = 50;
-    
+
     /** Default power. */
     static final int DEFAULT_POWER = 4;
 
@@ -66,16 +73,16 @@ public class NonGridContourDataset extends DefaultContourDataset {
     }
 
     /**
-     * Constructor for NonGridContourDataset.  Uses default values for grid 
+     * Constructor for NonGridContourDataset.  Uses default values for grid
      * dimensions and weighting.
-     * 
+     *
      * @param seriesName  the series name.
      * @param xData  the x values.
      * @param yData  the y values.
      * @param zData  the z values.
      */
     public NonGridContourDataset(String seriesName,
-                                 Object[] xData, Object[] yData, 
+                                 Object[] xData, Object[] yData,
                                  Object[] zData) {
         super(seriesName, xData, yData, zData);
         buildGrid(DEFAULT_NUM_X, DEFAULT_NUM_Y, DEFAULT_POWER);
@@ -83,7 +90,7 @@ public class NonGridContourDataset extends DefaultContourDataset {
 
     /**
      * Constructor for NonGridContourDataset.
-     * 
+     *
      * @param seriesName  the series name.
      * @param xData  the x values.
      * @param yData  the y values.
@@ -92,8 +99,8 @@ public class NonGridContourDataset extends DefaultContourDataset {
      * @param numY  number grid cells in along the y-axis
      * @param power  exponent for inverse distance weighting
      */
-    public NonGridContourDataset(String seriesName, 
-                                 Object[] xData, Object[] yData, 
+    public NonGridContourDataset(String seriesName,
+                                 Object[] xData, Object[] yData,
                                  Object[] zData,
                                  int numX, int numY, int power) {
         super(seriesName, xData, yData, zData);
@@ -101,12 +108,12 @@ public class NonGridContourDataset extends DefaultContourDataset {
     }
 
     /**
-     * Builds a regular grid.  Maps the non-grid data into the regular grid 
-     * using an inverse distance between grid and non-grid points.  Weighting 
-     * of distance can be controlled by setting through the power parameter 
-     * that controls the exponent used on the distance weighting 
+     * Builds a regular grid.  Maps the non-grid data into the regular grid
+     * using an inverse distance between grid and non-grid points.  Weighting
+     * of distance can be controlled by setting through the power parameter
+     * that controls the exponent used on the distance weighting
      * (e.g., distance^power).
-     * 
+     *
      * @param numX  number grid points in along the x-axis
      * @param numY  number grid points in along the y-axis
      * @param power  exponent for inverse distance weighting
@@ -187,13 +194,13 @@ public class NonGridContourDataset extends DefaultContourDataset {
                 if (d > 0.0) {
                     d = 1.0 / d;
                 }
-                else { // if d is real small set the inverse to a large number 
+                else { // if d is real small set the inverse to a large number
                        // to avoid INF
                     d = 1.e20;
                 }
                 if (this.zValues[k] != null) {
                     // scale by the inverse of distance^power
-                    zGrid[kGrid] += this.zValues[k].doubleValue() * d; 
+                    zGrid[kGrid] += this.zValues[k].doubleValue() * d;
                 }
                 dTotal += d;
             }
@@ -202,7 +209,7 @@ public class NonGridContourDataset extends DefaultContourDataset {
 
         //initalize xValues, yValues, and zValues arrays.
         initialize(
-            formObjectArray(xGrid), formObjectArray(yGrid), 
+            formObjectArray(xGrid), formObjectArray(yGrid),
             formObjectArray(zGrid)
         );
 
@@ -210,17 +217,17 @@ public class NonGridContourDataset extends DefaultContourDataset {
 
     /**
      * Calculates the distance between two points.
-     * 
+     *
      * @param xDataPt  the x coordinate.
      * @param yDataPt  the y coordinate.
      * @param xGrdPt  the x grid coordinate.
      * @param yGrdPt  the y grid coordinate.
-     * 
+     *
      * @return The distance between two points.
      */
-    protected double distance(double xDataPt, 
-                              double yDataPt, 
-                              double xGrdPt, 
+    protected double distance(double xDataPt,
+                              double yDataPt,
+                              double xGrdPt,
                               double yGrdPt) {
         double dx = xDataPt - xGrdPt;
         double dy = yDataPt - yGrdPt;

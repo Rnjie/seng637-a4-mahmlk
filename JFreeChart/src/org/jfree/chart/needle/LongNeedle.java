@@ -2,66 +2,65 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * ---------------
  * LongNeedle.java
  * ---------------
- * (C) Copyright 2002-2005, by the Australian Antarctic Division and 
+ * (C) Copyright 2002-2008, by the Australian Antarctic Division and
  *                          Contributors.
  *
  * Original Author:  Bryan Scott (for the Australian Antarctic Division);
  * Contributor(s):   David Gilbert (for Object Refinery Limited);
- *
- * $Id: LongNeedle.java,v 1.5 2005/06/17 09:21:45 mungady Exp $
  *
  * Changes:
  * --------
  * 25-Sep-2002 : Version 1, contributed by Bryan Scott (DG);
  * 27-Mar-2003 : Implemented Serializable (DG);
  * 09-Sep-2003 : Added equals() method (DG);
- * 16-Mar-2004 : Implemented Rotation
+ * 16-Mar-2004 : Implemented Rotation;
+ * 22-Nov-2007 : Implemented hashCode() (DG);
+ *
  */
 
 package org.jfree.chart.needle;
 
 import java.awt.Graphics2D;
+import java.awt.Shape;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.Shape;
 import java.io.Serializable;
 
 /**
  * A needle that is represented by a long line.
- *
- * @author Bryan Scott
  */
-public class LongNeedle extends MeterNeedle 
+public class LongNeedle extends MeterNeedle
                         implements Cloneable, Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = -4319985779783688159L;
-    
+
     /**
      * Default constructor.
      */
@@ -78,7 +77,8 @@ public class LongNeedle extends MeterNeedle
      * @param rotate  the rotation point.
      * @param angle  the angle.
      */
-    protected void drawNeedle(Graphics2D g2, Rectangle2D plotArea, 
+    @Override
+    protected void drawNeedle(Graphics2D g2, Rectangle2D plotArea,
                               Point2D rotate, double angle) {
 
         GeneralPath shape1 = new GeneralPath();
@@ -154,26 +154,38 @@ public class LongNeedle extends MeterNeedle
      *
      * @return A boolean.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
         }
         if (!(obj instanceof LongNeedle)) {
-            return false;   
-        }
-        if (!super.equals(obj)) {
             return false;
         }
-        return true;
+        return super.equals(obj);
+    }
+
+    /**
+     * Returns a hash code for this instance.
+     *
+     * @return A hash code.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 
     /**
      * Returns a clone of this needle.
-     * 
+     *
      * @return A clone.
+     *
+     * @throws CloneNotSupportedException if the <code>LongNeedle</code>
+     *     cannot be cloned (in theory, this should not happen).
      */
+    @Override
     public Object clone() throws CloneNotSupportedException {
-        return super.clone();   
+        return super.clone();
     }
 
 }

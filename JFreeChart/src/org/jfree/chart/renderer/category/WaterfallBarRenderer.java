@@ -2,52 +2,59 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2014, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * -------------------------
  * WaterfallBarRenderer.java
  * -------------------------
- * (C) Copyright 2003-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2003-2014, by Object Refinery Limited and Contributors.
  *
  * Original Author:  Darshan Shah;
  * Contributor(s):   David Gilbert (for Object Refinery Limited);
  *
- * $Id: WaterfallBarRenderer.java,v 1.10 2005/06/17 09:24:15 mungady Exp $
- *
  * Changes
  * -------
  * 20-Oct-2003 : Version 1, contributed by Darshan Shah (DG);
- * 06-Nov-2003 : Changed order of parameters in constructor, and added support 
+ * 06-Nov-2003 : Changed order of parameters in constructor, and added support
  *               for GradientPaint (DG);
- * 10-Feb-2004 : Updated drawItem() method to make cut-and-paste overriding 
- *               easier.  Also fixed a bug that meant the minimum bar length 
+ * 10-Feb-2004 : Updated drawItem() method to make cut-and-paste overriding
+ *               easier.  Also fixed a bug that meant the minimum bar length
  *               was being ignored (DG);
- * 04-Oct-2004 : Reworked equals() method and renamed PaintUtils 
+ * 04-Oct-2004 : Reworked equals() method and renamed PaintUtils
  *               --> PaintUtilities (DG);
  * 05-Nov-2004 : Modified drawItem() signature (DG);
  * 07-Jan-2005 : Renamed getRangeExtent() --> findRangeBounds (DG);
  * 23-Feb-2005 : Added argument checking (DG);
- * 20-Apr-2005 : Renamed CategoryLabelGenerator 
+ * 20-Apr-2005 : Renamed CategoryLabelGenerator
  *               --> CategoryItemLabelGenerator (DG);
+ * 09-Jun-2005 : Use addItemEntity() from superclass (DG);
+ * 27-Mar-2008 : Fixed error in findRangeBounds() method (DG);
+ * 26-Sep-2008 : Fixed bug with bar alignment when maximumBarWidth is
+ *               applied (DG);
+ * 04-Feb-2009 : Updated findRangeBounds to handle null dataset consistently
+ *               with other renderers (DG);
+ * 19-May-2009 : Fixed FindBugs warnings, patch by Michal Wozniak (DG);
+ * 03-Jul-2013 : Use ParamChecks (DG);
  *
  */
 
@@ -62,7 +69,6 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.ValueAxis;
@@ -72,29 +78,38 @@ import org.jfree.chart.labels.CategoryItemLabelGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.AbstractRenderer;
+import org.jfree.chart.util.ParamChecks;
 import org.jfree.data.Range;
 import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.general.DatasetUtilities;
 import org.jfree.io.SerialUtilities;
 import org.jfree.ui.GradientPaintTransformType;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.StandardGradientPaintTransformer;
 import org.jfree.util.PaintUtilities;
-import org.jfree.util.PublicCloneable;
 
 /**
- * A renderer that handles the drawing of waterfall bar charts, for use with 
- * the {@link CategoryPlot} class.  Note that the bar colors are defined 
- * using special methods in this class - the inherited methods (for example,
- * {@link AbstractRenderer#setSeriesPaint(int, Paint)}) are ignored.
+ * A renderer that handles the drawing of waterfall bar charts, for use with
+ * the {@link CategoryPlot} class.  Some quirks to note:
+ * <ul>
+ * <li>the value in the last category of the dataset should be (redundantly)
+ *   specified as the sum of the items in the preceding categories - otherwise
+ *   the final bar in the plot will be incorrectly plotted;</li>
+ * <li>the bar colors are defined using special methods in this class - the
+ *   inherited methods (for example,
+ *   {@link AbstractRenderer#setSeriesPaint(int, Paint)}) are ignored;</li>
+ * </ul>
+ * The example shown here is generated by the
+ * <code>WaterfallChartDemo1.java</code> program included in the JFreeChart
+ * Demo Collection:
+ * <br><br>
+ * <img src="../../../../../images/WaterfallBarRendererSample.png"
+ * alt="WaterfallBarRendererSample.png">
  */
-public class WaterfallBarRenderer extends BarRenderer 
-                                  implements Cloneable, PublicCloneable, 
-                                             Serializable {
+public class WaterfallBarRenderer extends BarRenderer {
 
     /** For serialization. */
     private static final long serialVersionUID = -2482910643727230911L;
-    
+
     /** The paint used to draw the first bar. */
     private transient Paint firstBarPaint;
 
@@ -111,92 +126,53 @@ public class WaterfallBarRenderer extends BarRenderer
      * Constructs a new renderer with default values for the bar colors.
      */
     public WaterfallBarRenderer() {
-        this(
-            new GradientPaint(
-                0.0f, 0.0f, new Color(0x22, 0x22, 0xFF), 
-                0.0f, 0.0f, new Color(0x66, 0x66, 0xFF)
-            ), 
-            new GradientPaint(
-                0.0f, 0.0f, new Color(0x22, 0xFF, 0x22), 
-                0.0f, 0.0f, new Color(0x66, 0xFF, 0x66)
-            ), 
-            new GradientPaint(
-                0.0f, 0.0f, new Color(0xFF, 0x22, 0x22), 
-                0.0f, 0.0f, new Color(0xFF, 0x66, 0x66)
-            ),
-            new GradientPaint(
-                0.0f, 0.0f, new Color(0xFF, 0xFF, 0x22), 
-                0.0f, 0.0f, new Color(0xFF, 0xFF, 0x66)
-            )
-        );
+        this(new GradientPaint(0.0f, 0.0f, new Color(0x22, 0x22, 0xFF),
+                0.0f, 0.0f, new Color(0x66, 0x66, 0xFF)),
+                new GradientPaint(0.0f, 0.0f, new Color(0x22, 0xFF, 0x22),
+                0.0f, 0.0f, new Color(0x66, 0xFF, 0x66)),
+                new GradientPaint(0.0f, 0.0f, new Color(0xFF, 0x22, 0x22),
+                0.0f, 0.0f, new Color(0xFF, 0x66, 0x66)),
+                new GradientPaint(0.0f, 0.0f, new Color(0xFF, 0xFF, 0x22),
+                0.0f, 0.0f, new Color(0xFF, 0xFF, 0x66)));
     }
 
     /**
      * Constructs a new waterfall renderer.
      *
-     * @param firstBarPaint  the color of the first bar (<code>null</code> not 
+     * @param firstBarPaint  the color of the first bar (<code>null</code> not
      *                       permitted).
-     * @param positiveBarPaint  the color for bars with positive values 
+     * @param positiveBarPaint  the color for bars with positive values
      *                          (<code>null</code> not permitted).
-     * @param negativeBarPaint  the color for bars with negative values 
+     * @param negativeBarPaint  the color for bars with negative values
      *                          (<code>null</code> not permitted).
-     * @param lastBarPaint  the color of the last bar (<code>null</code> not 
+     * @param lastBarPaint  the color of the last bar (<code>null</code> not
      *                      permitted).
      */
-    public WaterfallBarRenderer(Paint firstBarPaint, 
-                                Paint positiveBarPaint, 
-                                Paint negativeBarPaint,
-                                Paint lastBarPaint) {
+    public WaterfallBarRenderer(Paint firstBarPaint, Paint positiveBarPaint,
+            Paint negativeBarPaint, Paint lastBarPaint) {
         super();
-        if (firstBarPaint == null) {
-            throw new IllegalArgumentException("Null 'firstBarPaint' argument");
-        }
-        if (positiveBarPaint == null) {
-            throw new IllegalArgumentException(
-                "Null 'positiveBarPaint' argument"
-            );   
-        }
-        if (negativeBarPaint == null) {
-            throw new IllegalArgumentException(
-                "Null 'negativeBarPaint' argument"
-            );   
-        }
-        if (lastBarPaint == null) {
-            throw new IllegalArgumentException("Null 'lastBarPaint' argument");
-        }
+        ParamChecks.nullNotPermitted(firstBarPaint, "firstBarPaint");
+        ParamChecks.nullNotPermitted(positiveBarPaint, "positiveBarPaint");
+        ParamChecks.nullNotPermitted(negativeBarPaint, "negativeBarPaint");
+        ParamChecks.nullNotPermitted(lastBarPaint, "lastBarPaint");
         this.firstBarPaint = firstBarPaint;
         this.lastBarPaint = lastBarPaint;
         this.positiveBarPaint = positiveBarPaint;
         this.negativeBarPaint = negativeBarPaint;
-        setGradientPaintTransformer(
-            new StandardGradientPaintTransformer(
-                GradientPaintTransformType.CENTER_VERTICAL
-            )
-        );
+        setGradientPaintTransformer(new StandardGradientPaintTransformer(
+                GradientPaintTransformType.CENTER_VERTICAL));
         setMinimumBarLength(1.0);
     }
 
     /**
-     * Returns the range of values the renderer requires to display all the 
-     * items from the specified dataset.
-     * 
-     * @param dataset  the dataset (<code>null</code> not permitted).
-     * 
-     * @return The range (or <code>null</code> if the dataset is empty).
-     */
-    public Range findRangeBounds(CategoryDataset dataset) {
-        return DatasetUtilities.findCumulativeRangeBounds(dataset);   
-    }
-
-    /**
      * Returns the paint used to draw the first bar.
-     * 
+     *
      * @return The paint (never <code>null</code>).
      */
     public Paint getFirstBarPaint() {
         return this.firstBarPaint;
     }
-    
+
     /**
      * Sets the paint that will be used to draw the first bar and sends a
      * {@link RendererChangeEvent} to all registered listeners.
@@ -204,77 +180,118 @@ public class WaterfallBarRenderer extends BarRenderer
      * @param paint  the paint (<code>null</code> not permitted).
      */
     public void setFirstBarPaint(Paint paint) {
-        if (paint == null) {
-            throw new IllegalArgumentException("Null 'paint' argument");   
-        }
+        ParamChecks.nullNotPermitted(paint, "paint");
         this.firstBarPaint = paint;
-        notifyListeners(new RendererChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
      * Returns the paint used to draw the last bar.
-     * 
+     *
      * @return The paint (never <code>null</code>).
      */
     public Paint getLastBarPaint() {
         return this.lastBarPaint;
     }
-    
+
     /**
-     * Sets the paint that will be used to draw the last bar.
+     * Sets the paint that will be used to draw the last bar and sends a
+     * {@link RendererChangeEvent} to all registered listeners.
      *
      * @param paint  the paint (<code>null</code> not permitted).
      */
     public void setLastBarPaint(Paint paint) {
-        if (paint == null) {
-            throw new IllegalArgumentException("Null 'paint' argument");   
-        }
+        ParamChecks.nullNotPermitted(paint, "paint");
         this.lastBarPaint = paint;
-        notifyListeners(new RendererChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
      * Returns the paint used to draw bars with positive values.
-     * 
+     *
      * @return The paint (never <code>null</code>).
      */
     public Paint getPositiveBarPaint() {
         return this.positiveBarPaint;
     }
-    
+
     /**
      * Sets the paint that will be used to draw bars having positive values.
      *
      * @param paint  the paint (<code>null</code> not permitted).
      */
     public void setPositiveBarPaint(Paint paint) {
-        if (paint == null) {
-            throw new IllegalArgumentException("Null 'paint' argument");   
-        }
+        ParamChecks.nullNotPermitted(paint, "paint");
         this.positiveBarPaint = paint;
-        notifyListeners(new RendererChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
      * Returns the paint used to draw bars with negative values.
-     * 
+     *
      * @return The paint (never <code>null</code>).
      */
     public Paint getNegativeBarPaint() {
         return this.negativeBarPaint;
     }
-    
+
     /**
-     * Sets the paint that will be used to draw bars having negative values.
+     * Sets the paint that will be used to draw bars having negative values,
+     * and sends a {@link RendererChangeEvent} to all registered listeners.
      *
      * @param paint  the paint (<code>null</code> not permitted).
      */
     public void setNegativeBarPaint(Paint paint) {
-        if (paint == null) {
-            throw new IllegalArgumentException("Null 'paint' argument");   
-        }
+        ParamChecks.nullNotPermitted(paint, "paint");
         this.negativeBarPaint = paint;
-        notifyListeners(new RendererChangeEvent(this));
+        fireChangeEvent();
+    }
+
+    /**
+     * Returns the range of values the renderer requires to display all the
+     * items from the specified dataset.
+     *
+     * @param dataset  the dataset (<code>null</code> not permitted).
+     *
+     * @return The range (or <code>null</code> if the dataset is empty).
+     */
+    @Override
+    public Range findRangeBounds(CategoryDataset dataset) {
+        if (dataset == null) {
+            return null;
+        }
+        boolean allItemsNull = true; // we'll set this to false if there is at
+                                     // least one non-null data item...
+        double minimum = 0.0;
+        double maximum = 0.0;
+        int columnCount = dataset.getColumnCount();
+        for (int row = 0; row < dataset.getRowCount(); row++) {
+            double runningTotal = 0.0;
+            for (int column = 0; column <= columnCount - 1; column++) {
+                Number n = dataset.getValue(row, column);
+                if (n != null) {
+                    allItemsNull = false;
+                    double value = n.doubleValue();
+                    if (column == columnCount - 1) {
+                        // treat the last column value as an absolute
+                        runningTotal = value;
+                    }
+                    else {
+                        runningTotal = runningTotal + value;
+                    }
+                    minimum = Math.min(minimum, runningTotal);
+                    maximum = Math.max(maximum, runningTotal);
+                }
+            }
+
+        }
+        if (!allItemsNull) {
+            return new Range(minimum, maximum);
+        }
+        else {
+            return null;
+        }
+
     }
 
     /**
@@ -291,16 +308,11 @@ public class WaterfallBarRenderer extends BarRenderer
      * @param column  the column index (zero-based).
      * @param pass  the pass index.
      */
-    public void drawItem(Graphics2D g2,
-                         CategoryItemRendererState state,
-                         Rectangle2D dataArea,
-                         CategoryPlot plot,
-                         CategoryAxis domainAxis,
-                         ValueAxis rangeAxis,
-                         CategoryDataset dataset,
-                         int row,
-                         int column,
-                         int pass) {
+    @Override
+    public void drawItem(Graphics2D g2, CategoryItemRendererState state,
+            Rectangle2D dataArea, CategoryPlot plot, CategoryAxis domainAxis,
+            ValueAxis rangeAxis, CategoryDataset dataset, int row, int column,
+            int pass) {
 
         double previous = state.getSeriesRunningTotal();
         if (column == dataset.getColumnCount() - 1) {
@@ -312,26 +324,22 @@ public class WaterfallBarRenderer extends BarRenderer
             current = previous + n.doubleValue();
         }
         state.setSeriesRunningTotal(current);
-        
-        int seriesCount = getRowCount();
+
         int categoryCount = getColumnCount();
         PlotOrientation orientation = plot.getOrientation();
-        
+
         double rectX = 0.0;
         double rectY = 0.0;
 
-        RectangleEdge domainAxisLocation = plot.getDomainAxisEdge();
         RectangleEdge rangeAxisLocation = plot.getRangeAxisEdge();
-        
+
         // Y0
-        double j2dy0 = rangeAxis.valueToJava2D(
-            previous, dataArea, rangeAxisLocation
-        );
+        double j2dy0 = rangeAxis.valueToJava2D(previous, dataArea,
+                rangeAxisLocation);
 
         // Y1
-        double j2dy1 = rangeAxis.valueToJava2D(
-            current, dataArea, rangeAxisLocation
-        );
+        double j2dy1 = rangeAxis.valueToJava2D(current, dataArea,
+                rangeAxisLocation);
 
         double valDiff = current - previous;
         if (j2dy1 < j2dy0) {
@@ -344,79 +352,54 @@ public class WaterfallBarRenderer extends BarRenderer
         double rectWidth = state.getBarWidth();
 
         // BAR HEIGHT
-        double rectHeight = Math.max(
-            getMinimumBarLength(), Math.abs(j2dy1 - j2dy0)
-        );
+        double rectHeight = Math.max(getMinimumBarLength(),
+                Math.abs(j2dy1 - j2dy0));
 
+        Comparable seriesKey = dataset.getRowKey(row);
+        Comparable categoryKey = dataset.getColumnKey(column);
         if (orientation == PlotOrientation.HORIZONTAL) {
-            // BAR Y
-            rectY = domainAxis.getCategoryStart(
-                column, getColumnCount(), dataArea, domainAxisLocation
-            );
-            if (seriesCount > 1) {
-                double seriesGap = dataArea.getHeight() * getItemMargin()
-                                   / (categoryCount * (seriesCount - 1));
-                rectY = rectY + row * (state.getBarWidth() + seriesGap);
-            }
-            else {
-                rectY = rectY + row * state.getBarWidth();
-            }
-             
+            rectY = domainAxis.getCategorySeriesMiddle(categoryKey, seriesKey,
+                    dataset, getItemMargin(), dataArea, RectangleEdge.LEFT);
+
             rectX = j2dy0;
             rectHeight = state.getBarWidth();
-            rectWidth = Math.max(
-                getMinimumBarLength(), Math.abs(j2dy1 - j2dy0)
-            );
+            rectY = rectY - rectHeight / 2.0;
+            rectWidth = Math.max(getMinimumBarLength(),
+                    Math.abs(j2dy1 - j2dy0));
 
         }
         else if (orientation == PlotOrientation.VERTICAL) {
-            // BAR X
-            rectX = domainAxis.getCategoryStart(
-                column, getColumnCount(), dataArea, domainAxisLocation
-            );
-
-            if (seriesCount > 1) {
-                double seriesGap = dataArea.getWidth() * getItemMargin()
-                                   / (categoryCount * (seriesCount - 1));
-                rectX = rectX + row * (state.getBarWidth() + seriesGap);
-            }
-            else {
-                rectX = rectX + row * state.getBarWidth();
-            }
-
+            rectX = domainAxis.getCategorySeriesMiddle(categoryKey, seriesKey,
+                    dataset, getItemMargin(), dataArea, RectangleEdge.TOP);
+            rectX = rectX - rectWidth / 2.0;
             rectY = j2dy0;
         }
-        Rectangle2D bar = new Rectangle2D.Double(
-            rectX, rectY, rectWidth, rectHeight
-        );
-        Paint seriesPaint = getFirstBarPaint();
+        Rectangle2D bar = new Rectangle2D.Double(rectX, rectY, rectWidth,
+                rectHeight);
+        Paint seriesPaint;
         if (column == 0) {
             seriesPaint = getFirstBarPaint();
         }
         else if (column == categoryCount - 1) {
-            seriesPaint = getLastBarPaint();    
-        } 
+            seriesPaint = getLastBarPaint();
+        }
         else {
-            if (valDiff < 0.0) {
-                seriesPaint = getNegativeBarPaint();
-            } 
-            else if (valDiff > 0.0) {
+            if (valDiff >= 0.0) {
                 seriesPaint = getPositiveBarPaint();
-            } 
-            else {
-                seriesPaint = getLastBarPaint();
+            } else {
+                seriesPaint = getNegativeBarPaint();
             }
         }
-        if (getGradientPaintTransformer() != null 
+        if (getGradientPaintTransformer() != null
                 && seriesPaint instanceof GradientPaint) {
             GradientPaint gp = (GradientPaint) seriesPaint;
             seriesPaint = getGradientPaintTransformer().transform(gp, bar);
         }
         g2.setPaint(seriesPaint);
         g2.fill(bar);
-        
+
         // draw the outline...
-        if (isDrawBarOutline() 
+        if (isDrawBarOutline()
                 && state.getBarWidth() > BAR_OUTLINE_WIDTH_THRESHOLD) {
             Stroke stroke = getItemOutlineStroke(row, column);
             Paint paint = getItemOutlinePaint(row, column);
@@ -426,14 +409,13 @@ public class WaterfallBarRenderer extends BarRenderer
                 g2.draw(bar);
             }
         }
-        
-        CategoryItemLabelGenerator generator 
+
+        CategoryItemLabelGenerator generator
             = getItemLabelGenerator(row, column);
         if (generator != null && isItemLabelVisible(row, column)) {
-            drawItemLabel(
-                g2, dataset, row, column, plot, generator, bar, (valDiff < 0.0)
-            );
-        }        
+            drawItemLabel(g2, dataset, row, column, plot, generator, bar,
+                    (valDiff < 0.0));
+        }
 
         // add an item entity, if this information is being collected
         EntityCollection entities = state.getEntityCollection();
@@ -442,16 +424,17 @@ public class WaterfallBarRenderer extends BarRenderer
         }
 
     }
-    
+
     /**
      * Tests an object for equality with this instance.
-     * 
+     *
      * @param obj  the object (<code>null</code> permitted).
-     * 
+     *
      * @return A boolean.
      */
+    @Override
     public boolean equals(Object obj) {
-        
+
         if (obj == this) {
             return true;
         }
@@ -467,19 +450,19 @@ public class WaterfallBarRenderer extends BarRenderer
         }
         if (!PaintUtilities.equal(this.lastBarPaint, that.lastBarPaint)) {
             return false;
-        }             
-        if (!PaintUtilities.equal(this.positiveBarPaint, 
+        }
+        if (!PaintUtilities.equal(this.positiveBarPaint,
                 that.positiveBarPaint)) {
             return false;
-        }             
-        if (!PaintUtilities.equal(this.negativeBarPaint, 
+        }
+        if (!PaintUtilities.equal(this.negativeBarPaint,
                 that.negativeBarPaint)) {
             return false;
-        }             
+        }
         return true;
-        
+
     }
-    
+
     /**
      * Provides serialization support.
      *
@@ -503,7 +486,7 @@ public class WaterfallBarRenderer extends BarRenderer
      * @throws IOException  if there is an I/O error.
      * @throws ClassNotFoundException  if there is a classpath problem.
      */
-    private void readObject(ObjectInputStream stream) 
+    private void readObject(ObjectInputStream stream)
         throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         this.firstBarPaint = SerialUtilities.readPaint(stream);

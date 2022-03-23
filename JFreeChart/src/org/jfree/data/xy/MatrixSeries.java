@@ -2,44 +2,46 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * -----------------
  * MatrixSeries.java
  * -----------------
- * (C) Copyright 2003-2005, by Barak Naveh and Contributors.
+ * (C) Copyright 2003-2008, by Barak Naveh and Contributors.
  *
- * Original Author:  Barak Naveh;;
+ * Original Author:  Barak Naveh;
  * Contributor(s):   David Gilbert (for Object Refinery Limited);
  *                   Zhitao Wang;
- *
- * $Id: MatrixSeries.java,v 1.5 2005/05/19 10:35:27 mungady Exp $
  *
  * Changes
  * -------
  * 10-Jul-2003 : Version 1 contributed by Barak Naveh (DG);
  * 10-Feb-2004 : Fixed Checkstyle complaints (DG);
- * 21-May-2004 : Fixed bug 940188 - problem in getItemColumn() and 
+ * 21-May-2004 : Fixed bug 940188 - problem in getItemColumn() and
  *               getItemRow() (DG);
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 27-Nov-2006 : Fixed bug in equals() method (DG);
+ * 02-Feb-2007 : Removed author tags all over JFreeChart sources (DG);
  *
  */
 
@@ -52,14 +54,12 @@ import org.jfree.data.general.Series;
 /**
  * Represents a dense matrix M[i,j] where each Mij item of the matrix has a
  * value (default is 0).
- *
- * @author Barak Naveh
  */
 public class MatrixSeries extends Series implements Serializable {
-    
+
     /** For serialization. */
-    private static final long serialVersionUID = 7934188527308315704L;    
-    
+    private static final long serialVersionUID = 7934188527308315704L;
+
     /** Series matrix values */
     protected double[][] data;
 
@@ -90,11 +90,14 @@ public class MatrixSeries extends Series implements Serializable {
 
 
     /**
-     * Return the matrix item at the specified index.
+     * Return the matrix item at the specified index.  Note that this method
+     * creates a new <code>Double</code> instance every time it is called.
      *
      * @param itemIndex item index.
      *
      * @return The matrix item at the specified index.
+     *
+     * @see #get(int, int)
      */
     public Number getItem(int itemIndex) {
         int i = getItemRow(itemIndex);
@@ -124,6 +127,7 @@ public class MatrixSeries extends Series implements Serializable {
      *
      * @return The item count.
      */
+    @Override
     public int getItemCount() {
         return getRowCount() * getColumnsCount();
     }
@@ -159,6 +163,9 @@ public class MatrixSeries extends Series implements Serializable {
      * @param j the column of the item.
      *
      * @return The value of the specified item in this matrix series.
+     *
+     * @see #getItem(int)
+     * @see #update(int, int, double)
      */
     public double get(int i, int j) {
         return this.data[i][j];
@@ -171,6 +178,8 @@ public class MatrixSeries extends Series implements Serializable {
      * @param i the row of the item.
      * @param j the column of the item.
      * @param mij the new value for the item.
+     *
+     * @see #get(int, int)
      */
     public void update(int i, int j, double mij) {
         this.data[i][j] = mij;
@@ -179,8 +188,8 @@ public class MatrixSeries extends Series implements Serializable {
 
 
     /**
-     * Sets all matrix values to zero and sends a 
-     * {@link org.jfree.data.general.SeriesChangeEvent} to all registered 
+     * Sets all matrix values to zero and sends a
+     * {@link org.jfree.data.general.SeriesChangeEvent} to all registered
      * listeners.
      */
     public void zeroAll() {
@@ -194,29 +203,37 @@ public class MatrixSeries extends Series implements Serializable {
         }
         fireSeriesChanged();
     }
-    
+
     /**
      * Tests this object instance for equality with an arbitrary object.
-     * 
+     *
      * @param obj  the object (<code>null</code> permitted).
-     * 
+     *
      * @return A boolean.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
-            return true;   
+            return true;
         }
-        if (obj instanceof MatrixSeries && super.equals(obj)) {
-            MatrixSeries m = (MatrixSeries) obj;
-            if (!(getRowCount() == m.getRowCount())) {
-                return false;
-            }
-            if (!(getColumnsCount() == m.getColumnsCount())) {
-                return false;   
-            }
-            return true;   
+        if (!(obj instanceof MatrixSeries)) {
+            return false;
         }
-        return false;
+        MatrixSeries that = (MatrixSeries) obj;
+        if (!(getRowCount() == that.getRowCount())) {
+            return false;
+        }
+        if (!(getColumnsCount() == that.getColumnsCount())) {
+            return false;
+        }
+        for (int r = 0; r < getRowCount(); r++) {
+            for (int c = 0; c < getColumnsCount(); c++) {
+                if (get(r, c) != that.get(r, c)) {
+                    return false;
+                }
+            }
+        }
+        return super.equals(obj);
     }
-    
+
 }

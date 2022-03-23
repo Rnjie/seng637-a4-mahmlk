@@ -2,32 +2,32 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2006, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2014, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, 
- * USA.  
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
- * 
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.]
+ *
  * ------------------
  * SpiderWebPlot.java
  * ------------------
- * (C) Copyright 2005, 2006, by Heaps of Flavour Pty Ltd and Contributors.
+ * (C) Copyright 2005-2014, by Heaps of Flavour Pty Ltd and Contributors.
  *
  * Company Info:  http://www.i4-talent.com
  *
@@ -35,25 +35,37 @@
  * Contributor(s):   David Gilbert (for Object Refinery Limited);
  *                   Nina Jeliazkova;
  *
- * $Id: SpiderWebPlot.java,v 1.18 2006/04/05 14:35:28 mungady Exp $
- *
- * Changes (from 28-Jan-2005)
- * --------------------------
+ * Changes
+ * -------
  * 28-Jan-2005 : First cut - missing a few features - still to do:
  *                           - needs tooltips/URL/label generator functions
  *                           - ticks on axes / background grid?
- * 31-Jan-2005 : Renamed SpiderWebPlot, added label generator support, and 
- *               reformatted for consistency with other source files in 
+ * 31-Jan-2005 : Renamed SpiderWebPlot, added label generator support, and
+ *               reformatted for consistency with other source files in
  *               JFreeChart (DG);
- * 20-Apr-2005 : Renamed CategoryLabelGenerator 
+ * 20-Apr-2005 : Renamed CategoryLabelGenerator
  *               --> CategoryItemLabelGenerator (DG);
+ * 05-May-2005 : Updated draw() method parameters (DG);
  * 10-Jun-2005 : Added equals() method and fixed serialization (DG);
- * 16-Jun-2005 : Added default constructor and get/setDataset() 
+ * 16-Jun-2005 : Added default constructor and get/setDataset()
  *               methods (DG);
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
  * 05-Apr-2006 : Fixed bug preventing the display of zero values - see patch
  *               1462727 (DG);
  * 05-Apr-2006 : Added support for mouse clicks, tool tips and URLs - see patch
  *               1463455 (DG);
+ * 01-Jun-2006 : Fix bug 1493199, NullPointerException when drawing with null
+ *               info (DG);
+ * 05-Feb-2007 : Added attributes for axis stroke and paint, while fixing
+ *               bug 1651277, and implemented clone() properly (DG);
+ * 06-Feb-2007 : Changed getPlotValue() to protected, as suggested in bug
+ *               1605202 (DG);
+ * 05-Mar-2007 : Restore clip region correctly (see bug 1667750) (DG);
+ * 18-May-2007 : Set dataset for LegendItem (DG);
+ * 02-Jun-2008 : Fixed bug with chart entities using TableOrder.BY_COLUMN (DG);
+ * 02-Jun-2008 : Fixed bug with null dataset (DG);
+ * 01-Jun-2009 : Set series key in getLegendItems() (DG);
+ * 02-Jul-2013 : Use ParamChecks (DG);
  *
  */
 
@@ -86,10 +98,6 @@ import java.util.List;
 
 import org.jfree.chart.LegendItem;
 import org.jfree.chart.LegendItemCollection;
-import org.jfree.chart.block.ArrangeParams;
-import org.jfree.chart.block.ArrangeResult;
-import org.jfree.chart.block.Block;
-import org.jfree.chart.block.RectangleConstraint;
 import org.jfree.chart.entity.CategoryItemEntity;
 import org.jfree.chart.entity.EntityCollection;
 import org.jfree.chart.event.PlotChangeEvent;
@@ -97,6 +105,7 @@ import org.jfree.chart.labels.CategoryItemLabelGenerator;
 import org.jfree.chart.labels.CategoryToolTipGenerator;
 import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
 import org.jfree.chart.urls.CategoryURLGenerator;
+import org.jfree.chart.util.ParamChecks;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.general.DatasetChangeEvent;
 import org.jfree.data.general.DatasetUtilities;
@@ -111,22 +120,21 @@ import org.jfree.util.StrokeList;
 import org.jfree.util.TableOrder;
 
 /**
- * A plot that displays data from a {@link CategoryDataset} in the form of a 
- * "spider web".  Multiple series can be plotted on the same axis to allow 
+ * A plot that displays data from a {@link CategoryDataset} in the form of a
+ * "spider web".  Multiple series can be plotted on the same axis to allow
  * easy comparison.  This plot doesn't support negative values at present.
  */
-public class SpiderWebPlot extends Plot 
-                           implements Block, Cloneable, Serializable {
-    
+public class SpiderWebPlot extends Plot implements Cloneable, Serializable {
+
     /** For serialization. */
     private static final long serialVersionUID = -5376340422031599463L;
-    
+
     /** The default head radius percent (currently 1%). */
     public static final double DEFAULT_HEAD = 0.01;
 
     /** The default axis label gap (currently 10%). */
     public static final double DEFAULT_AXIS_LABEL_GAP = 0.10;
- 
+
     /** The default interior gap. */
     public static final double DEFAULT_INTERIOR_GAP = 0.25;
 
@@ -137,27 +145,27 @@ public class SpiderWebPlot extends Plot
     public static final double DEFAULT_START_ANGLE = 90.0;
 
     /** The default series label font. */
-    public static final Font DEFAULT_LABEL_FONT = new Font("SansSerif", 
+    public static final Font DEFAULT_LABEL_FONT = new Font("SansSerif",
             Font.PLAIN, 10);
-    
+
     /** The default series label paint. */
     public static final Paint  DEFAULT_LABEL_PAINT = Color.black;
 
     /** The default series label background paint. */
-    public static final Paint  DEFAULT_LABEL_BACKGROUND_PAINT 
-        = new Color(255, 255, 192);
+    public static final Paint  DEFAULT_LABEL_BACKGROUND_PAINT
+            = new Color(255, 255, 192);
 
     /** The default series label outline paint. */
     public static final Paint  DEFAULT_LABEL_OUTLINE_PAINT = Color.black;
 
     /** The default series label outline stroke. */
-    public static final Stroke DEFAULT_LABEL_OUTLINE_STROKE 
-        = new BasicStroke(0.5f);
+    public static final Stroke DEFAULT_LABEL_OUTLINE_STROKE
+            = new BasicStroke(0.5f);
 
     /** The default series label shadow paint. */
     public static final Paint  DEFAULT_LABEL_SHADOW_PAINT = Color.lightGray;
 
-    /** 
+    /**
      * The default maximum value plotted - forces the plot to evaluate
      *  the maximum from the data passed in
      */
@@ -172,13 +180,27 @@ public class SpiderWebPlot extends Plot
     /** The gap between the labels and the axes as a %age of the radius. */
     private double axisLabelGap;
 
+    /**
+     * The paint used to draw the axis lines.
+     *
+     * @since 1.0.4
+     */
+    private transient Paint axisLinePaint;
+
+    /**
+     * The stroke used to draw the axis lines.
+     *
+     * @since 1.0.4
+     */
+    private transient Stroke axisLineStroke;
+
     /** The dataset. */
     private CategoryDataset dataset;
 
     /** The maximum value we are plotting against on each category axis */
     private double maxValue;
-  
-    /** 
+
+    /**
      * The data extract order (BY_ROW or BY_COLUMN). This denotes whether
      * the data series are stored in rows (in which case the category names are
      * derived from the column keys) or in columns (in which case the category
@@ -189,7 +211,7 @@ public class SpiderWebPlot extends Plot
     /** The starting angle. */
     private double startAngle;
 
-    /** The direction for drawing the radar axis & plots. */
+    /** The direction for drawing the radar axis and plots. */
     private Rotation direction;
 
     /** The legend item shape. */
@@ -227,30 +249,30 @@ public class SpiderWebPlot extends Plot
 
     /** The color used to draw the category labels. */
     private transient Paint labelPaint;
-    
+
     /** The label generator. */
     private CategoryItemLabelGenerator labelGenerator;
 
     /** controls if the web polygons are filled or not */
     private boolean webFilled = true;
-    
+
     /** A tooltip generator for the plot (<code>null</code> permitted). */
     private CategoryToolTipGenerator toolTipGenerator;
-    
+
     /** A URL generator for the plot (<code>null</code> permitted). */
     private CategoryURLGenerator urlGenerator;
-  
+
     /**
      * Creates a default plot with no dataset.
      */
     public SpiderWebPlot() {
-        this(null);   
+        this(null);
     }
 
     /**
      * Creates a new spider web plot with the given dataset, with each row
-     * representing a series.  
-     * 
+     * representing a series.
+     *
      * @param dataset  the dataset (<code>null</code> permitted).
      */
     public SpiderWebPlot(CategoryDataset dataset) {
@@ -259,16 +281,14 @@ public class SpiderWebPlot extends Plot
 
     /**
      * Creates a new spider web plot with the given dataset.
-     * 
+     *
      * @param dataset  the dataset.
      * @param extract  controls how data is extracted ({@link TableOrder#BY_ROW}
      *                 or {@link TableOrder#BY_COLUMN}).
      */
     public SpiderWebPlot(CategoryDataset dataset, TableOrder extract) {
         super();
-        if (extract == null) {
-            throw new IllegalArgumentException("Null 'extract' argument.");
-        }
+        ParamChecks.nullNotPermitted(extract, "extract");
         this.dataset = dataset;
         if (dataset != null) {
             dataset.addChangeListener(this);
@@ -277,6 +297,8 @@ public class SpiderWebPlot extends Plot
         this.dataExtractOrder = extract;
         this.headPercent = DEFAULT_HEAD;
         this.axisLabelGap = DEFAULT_AXIS_LABEL_GAP;
+        this.axisLinePaint = Color.black;
+        this.axisLineStroke = new BasicStroke(1.0f);
 
         this.interiorGap = DEFAULT_INTERIOR_GAP;
         this.startAngle = DEFAULT_START_ANGLE;
@@ -289,46 +311,51 @@ public class SpiderWebPlot extends Plot
 
         this.seriesOutlinePaint = null;
         this.seriesOutlinePaintList = new PaintList();
-        this.baseSeriesOutlinePaint = Color.gray;
+        this.baseSeriesOutlinePaint = DEFAULT_OUTLINE_PAINT;
 
         this.seriesOutlineStroke = null;
         this.seriesOutlineStrokeList = new StrokeList();
-        this.baseSeriesOutlineStroke = new BasicStroke(0.5f);
+        this.baseSeriesOutlineStroke = DEFAULT_OUTLINE_STROKE;
 
         this.labelFont = DEFAULT_LABEL_FONT;
         this.labelPaint = DEFAULT_LABEL_PAINT;
         this.labelGenerator = new StandardCategoryItemLabelGenerator();
-        
+
         this.legendItemShape = DEFAULT_LEGEND_ITEM_CIRCLE;
     }
 
     /**
      * Returns a short string describing the type of plot.
-     * 
+     *
      * @return The plot type.
      */
+    @Override
     public String getPlotType() {
         // return localizationResources.getString("Radar_Plot");
         return ("Spider Web Plot");
     }
-    
+
     /**
      * Returns the dataset.
-     * 
+     *
      * @return The dataset (possibly <code>null</code>).
+     *
+     * @see #setDataset(CategoryDataset)
      */
     public CategoryDataset getDataset() {
-        return this.dataset;   
+        return this.dataset;
     }
-    
+
     /**
      * Sets the dataset used by the plot and sends a {@link PlotChangeEvent}
      * to all registered listeners.
-     * 
+     *
      * @param dataset  the dataset (<code>null</code> permitted).
+     *
+     * @see #getDataset()
      */
     public void setDataset(CategoryDataset dataset) {
-        // if there is an existing dataset, remove the plot from the list of 
+        // if there is an existing dataset, remove the plot from the list of
         // change listeners...
         if (this.dataset != null) {
             this.dataset.removeChangeListener(this);
@@ -347,28 +374,34 @@ public class SpiderWebPlot extends Plot
 
     /**
      * Method to determine if the web chart is to be filled.
-     * 
+     *
      * @return A boolean.
+     *
+     * @see #setWebFilled(boolean)
      */
     public boolean isWebFilled() {
         return this.webFilled;
     }
 
     /**
-     * Sets the webFilled flag and sends a {@link PlotChangeEvent} to all 
+     * Sets the webFilled flag and sends a {@link PlotChangeEvent} to all
      * registered listeners.
-     * 
+     *
      * @param flag  the flag.
+     *
+     * @see #isWebFilled()
      */
     public void setWebFilled(boolean flag) {
         this.webFilled = flag;
-        notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
-  
+
     /**
      * Returns the data extract order (by row or by column).
-     * 
+     *
      * @return The data extract order (never <code>null</code>).
+     *
+     * @see #setDataExtractOrder(TableOrder)
      */
     public TableOrder getDataExtractOrder() {
         return this.dataExtractOrder;
@@ -377,35 +410,42 @@ public class SpiderWebPlot extends Plot
     /**
      * Sets the data extract order (by row or by column) and sends a
      * {@link PlotChangeEvent}to all registered listeners.
-     * 
+     *
      * @param order the order (<code>null</code> not permitted).
+     *
+     * @throws IllegalArgumentException if <code>order</code> is
+     *     <code>null</code>.
+     *
+     * @see #getDataExtractOrder()
      */
     public void setDataExtractOrder(TableOrder order) {
-        if (order == null) {
-            throw new IllegalArgumentException("Null 'order' argument");
-        }
+        ParamChecks.nullNotPermitted(order, "order");
         this.dataExtractOrder = order;
-        notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
      * Returns the head percent.
-     * 
+     *
      * @return The head percent.
+     *
+     * @see #setHeadPercent(double)
      */
     public double getHeadPercent() {
-        return this.headPercent;   
+        return this.headPercent;
     }
-    
+
     /**
-     * Sets the head percent and sends a {@link PlotChangeEvent} to all 
+     * Sets the head percent and sends a {@link PlotChangeEvent} to all
      * registered listeners.
-     * 
+     *
      * @param percent  the percent.
+     *
+     * @see #getHeadPercent()
      */
     public void setHeadPercent(double percent) {
         this.headPercent = percent;
-        notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
@@ -413,8 +453,10 @@ public class SpiderWebPlot extends Plot
      * <BR>
      * This is measured in degrees starting from 3 o'clock (Java Arc2D default)
      * and measuring anti-clockwise.
-     * 
+     *
      * @return The start angle.
+     *
+     * @see #setStartAngle(double)
      */
     public double getStartAngle() {
         return this.startAngle;
@@ -427,39 +469,47 @@ public class SpiderWebPlot extends Plot
      * The initial default value is 90 degrees, which corresponds to 12 o'clock.
      * A value of zero corresponds to 3 o'clock... this is the encoding used by
      * Java's Arc2D class.
-     * 
+     *
      * @param angle  the angle (in degrees).
+     *
+     * @see #getStartAngle()
      */
     public void setStartAngle(double angle) {
         this.startAngle = angle;
-        notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
      * Returns the maximum value any category axis can take.
-     * 
+     *
      * @return The maximum value.
+     *
+     * @see #setMaxValue(double)
      */
     public double getMaxValue() {
         return this.maxValue;
     }
 
     /**
-     * Sets the maximum value any category axis can take and sends 
+     * Sets the maximum value any category axis can take and sends
      * a {@link PlotChangeEvent} to all registered listeners.
-     * 
+     *
      * @param value  the maximum value.
+     *
+     * @see #getMaxValue()
      */
     public void setMaxValue(double value) {
         this.maxValue = value;
-        notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
      * Returns the direction in which the radar axes are drawn
      * (clockwise or anti-clockwise).
-     * 
+     *
      * @return The direction (never <code>null</code>).
+     *
+     * @see #setDirection(Rotation)
      */
     public Rotation getDirection() {
         return this.direction;
@@ -468,33 +518,37 @@ public class SpiderWebPlot extends Plot
     /**
      * Sets the direction in which the radar axes are drawn and sends a
      * {@link PlotChangeEvent} to all registered listeners.
-     * 
+     *
      * @param direction  the direction (<code>null</code> not permitted).
+     *
+     * @see #getDirection()
      */
     public void setDirection(Rotation direction) {
-        if (direction == null) {
-            throw new IllegalArgumentException("Null 'direction' argument.");
-        }
+        ParamChecks.nullNotPermitted(direction, "direction");
         this.direction = direction;
-        notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
-     * Returns the interior gap, measured as a percentage of the available 
+     * Returns the interior gap, measured as a percentage of the available
      * drawing space.
-     * 
+     *
      * @return The gap (as a percentage of the available drawing space).
+     *
+     * @see #setInteriorGap(double)
      */
     public double getInteriorGap() {
         return this.interiorGap;
     }
 
     /**
-     * Sets the interior gap and sends a {@link PlotChangeEvent} to all 
-     * registered listeners. This controls the space between the edges of the 
+     * Sets the interior gap and sends a {@link PlotChangeEvent} to all
+     * registered listeners. This controls the space between the edges of the
      * plot and the plot area itself (the region where the axis labels appear).
-     * 
+     *
      * @param percent  the gap (as a percentage of the available drawing space).
+     *
+     * @see #getInteriorGap()
      */
     public void setInteriorGap(double percent) {
         if ((percent < 0.0) || (percent > MAX_INTERIOR_GAP)) {
@@ -503,59 +557,125 @@ public class SpiderWebPlot extends Plot
         }
         if (this.interiorGap != percent) {
             this.interiorGap = percent;
-            notifyListeners(new PlotChangeEvent(this));
+            fireChangeEvent();
         }
     }
 
     /**
      * Returns the axis label gap.
-     * 
+     *
      * @return The axis label gap.
+     *
+     * @see #setAxisLabelGap(double)
      */
     public double getAxisLabelGap() {
-        return this.axisLabelGap;   
+        return this.axisLabelGap;
     }
-    
+
     /**
-     * Sets the axis label gap and sends a {@link PlotChangeEvent} to all 
+     * Sets the axis label gap and sends a {@link PlotChangeEvent} to all
      * registered listeners.
-     * 
+     *
      * @param gap  the gap.
+     *
+     * @see #getAxisLabelGap()
      */
     public void setAxisLabelGap(double gap) {
         this.axisLabelGap = gap;
-        notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
+    }
+
+    /**
+     * Returns the paint used to draw the axis lines.
+     *
+     * @return The paint used to draw the axis lines (never <code>null</code>).
+     *
+     * @see #setAxisLinePaint(Paint)
+     * @see #getAxisLineStroke()
+     * @since 1.0.4
+     */
+    public Paint getAxisLinePaint() {
+        return this.axisLinePaint;
+    }
+
+    /**
+     * Sets the paint used to draw the axis lines and sends a
+     * {@link PlotChangeEvent} to all registered listeners.
+     *
+     * @param paint  the paint (<code>null</code> not permitted).
+     *
+     * @see #getAxisLinePaint()
+     * @since 1.0.4
+     */
+    public void setAxisLinePaint(Paint paint) {
+        ParamChecks.nullNotPermitted(paint, "paint");
+        this.axisLinePaint = paint;
+        fireChangeEvent();
+    }
+
+    /**
+     * Returns the stroke used to draw the axis lines.
+     *
+     * @return The stroke used to draw the axis lines (never <code>null</code>).
+     *
+     * @see #setAxisLineStroke(Stroke)
+     * @see #getAxisLinePaint()
+     * @since 1.0.4
+     */
+    public Stroke getAxisLineStroke() {
+        return this.axisLineStroke;
+    }
+
+    /**
+     * Sets the stroke used to draw the axis lines and sends a
+     * {@link PlotChangeEvent} to all registered listeners.
+     *
+     * @param stroke  the stroke (<code>null</code> not permitted).
+     *
+     * @see #getAxisLineStroke()
+     * @since 1.0.4
+     */
+    public void setAxisLineStroke(Stroke stroke) {
+        ParamChecks.nullNotPermitted(stroke, "stroke");
+        this.axisLineStroke = stroke;
+        fireChangeEvent();
     }
 
     //// SERIES PAINT /////////////////////////
 
     /**
      * Returns the paint for ALL series in the plot.
-     * 
+     *
      * @return The paint (possibly <code>null</code>).
+     *
+     * @see #setSeriesPaint(Paint)
      */
     public Paint getSeriesPaint() {
         return this.seriesPaint;
     }
 
     /**
-     * Sets the paint for ALL series in the plot. If this is set to</code> null
-     * </code>, then a list of paints is used instead (to allow different colors
-     * to be used for each series of the radar group).
-     * 
-     * @param paint the paint (<code>null</code> permitted).
+     * Sets the paint for ALL series in the plot.  If this is set to 
+     * {@code null}, then a list of paints is used instead (to allow different 
+     * colors to be used for each series of the radar group).
+     *
+     * @param paint the paint ({@code null} permitted).
+     *
+     * @see #getSeriesPaint()
      */
     public void setSeriesPaint(Paint paint) {
         this.seriesPaint = paint;
-        notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
      * Returns the paint for the specified series.
-     * 
+     *
      * @param series  the series index (zero-based).
-     * 
+     *
      * @return The paint (never <code>null</code>).
+     *
+     * @see #setSeriesPaint(int, Paint)
      */
     public Paint getSeriesPaint(int series) {
 
@@ -584,20 +704,24 @@ public class SpiderWebPlot extends Plot
     /**
      * Sets the paint used to fill a series of the radar and sends a
      * {@link PlotChangeEvent} to all registered listeners.
-     * 
+     *
      * @param series  the series index (zero-based).
      * @param paint  the paint (<code>null</code> permitted).
+     *
+     * @see #getSeriesPaint(int)
      */
     public void setSeriesPaint(int series, Paint paint) {
         this.seriesPaintList.setPaint(series, paint);
-        notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
      * Returns the base series paint. This is used when no other paint is
      * available.
-     * 
+     *
      * @return The paint (never <code>null</code>).
+     *
+     * @see #setBaseSeriesPaint(Paint)
      */
     public Paint getBaseSeriesPaint() {
       return this.baseSeriesPaint;
@@ -605,22 +729,22 @@ public class SpiderWebPlot extends Plot
 
     /**
      * Sets the base series paint.
-     * 
+     *
      * @param paint  the paint (<code>null</code> not permitted).
+     *
+     * @see #getBaseSeriesPaint()
      */
     public void setBaseSeriesPaint(Paint paint) {
-        if (paint == null) {
-            throw new IllegalArgumentException("Null 'paint' argument.");
-        }
+        ParamChecks.nullNotPermitted(paint, "paint");
         this.baseSeriesPaint = paint;
-        notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
 
     //// SERIES OUTLINE PAINT ////////////////////////////
 
     /**
      * Returns the outline paint for ALL series in the plot.
-     * 
+     *
      * @return The paint (possibly <code>null</code>).
      */
     public Paint getSeriesOutlinePaint() {
@@ -629,21 +753,21 @@ public class SpiderWebPlot extends Plot
 
     /**
      * Sets the outline paint for ALL series in the plot. If this is set to
-     * </code> null</code>, then a list of paints is used instead (to allow
+     * {@code null}, then a list of paints is used instead (to allow
      * different colors to be used for each series).
-     * 
-     * @param paint  the paint (<code>null</code> permitted).
+     *
+     * @param paint  the paint ({@code null} permitted).
      */
     public void setSeriesOutlinePaint(Paint paint) {
         this.seriesOutlinePaint = paint;
-        notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
      * Returns the paint for the specified series.
-     * 
+     *
      * @param series  the series index (zero-based).
-     * 
+     *
      * @return The paint (never <code>null</code>).
      */
     public Paint getSeriesOutlinePaint(int series) {
@@ -662,19 +786,19 @@ public class SpiderWebPlot extends Plot
     /**
      * Sets the paint used to fill a series of the radar and sends a
      * {@link PlotChangeEvent} to all registered listeners.
-     * 
+     *
      * @param series  the series index (zero-based).
      * @param paint  the paint (<code>null</code> permitted).
      */
     public void setSeriesOutlinePaint(int series, Paint paint) {
         this.seriesOutlinePaintList.setPaint(series, paint);
-        notifyListeners(new PlotChangeEvent(this));  
+        fireChangeEvent();
     }
 
     /**
      * Returns the base series paint. This is used when no other paint is
      * available.
-     * 
+     *
      * @return The paint (never <code>null</code>).
      */
     public Paint getBaseSeriesOutlinePaint() {
@@ -683,22 +807,20 @@ public class SpiderWebPlot extends Plot
 
     /**
      * Sets the base series paint.
-     * 
+     *
      * @param paint  the paint (<code>null</code> not permitted).
      */
     public void setBaseSeriesOutlinePaint(Paint paint) {
-        if (paint == null) {
-            throw new IllegalArgumentException("Null 'paint' argument.");
-        }
+        ParamChecks.nullNotPermitted(paint, "paint");
         this.baseSeriesOutlinePaint = paint;
-        notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
 
     //// SERIES OUTLINE STROKE /////////////////////
 
     /**
      * Returns the outline stroke for ALL series in the plot.
-     * 
+     *
      * @return The stroke (possibly <code>null</code>).
      */
     public Stroke getSeriesOutlineStroke() {
@@ -707,21 +829,21 @@ public class SpiderWebPlot extends Plot
 
     /**
      * Sets the outline stroke for ALL series in the plot. If this is set to
-     * </code> null</code>, then a list of paints is used instead (to allow
+     * {@code null}, then a list of paints is used instead (to allow
      * different colors to be used for each series).
-     * 
-     * @param stroke  the stroke (<code>null</code> permitted).
+     *
+     * @param stroke  the stroke ({@code null} permitted).
      */
     public void setSeriesOutlineStroke(Stroke stroke) {
         this.seriesOutlineStroke = stroke;
-        notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
      * Returns the stroke for the specified series.
-     * 
+     *
      * @param series  the series index (zero-based).
-     * 
+     *
      * @return The stroke (never <code>null</code>).
      */
     public Stroke getSeriesOutlineStroke(int series) {
@@ -743,19 +865,19 @@ public class SpiderWebPlot extends Plot
     /**
      * Sets the stroke used to fill a series of the radar and sends a
      * {@link PlotChangeEvent} to all registered listeners.
-     * 
+     *
      * @param series  the series index (zero-based).
      * @param stroke  the stroke (<code>null</code> permitted).
      */
     public void setSeriesOutlineStroke(int series, Stroke stroke) {
         this.seriesOutlineStrokeList.setStroke(series, stroke);
-        notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
      * Returns the base series stroke. This is used when no other stroke is
      * available.
-     * 
+     *
      * @return The stroke (never <code>null</code>).
      */
     public Stroke getBaseSeriesOutlineStroke() {
@@ -764,43 +886,46 @@ public class SpiderWebPlot extends Plot
 
     /**
      * Sets the base series stroke.
-     * 
+     *
      * @param stroke  the stroke (<code>null</code> not permitted).
      */
     public void setBaseSeriesOutlineStroke(Stroke stroke) {
-        if (stroke == null) {
-            throw new IllegalArgumentException("Null 'stroke' argument.");
-        }
+        ParamChecks.nullNotPermitted(stroke, "stroke");
         this.baseSeriesOutlineStroke = stroke;
-        notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
      * Returns the shape used for legend items.
-     * 
-     * @return The shape.
+     *
+     * @return The shape (never <code>null</code>).
+     *
+     * @see #setLegendItemShape(Shape)
      */
     public Shape getLegendItemShape() {
         return this.legendItemShape;
     }
 
     /**
-     * Sets the shape used for legend items.
-     * 
+     * Sets the shape used for legend items and sends a {@link PlotChangeEvent}
+     * to all registered listeners.
+     *
      * @param shape  the shape (<code>null</code> not permitted).
+     *
+     * @see #getLegendItemShape()
      */
     public void setLegendItemShape(Shape shape) {
-        if (shape == null) {
-            throw new IllegalArgumentException("Null 'shape' argument.");
-        }
+        ParamChecks.nullNotPermitted(shape, "shape");
         this.legendItemShape = shape;
-        notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
      * Returns the series label font.
-     * 
+     *
      * @return The font (never <code>null</code>).
+     *
+     * @see #setLabelFont(Font)
      */
     public Font getLabelFont() {
         return this.labelFont;
@@ -809,21 +934,23 @@ public class SpiderWebPlot extends Plot
     /**
      * Sets the series label font and sends a {@link PlotChangeEvent} to all
      * registered listeners.
-     * 
+     *
      * @param font  the font (<code>null</code> not permitted).
+     *
+     * @see #getLabelFont()
      */
     public void setLabelFont(Font font) {
-        if (font == null) {
-            throw new IllegalArgumentException("Null 'font' argument.");
-        }
+        ParamChecks.nullNotPermitted(font, "font");
         this.labelFont = font;
-        notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
      * Returns the series label paint.
-     * 
+     *
      * @return The paint (never <code>null</code>).
+     *
+     * @see #setLabelPaint(Paint)
      */
     public Paint getLabelPaint() {
         return this.labelPaint;
@@ -832,202 +959,177 @@ public class SpiderWebPlot extends Plot
     /**
      * Sets the series label paint and sends a {@link PlotChangeEvent} to all
      * registered listeners.
-     * 
+     *
      * @param paint  the paint (<code>null</code> not permitted).
+     *
+     * @see #getLabelPaint()
      */
     public void setLabelPaint(Paint paint) {
-        if (paint == null) {
-            throw new IllegalArgumentException("Null 'paint' argument.");
-        }
+        ParamChecks.nullNotPermitted(paint, "paint");
         this.labelPaint = paint;
-        notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
 
     /**
      * Returns the label generator.
-     * 
+     *
      * @return The label generator (never <code>null</code>).
+     *
+     * @see #setLabelGenerator(CategoryItemLabelGenerator)
      */
     public CategoryItemLabelGenerator getLabelGenerator() {
-        return this.labelGenerator;   
+        return this.labelGenerator;
     }
-    
+
     /**
      * Sets the label generator and sends a {@link PlotChangeEvent} to all
      * registered listeners.
-     * 
+     *
      * @param generator  the generator (<code>null</code> not permitted).
+     *
+     * @see #getLabelGenerator()
      */
     public void setLabelGenerator(CategoryItemLabelGenerator generator) {
-        if (generator == null) {
-            throw new IllegalArgumentException("Null 'generator' argument.");   
-        }
-        this.labelGenerator = generator;    
+        ParamChecks.nullNotPermitted(generator, "generator");
+        this.labelGenerator = generator;
     }
-    
+
     /**
      * Returns the tool tip generator for the plot.
-     * 
+     *
      * @return The tool tip generator (possibly <code>null</code>).
-     * 
+     *
      * @see #setToolTipGenerator(CategoryToolTipGenerator)
-     * 
+     *
      * @since 1.0.2
      */
     public CategoryToolTipGenerator getToolTipGenerator() {
-        return this.toolTipGenerator;    
+        return this.toolTipGenerator;
     }
-    
+
     /**
-     * Sets the tool tip generator for the plot and sends a 
+     * Sets the tool tip generator for the plot and sends a
      * {@link PlotChangeEvent} to all registered listeners.
-     * 
+     *
      * @param generator  the generator (<code>null</code> permitted).
-     * 
+     *
      * @see #getToolTipGenerator()
-     * 
+     *
      * @since 1.0.2
      */
     public void setToolTipGenerator(CategoryToolTipGenerator generator) {
         this.toolTipGenerator = generator;
-        this.notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
-    
+
     /**
      * Returns the URL generator for the plot.
-     * 
+     *
      * @return The URL generator (possibly <code>null</code>).
-     * 
+     *
      * @see #setURLGenerator(CategoryURLGenerator)
-     * 
+     *
      * @since 1.0.2
      */
     public CategoryURLGenerator getURLGenerator() {
-        return this.urlGenerator;    
+        return this.urlGenerator;
     }
-    
+
     /**
-     * Sets the URL generator for the plot and sends a 
+     * Sets the URL generator for the plot and sends a
      * {@link PlotChangeEvent} to all registered listeners.
-     * 
+     *
      * @param generator  the generator (<code>null</code> permitted).
-     * 
+     *
      * @see #getURLGenerator()
-     * 
+     *
      * @since 1.0.2
      */
     public void setURLGenerator(CategoryURLGenerator generator) {
         this.urlGenerator = generator;
-        this.notifyListeners(new PlotChangeEvent(this));
+        fireChangeEvent();
     }
-    
+
     /**
-     * Returns a collection of legend items for the radar chart.
-     * 
-     * @return The legend items.
+     * Returns a collection of legend items for the spider web chart.
+     *
+     * @return The legend items (never <code>null</code>).
      */
+    @Override
     public LegendItemCollection getLegendItems() {
         LegendItemCollection result = new LegendItemCollection();
-
+        if (getDataset() == null) {
+            return result;
+        }
         List keys = null;
-
         if (this.dataExtractOrder == TableOrder.BY_ROW) {
             keys = this.dataset.getRowKeys();
         }
         else if (this.dataExtractOrder == TableOrder.BY_COLUMN) {
             keys = this.dataset.getColumnKeys();
         }
-
-        if (keys != null) {
-            int series = 0;
-            Iterator iterator = keys.iterator();
-            Shape shape = getLegendItemShape();
-
-            while (iterator.hasNext()) {
-                String label = iterator.next().toString();
-                String description = label;
-
-                Paint paint = getSeriesPaint(series);
-                Paint outlinePaint = getSeriesOutlinePaint(series);
-                Stroke stroke = getSeriesOutlineStroke(series);
-                LegendItem item = new LegendItem(label, description, 
-                        null, null, shape, paint, stroke, outlinePaint);
-                result.add(item);
-                series++;
-            }
+        if (keys == null) {
+            return result;
         }
 
+        int series = 0;
+        Iterator iterator = keys.iterator();
+        Shape shape = getLegendItemShape();
+        while (iterator.hasNext()) {
+            Comparable key = (Comparable) iterator.next();
+            String label = key.toString();
+            String description = label;
+            Paint paint = getSeriesPaint(series);
+            Paint outlinePaint = getSeriesOutlinePaint(series);
+            Stroke stroke = getSeriesOutlineStroke(series);
+            LegendItem item = new LegendItem(label, description,
+                    null, null, shape, paint, stroke, outlinePaint);
+            item.setDataset(getDataset());
+            item.setSeriesKey(key);
+            item.setSeriesIndex(series);
+            result.add(item);
+            series++;
+        }
         return result;
     }
 
     /**
      * Returns a cartesian point from a polar angle, length and bounding box
-     * 
+     *
      * @param bounds  the area inside which the point needs to be.
      * @param angle  the polar angle, in degrees.
      * @param length  the relative length. Given in percent of maximum extend.
-     * 
+     *
      * @return The cartesian point.
      */
-    protected Point2D getWebPoint(Rectangle2D bounds, 
+    protected Point2D getWebPoint(Rectangle2D bounds,
                                   double angle, double length) {
-        
+
         double angrad = Math.toRadians(angle);
         double x = Math.cos(angrad) * length * bounds.getWidth() / 2;
         double y = -Math.sin(angrad) * length * bounds.getHeight() / 2;
 
-        return new Point2D.Double(bounds.getX() + x + bounds.getWidth() / 2, 
+        return new Point2D.Double(bounds.getX() + x + bounds.getWidth() / 2,
                 bounds.getY() + y + bounds.getHeight() / 2);
     }
-    
-    /**
-     * Arranges the contents of the block, within the given constraints, and 
-     * returns the block size.
-     * 
-     * @param g2  the graphics device.
-     * @param constraint  the constraint (<code>null</code> not permitted).
-     * @param params  the layout parameters (<code>null</code> not permitted).
-     * 
-     * @return The layout result.
-     */
-    public ArrangeResult arrange(Graphics2D g2, RectangleConstraint constraint, 
-            ArrangeParams params) {
-        
-        // there isn't any content to arrange, so we just need to return the
-        // size for the given constraint
-        ArrangeResult result = params.getRecyclableResult();
-        double w = constraint.calculateConstrainedWidth(getDefaultWidth());
-        double h = constraint.calculateConstrainedHeight(getDefaultHeight());
-        if (result != null) {
-            result.setSize(w, h);
-        }
-        else {
-            result = new ArrangeResult(w, h, null);
-        }
-        return result;
-        
-    }
-    
+
     /**
      * Draws the plot on a Java 2D graphics device (such as the screen or a
      * printer).
-     * 
+     *
      * @param g2  the graphics device.
      * @param area  the area within which the plot should be drawn.
      * @param anchor  the anchor point (<code>null</code> permitted).
      * @param parentState  the state from the parent plot, if there is one.
      * @param info  collects info about the drawing.
      */
-    public void draw(Graphics2D g2, Rectangle2D area, 
-                     Point2D anchor,
-                     PlotState parentState,
-                     PlotRenderingInfo info)
-    {
+    @Override
+    public void draw(Graphics2D g2, Rectangle2D area, Point2D anchor,
+            PlotState parentState, PlotRenderingInfo info) {
+
         // adjust for insets...
-        //RectangleInsets insets = getInsets();
-        //insets.trim(plotArea);
-        RectangleInsets margin = getMargin();
-        margin.trim(area);
+        RectangleInsets insets = getInsets();
+        insets.trim(area);
 
         if (info != null) {
             info.setPlotArea(area);
@@ -1035,16 +1137,17 @@ public class SpiderWebPlot extends Plot
         }
 
         drawBackground(g2, area);
+        drawOutline(g2, area);
 
         Shape savedClip = g2.getClip();
 
         g2.clip(area);
         Composite originalComposite = g2.getComposite();
-        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
                 getForegroundAlpha()));
 
         if (!DatasetUtilities.isEmptyOrNull(this.dataset)) {
-            int seriesCount = 0, catCount = 0;
+            int seriesCount, catCount;
 
             if (this.dataExtractOrder == TableOrder.BY_ROW) {
                 seriesCount = this.dataset.getRowCount();
@@ -1056,11 +1159,12 @@ public class SpiderWebPlot extends Plot
             }
 
             // ensure we have a maximum value to use on the axes
-            if (this.maxValue == DEFAULT_MAX_VALUE)
+            if (this.maxValue == DEFAULT_MAX_VALUE) {
                 calculateMaxValue(seriesCount, catCount);
+            }
 
-            // Next, setup the plot area 
-      
+            // Next, setup the plot area
+
             // adjust the plot area by the interior spacing value
 
             double gapHorizontal = area.getWidth() * getInteriorGap();
@@ -1084,18 +1188,32 @@ public class SpiderWebPlot extends Plot
             Point2D  centre = new Point2D.Double(X + W / 2, Y + H / 2);
             Rectangle2D radarArea = new Rectangle2D.Double(X, Y, W, H);
 
-            // Now actually plot each of the series polygons..
+            // draw the axis and category label
+            for (int cat = 0; cat < catCount; cat++) {
+                double angle = getStartAngle()
+                        + (getDirection().getFactor() * cat * 360 / catCount);
 
+                Point2D endPoint = getWebPoint(radarArea, angle, 1);
+                                                     // 1 = end of axis
+                Line2D  line = new Line2D.Double(centre, endPoint);
+                g2.setPaint(this.axisLinePaint);
+                g2.setStroke(this.axisLineStroke);
+                g2.draw(line);
+                drawLabel(g2, radarArea, 0.0, cat, angle, 360.0 / catCount);
+            }
+
+            // Now actually plot each of the series polygons..
             for (int series = 0; series < seriesCount; series++) {
-                drawRadarPoly(g2, radarArea, centre, info, series, catCount, 
+                drawRadarPoly(g2, radarArea, centre, info, series, catCount,
                         headH, headW);
             }
         }
-        else { 
+        else {
             drawNoDataMessage(g2, area);
         }
-        g2.clip(savedClip);
+        g2.setClip(savedClip);
         g2.setComposite(originalComposite);
+        drawOutline(g2, area);
     }
 
     /**
@@ -1106,17 +1224,17 @@ public class SpiderWebPlot extends Plot
      * @param catCount  the number of categories
      */
     private void calculateMaxValue(int seriesCount, int catCount) {
-        double v = 0;
-        Number nV = null;
+        double v;
+        Number nV;
 
         for (int seriesIndex = 0; seriesIndex < seriesCount; seriesIndex++) {
             for (int catIndex = 0; catIndex < catCount; catIndex++) {
                 nV = getPlotValue(seriesIndex, catIndex);
                 if (nV != null) {
                     v = nV.doubleValue();
-                    if (v > this.maxValue) { 
+                    if (v > this.maxValue) {
                         this.maxValue = v;
-                    }   
+                    }
                 }
             }
         }
@@ -1124,7 +1242,7 @@ public class SpiderWebPlot extends Plot
 
     /**
      * Draws a radar plot polygon.
-     * 
+     *
      * @param g2 the graphics device.
      * @param plotArea the area we are plotting in (already adjusted).
      * @param centre the centre point of the radar axes
@@ -1134,7 +1252,7 @@ public class SpiderWebPlot extends Plot
      * @param headH the data point height
      * @param headW the data point width
      */
-    protected void drawRadarPoly(Graphics2D g2, 
+    protected void drawRadarPoly(Graphics2D g2,
                                  Rectangle2D plotArea,
                                  Point2D centre,
                                  PlotRenderingInfo info,
@@ -1143,34 +1261,38 @@ public class SpiderWebPlot extends Plot
 
         Polygon polygon = new Polygon();
 
-        EntityCollection entities = info.getOwner().getEntityCollection();
+        EntityCollection entities = null;
+        if (info != null) {
+            entities = info.getOwner().getEntityCollection();
+        }
 
         // plot the data...
         for (int cat = 0; cat < catCount; cat++) {
+
             Number dataValue = getPlotValue(series, cat);
 
             if (dataValue != null) {
                 double value = dataValue.doubleValue();
-  
+
                 if (value >= 0) { // draw the polygon series...
-              
+
                     // Finds our starting angle from the centre for this axis
 
                     double angle = getStartAngle()
                         + (getDirection().getFactor() * cat * 360 / catCount);
 
-                    // The following angle calc will ensure there isn't a top 
-                    // vertical axis - this may be useful if you don't want any 
-                    // given criteria to 'appear' move important than the 
+                    // The following angle calc will ensure there isn't a top
+                    // vertical axis - this may be useful if you don't want any
+                    // given criteria to 'appear' move important than the
                     // others..
-                    //  + (getDirection().getFactor() 
+                    //  + (getDirection().getFactor()
                     //        * (cat + 0.5) * 360 / catCount);
 
-                    // find the point at the appropriate distance end point 
+                    // find the point at the appropriate distance end point
                     // along the axis/angle identified above and add it to the
                     // polygon
 
-                    Point2D point = getWebPoint(plotArea, angle, 
+                    Point2D point = getWebPoint(plotArea, angle,
                             value / this.maxValue);
                     polygon.addPoint((int) point.getX(), (int) point.getY());
 
@@ -1180,8 +1302,8 @@ public class SpiderWebPlot extends Plot
                     Paint outlinePaint = getSeriesOutlinePaint(series);
                     Stroke outlineStroke = getSeriesOutlineStroke(series);
 
-                    Ellipse2D head = new Ellipse2D.Double(point.getX() 
-                            - headW / 2, point.getY() - headH / 2, headW, 
+                    Ellipse2D head = new Ellipse2D.Double(point.getX()
+                            - headW / 2, point.getY() - headH / 2, headW,
                             headH);
                     g2.setPaint(paint);
                     g2.fill(head);
@@ -1190,70 +1312,74 @@ public class SpiderWebPlot extends Plot
                     g2.draw(head);
 
                     if (entities != null) {
+                        int row, col;
+                        if (this.dataExtractOrder == TableOrder.BY_ROW) {
+                            row = series;
+                            col = cat;
+                        }
+                        else {
+                            row = cat;
+                            col = series;
+                        }
                         String tip = null;
                         if (this.toolTipGenerator != null) {
                             tip = this.toolTipGenerator.generateToolTip(
-                                    this.dataset, series, cat);
+                                    this.dataset, row, col);
                         }
 
                         String url = null;
                         if (this.urlGenerator != null) {
-                            url = this.urlGenerator.generateURL(this.dataset, 
-                                   series, cat);
-                        } 
-                   
-                        Shape area = new Rectangle((int) (point.getX() - headW), 
-                                (int) (point.getY() - headH), 
+                            url = this.urlGenerator.generateURL(this.dataset,
+                                   row, col);
+                        }
+
+                        Shape area = new Rectangle(
+                                (int) (point.getX() - headW),
+                                (int) (point.getY() - headH),
                                 (int) (headW * 2), (int) (headH * 2));
                         CategoryItemEntity entity = new CategoryItemEntity(
-                                area, tip, url, this.dataset, series,
-                                dataset.getColumnKey(cat), cat); 
-                        entities.add(entity);                                
+                                area, tip, url, this.dataset,
+                                this.dataset.getRowKey(row),
+                                this.dataset.getColumnKey(col));
+                        entities.add(entity);
                     }
 
-                    // then draw the axis and category label, but only on the 
-                    // first time through.....
-
-                    if (series == 0) {
-                        Point2D endPoint = getWebPoint(plotArea, angle, 1); 
-                                                             // 1 = end of axis
-                        Line2D  line = new Line2D.Double(centre, endPoint);
-                        g2.draw(line);
-                        drawLabel(g2, plotArea, value, cat, angle, 
-                                360.0 / catCount);
-                    }
                 }
             }
         }
         // Plot the polygon
-    
+
         Paint paint = getSeriesPaint(series);
         g2.setPaint(paint);
+        g2.setStroke(getSeriesOutlineStroke(series));
         g2.draw(polygon);
 
         // Lastly, fill the web polygon if this is required
-    
+
         if (this.webFilled) {
-            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
                     0.1f));
             g2.fill(polygon);
-            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
                     getForegroundAlpha()));
         }
     }
 
     /**
-     * Returns the value to be plotted at the interseries of the 
+     * Returns the value to be plotted at the interseries of the
      * series and the category.  This allows us to plot
-     * BY_ROW or BY_COLUMN which basically is just reversing the
-     * definition of the categories and data series being plotted
-     * 
-     * @param series the series to be plotted 
-     * @param cat the category within the series to be plotted
-     * 
-     * @return The value to be plotted
+     * <code>BY_ROW</code> or <code>BY_COLUMN</code> which basically is just
+     * reversing the definition of the categories and data series being
+     * plotted.
+     *
+     * @param series the series to be plotted.
+     * @param cat the category within the series to be plotted.
+     *
+     * @return The value to be plotted (possibly <code>null</code>).
+     *
+     * @see #getDataExtractOrder()
      */
-    Number getPlotValue(int series, int cat) {
+    protected Number getPlotValue(int series, int cat) {
         Number value = null;
         if (this.dataExtractOrder == TableOrder.BY_ROW) {
             value = this.dataset.getValue(series, cat);
@@ -1266,19 +1392,19 @@ public class SpiderWebPlot extends Plot
 
     /**
      * Draws the label for one axis.
-     * 
+     *
      * @param g2  the graphics device.
      * @param plotArea  the plot area
-     * @param value  the value of the label.
+     * @param value  the value of the label (ignored).
      * @param cat  the category (zero-based index).
      * @param startAngle  the starting angle.
      * @param extent  the extent of the arc.
      */
-    protected void drawLabel(Graphics2D g2, Rectangle2D plotArea, double value, 
+    protected void drawLabel(Graphics2D g2, Rectangle2D plotArea, double value,
                              int cat, double startAngle, double extent) {
         FontRenderContext frc = g2.getFontRenderContext();
- 
-        String label = null;
+
+        String label;
         if (this.dataExtractOrder == TableOrder.BY_ROW) {
             // if series are in rows, then the categories are the column keys
             label = this.labelGenerator.generateColumnLabel(this.dataset, cat);
@@ -1287,46 +1413,46 @@ public class SpiderWebPlot extends Plot
             // if series are in columns, then the categories are the row keys
             label = this.labelGenerator.generateRowLabel(this.dataset, cat);
         }
- 
+
         Rectangle2D labelBounds = getLabelFont().getStringBounds(label, frc);
         LineMetrics lm = getLabelFont().getLineMetrics(label, frc);
         double ascent = lm.getAscent();
 
-        Point2D labelLocation = calculateLabelLocation(labelBounds, ascent, 
+        Point2D labelLocation = calculateLabelLocation(labelBounds, ascent,
                 plotArea, startAngle);
 
         Composite saveComposite = g2.getComposite();
-    
-        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 
+
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
                 1.0f));
         g2.setPaint(getLabelPaint());
         g2.setFont(getLabelFont());
-        g2.drawString(label, (float) labelLocation.getX(), 
+        g2.drawString(label, (float) labelLocation.getX(),
                 (float) labelLocation.getY());
         g2.setComposite(saveComposite);
     }
 
     /**
      * Returns the location for a label
-     * 
+     *
      * @param labelBounds the label bounds.
      * @param ascent the ascent (height of font).
      * @param plotArea the plot area
      * @param startAngle the start angle for the pie series.
-     * 
+     *
      * @return The location for a label.
      */
-    protected Point2D calculateLabelLocation(Rectangle2D labelBounds, 
+    protected Point2D calculateLabelLocation(Rectangle2D labelBounds,
                                              double ascent,
-                                             Rectangle2D plotArea, 
+                                             Rectangle2D plotArea,
                                              double startAngle)
     {
         Arc2D arc1 = new Arc2D.Double(plotArea, startAngle, 0, Arc2D.OPEN);
         Point2D point1 = arc1.getEndPoint();
 
-        double deltaX = -(point1.getX() - plotArea.getCenterX()) 
+        double deltaX = -(point1.getX() - plotArea.getCenterX())
                         * this.axisLabelGap;
-        double deltaY = -(point1.getY() - plotArea.getCenterY()) 
+        double deltaY = -(point1.getY() - plotArea.getCenterY())
                         * this.axisLabelGap;
 
         double labelX = point1.getX() - deltaX;
@@ -1335,7 +1461,7 @@ public class SpiderWebPlot extends Plot
         if (labelX < plotArea.getCenterX()) {
             labelX -= labelBounds.getWidth();
         }
-    
+
         if (labelX == plotArea.getCenterX()) {
             labelX -= labelBounds.getWidth() / 2;
         }
@@ -1346,99 +1472,131 @@ public class SpiderWebPlot extends Plot
 
         return new Point2D.Double(labelX, labelY);
     }
-    
+
     /**
      * Tests this plot for equality with an arbitrary object.
-     * 
+     *
      * @param obj  the object (<code>null</code> permitted).
-     * 
+     *
      * @return A boolean.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
-            return true;   
+            return true;
         }
         if (!(obj instanceof SpiderWebPlot)) {
-            return false;   
+            return false;
         }
         if (!super.equals(obj)) {
-            return false;   
+            return false;
         }
         SpiderWebPlot that = (SpiderWebPlot) obj;
         if (!this.dataExtractOrder.equals(that.dataExtractOrder)) {
-            return false;   
+            return false;
         }
         if (this.headPercent != that.headPercent) {
-            return false;   
+            return false;
         }
         if (this.interiorGap != that.interiorGap) {
-            return false;   
+            return false;
         }
         if (this.startAngle != that.startAngle) {
-            return false;   
+            return false;
         }
         if (!this.direction.equals(that.direction)) {
-            return false;   
+            return false;
         }
         if (this.maxValue != that.maxValue) {
-            return false;   
+            return false;
         }
         if (this.webFilled != that.webFilled) {
-            return false;   
+            return false;
+        }
+        if (this.axisLabelGap != that.axisLabelGap) {
+            return false;
+        }
+        if (!PaintUtilities.equal(this.axisLinePaint, that.axisLinePaint)) {
+            return false;
+        }
+        if (!this.axisLineStroke.equals(that.axisLineStroke)) {
+            return false;
         }
         if (!ShapeUtilities.equal(this.legendItemShape, that.legendItemShape)) {
-            return false;   
+            return false;
         }
         if (!PaintUtilities.equal(this.seriesPaint, that.seriesPaint)) {
-            return false;   
+            return false;
         }
         if (!this.seriesPaintList.equals(that.seriesPaintList)) {
-            return false;   
+            return false;
         }
         if (!PaintUtilities.equal(this.baseSeriesPaint, that.baseSeriesPaint)) {
-            return false;   
+            return false;
         }
-        if (!PaintUtilities.equal(this.seriesOutlinePaint, 
+        if (!PaintUtilities.equal(this.seriesOutlinePaint,
                 that.seriesOutlinePaint)) {
-            return false;   
+            return false;
         }
         if (!this.seriesOutlinePaintList.equals(that.seriesOutlinePaintList)) {
-            return false;   
+            return false;
         }
-        if (!PaintUtilities.equal(this.baseSeriesOutlinePaint, 
+        if (!PaintUtilities.equal(this.baseSeriesOutlinePaint,
                 that.baseSeriesOutlinePaint)) {
-            return false;   
+            return false;
         }
-        if (!ObjectUtilities.equal(this.seriesOutlineStroke, 
+        if (!ObjectUtilities.equal(this.seriesOutlineStroke,
                 that.seriesOutlineStroke)) {
-            return false;   
+            return false;
         }
         if (!this.seriesOutlineStrokeList.equals(
                 that.seriesOutlineStrokeList)) {
-            return false;   
+            return false;
         }
         if (!this.baseSeriesOutlineStroke.equals(
                 that.baseSeriesOutlineStroke)) {
-            return false;   
-        }
-        if (!this.labelFont.equals(that.labelFont)) {
-            return false;   
-        }
-        if (!PaintUtilities.equal(this.labelPaint, that.labelPaint)) {
-            return false;   
-        }
-        if (!this.labelGenerator.equals(that.labelGenerator)) {
-            return false;   
-        }
-        if (!this.toolTipGenerator.equals(that.toolTipGenerator)) {
             return false;
         }
-        if (!this.urlGenerator.equals(that.urlGenerator)) {
+        if (!this.labelFont.equals(that.labelFont)) {
+            return false;
+        }
+        if (!PaintUtilities.equal(this.labelPaint, that.labelPaint)) {
+            return false;
+        }
+        if (!this.labelGenerator.equals(that.labelGenerator)) {
+            return false;
+        }
+        if (!ObjectUtilities.equal(this.toolTipGenerator,
+                that.toolTipGenerator)) {
+            return false;
+        }
+        if (!ObjectUtilities.equal(this.urlGenerator,
+                that.urlGenerator)) {
             return false;
         }
         return true;
     }
-    
+
+    /**
+     * Returns a clone of this plot.
+     *
+     * @return A clone of this plot.
+     *
+     * @throws CloneNotSupportedException if the plot cannot be cloned for
+     *         any reason.
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        SpiderWebPlot clone = (SpiderWebPlot) super.clone();
+        clone.legendItemShape = ShapeUtilities.clone(this.legendItemShape);
+        clone.seriesPaintList = (PaintList) this.seriesPaintList.clone();
+        clone.seriesOutlinePaintList
+                = (PaintList) this.seriesOutlinePaintList.clone();
+        clone.seriesOutlineStrokeList
+                = (StrokeList) this.seriesOutlineStrokeList.clone();
+        return clone;
+    }
+
     /**
      * Provides serialization support.
      *
@@ -1457,6 +1615,8 @@ public class SpiderWebPlot extends Plot
         SerialUtilities.writeStroke(this.seriesOutlineStroke, stream);
         SerialUtilities.writeStroke(this.baseSeriesOutlineStroke, stream);
         SerialUtilities.writePaint(this.labelPaint, stream);
+        SerialUtilities.writePaint(this.axisLinePaint, stream);
+        SerialUtilities.writeStroke(this.axisLineStroke, stream);
     }
 
     /**
@@ -1479,10 +1639,11 @@ public class SpiderWebPlot extends Plot
         this.seriesOutlineStroke = SerialUtilities.readStroke(stream);
         this.baseSeriesOutlineStroke = SerialUtilities.readStroke(stream);
         this.labelPaint = SerialUtilities.readPaint(stream);
-       
-        if (dataset != null) {
-            dataset.addChangeListener(this);
+        this.axisLinePaint = SerialUtilities.readPaint(stream);
+        this.axisLineStroke = SerialUtilities.readStroke(stream);
+        if (this.dataset != null) {
+            this.dataset.addChangeListener(this);
         }
-    } 
+    }
 
 }

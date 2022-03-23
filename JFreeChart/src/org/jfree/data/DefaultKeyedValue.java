@@ -2,36 +2,35 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * ----------------------
  * DefaultKeyedValue.java
  * ----------------------
- * (C) Copyright 2002-2005, by Object Refinery Limited.
+ * (C) Copyright 2002-2013, by Object Refinery Limited.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
  * Contributor(s):   -;
- *
- * $Id: DefaultKeyedValue.java,v 1.6 2005/05/19 10:34:07 mungady Exp $
  *
  * Changes:
  * --------
@@ -40,26 +39,31 @@
  * 18-Aug-2003 : Implemented Cloneable (DG);
  * 18-Aug-2004 : Moved from org.jfree.data --> org.jfree.data.base (DG);
  * 15-Sep-2004 : Added PublicCloneable interface (DG);
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 11-Jun-2007 : Added toString() method to help with debugging (DG);
+ * 15-Feb-2008 : Prevent null key (DG);
+ * 07-Apr-2008 : Removed to-do item (DG);
+ * 03-Jul-2013 : Use ParamChecks (DG);
  *
  */
 
 package org.jfree.data;
 
 import java.io.Serializable;
+import org.jfree.chart.util.ParamChecks;
 
 import org.jfree.util.PublicCloneable;
 
 /**
- * A (key, value) pair.  This class provides a default implementation 
+ * A (key, value) pair.  This class provides a default implementation
  * of the {@link KeyedValue} interface.
  */
-public class DefaultKeyedValue implements KeyedValue, 
-                                          Cloneable, PublicCloneable, 
-                                          Serializable {
+public class DefaultKeyedValue implements KeyedValue, Cloneable,
+        PublicCloneable, Serializable {
 
     /** For serialization. */
     private static final long serialVersionUID = -7388924517460437712L;
-    
+
     /** The key. */
     private Comparable key;
 
@@ -69,10 +73,12 @@ public class DefaultKeyedValue implements KeyedValue,
     /**
      * Creates a new (key, value) item.
      *
-     * @param key  the key (should be immutable).
+     * @param key  the key (should be immutable, <code>null</code> not
+     *         permitted).
      * @param value  the value (<code>null</code> permitted).
      */
     public DefaultKeyedValue(Comparable key, Number value) {
+        ParamChecks.nullNotPermitted(key, "key");
         this.key = key;
         this.value = value;
     }
@@ -80,8 +86,9 @@ public class DefaultKeyedValue implements KeyedValue,
     /**
      * Returns the key.
      *
-     * @return The key.
+     * @return The key (never <code>null</code>).
      */
+    @Override
     public Comparable getKey() {
         return this.key;
     }
@@ -91,6 +98,7 @@ public class DefaultKeyedValue implements KeyedValue,
      *
      * @return The value (possibly <code>null</code>).
      */
+    @Override
     public Number getValue() {
         return this.value;
     }
@@ -111,6 +119,7 @@ public class DefaultKeyedValue implements KeyedValue,
      *
      * @return A boolean.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
@@ -118,17 +127,13 @@ public class DefaultKeyedValue implements KeyedValue,
         if (!(obj instanceof DefaultKeyedValue)) {
             return false;
         }
-        // TODO: modify this so that we check for equality with any KeyedValue
-        // rather than specifically a DefaultKeyedValue
         DefaultKeyedValue that = (DefaultKeyedValue) obj;
-        
-        // TODO: the following checks for null should be handled in a utility 
-        // method
-        if (this.key != null ? !this.key.equals(that.key) : that.key != null) {
+
+        if (!this.key.equals(that.key)) {
             return false;
         }
-        if (this.value != null 
-                ? !this.value.equals(that.value) : that.key != null) {
+        if (this.value != null
+                ? !this.value.equals(that.value) : that.value != null) {
             return false;
         }
         return true;
@@ -136,9 +141,10 @@ public class DefaultKeyedValue implements KeyedValue,
 
     /**
      * Returns a hash code.
-     * 
+     *
      * @return A hash code.
      */
+    @Override
     public int hashCode() {
         int result;
         result = (this.key != null ? this.key.hashCode() : 0);
@@ -147,18 +153,29 @@ public class DefaultKeyedValue implements KeyedValue,
     }
 
     /**
-     * Returns a clone.  It is assumed that both the key and value are 
-     * immutable objects, so only the references are cloned, not the objects 
+     * Returns a clone.  It is assumed that both the key and value are
+     * immutable objects, so only the references are cloned, not the objects
      * themselves.
-     * 
+     *
      * @return A clone.
-     * 
-     * @throws CloneNotSupportedException Not thrown by this class, but 
+     *
+     * @throws CloneNotSupportedException Not thrown by this class, but
      *         subclasses (if any) might.
      */
+    @Override
     public Object clone() throws CloneNotSupportedException {
-        DefaultKeyedValue clone = (DefaultKeyedValue) super.clone();
-        return clone;
+        return (DefaultKeyedValue) super.clone();
+    }
+
+    /**
+     * Returns a string representing this instance, primarily useful for
+     * debugging.
+     *
+     * @return A string.
+     */
+    @Override
+    public String toString() {
+        return "(" + this.key.toString() + ", " + this.value.toString() + ")";
     }
 
 }

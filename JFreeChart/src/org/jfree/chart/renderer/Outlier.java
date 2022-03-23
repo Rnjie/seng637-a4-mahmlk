@@ -2,42 +2,44 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * ------------
  * Outlier.java
  * ------------
- * (C) Copyright 2003-2005, by David Browning and Contributors.
+ * (C) Copyright 2003-2008, by David Browning and Contributors.
  *
- * Original Author:  David Browning (for Australian Institute of Marine 
+ * Original Author:  David Browning (for Australian Institute of Marine
  *                   Science);
  * Contributor(s):   David Gilbert (for Object Refinery Limited);
- *
- * $Id: Outlier.java,v 1.4 2005/05/03 10:09:01 mungady Exp $
  *
  * Changes
  * -------
  * 05-Aug-2003 : Version 1, contributed by David Browning (DG);
  * 28-Aug-2003 : Minor tidy-up (DG);
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 02-Feb-2007 : Removed author tags from all over JFreeChart sources (DG);
+ * 21-Nov-2007 : Implemented equals() to shut up FindBugs (DG);
  *
  */
 
@@ -49,13 +51,11 @@ import java.awt.geom.Point2D;
  * Represents one outlier in the box and whisker plot.
  * <P>
  * All the coordinates in this class are in Java2D space.
- *
- * @author David Browning
  */
 public class Outlier implements Comparable {
 
-    /** 
-     * The xy coordinates of the bounding box containing the outlier ellipse. 
+    /**
+     * The xy coordinates of the bounding box containing the outlier ellipse.
      */
     private Point2D point;
 
@@ -63,7 +63,7 @@ public class Outlier implements Comparable {
     private double radius;
 
     /**
-     * Constructs an outlier item consisting of a point and the radius of the 
+     * Constructs an outlier item consisting of a point and the radius of the
      * outlier ellipse
      *
      * @param xCoord  the x coordinate of the point.
@@ -76,7 +76,7 @@ public class Outlier implements Comparable {
     }
 
     /**
-     * Returns the xy coordinates of the bounding box containing the outlier 
+     * Returns the xy coordinates of the bounding box containing the outlier
      * ellipse.
      *
      * @return The location of the outlier ellipse.
@@ -86,7 +86,7 @@ public class Outlier implements Comparable {
     }
 
     /**
-     * Sets the xy coordinates of the bounding box containing the outlier 
+     * Sets the xy coordinates of the bounding box containing the outlier
      * ellipse.
      *
      * @param point  the location.
@@ -96,7 +96,7 @@ public class Outlier implements Comparable {
     }
 
     /**
-     * Returns the x coordinate of the bounding box containing the outlier 
+     * Returns the x coordinate of the bounding box containing the outlier
      * ellipse.
      *
      * @return The x coordinate.
@@ -106,7 +106,7 @@ public class Outlier implements Comparable {
     }
 
     /**
-     * Returns the y coordinate of the bounding box containing the outlier 
+     * Returns the y coordinate of the bounding box containing the outlier
      * ellipse.
      *
      * @return The y coordinate.
@@ -142,19 +142,20 @@ public class Outlier implements Comparable {
      *      is less than, equal to, or greater than the specified object.
      *
      */
+    @Override
     public int compareTo(Object o) {
         Outlier outlier = (Outlier) o;
         Point2D p1 = getPoint();
         Point2D p2 = outlier.getPoint();
         if (p1.equals(p2)) {
             return 0;
-        } 
+        }
         else if ((p1.getX() < p2.getX()) || (p1.getY() < p2.getY())) {
             return -1;
-        } 
+        }
         else {
             return 1;
-        } 
+        }
     }
 
     /**
@@ -163,15 +164,40 @@ public class Outlier implements Comparable {
      * a small margin.
      *
      * @param other  the other outlier.
-     * 
-     * @return A <code>boolean</code> indicating whether or not an overlap has 
+     *
+     * @return A <code>boolean</code> indicating whether or not an overlap has
      *         occurred.
      */
     public boolean overlaps(Outlier other) {
-        return ((other.getX() >= getX() - (this.radius * 1.1)) 
-                && (other.getX() <= getX() + (this.radius * 1.1)) 
-                && (other.getY() >= getY() - (this.radius * 1.1)) 
+        return ((other.getX() >= getX() - (this.radius * 1.1))
+                && (other.getX() <= getX() + (this.radius * 1.1))
+                && (other.getY() >= getY() - (this.radius * 1.1))
                 && (other.getY() <= getY() + (this.radius * 1.1)));
+    }
+
+    /**
+     * Tests this outlier for equality with an arbitrary object.
+     *
+     * @param obj  the object (<code>null</code> permitted).
+     *
+     * @return A boolean.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof Outlier)) {
+            return false;
+        }
+        Outlier that = (Outlier) obj;
+        if (!this.point.equals(that.point)) {
+            return false;
+        }
+        if (this.radius != that.radius) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -179,6 +205,7 @@ public class Outlier implements Comparable {
      *
      * @return A <code>String</code> representing the outlier.
      */
+    @Override
     public String toString() {
         return "{" + getX() + "," + getY() + "}";
     }

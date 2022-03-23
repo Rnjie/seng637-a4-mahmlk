@@ -2,36 +2,35 @@
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================
  *
- * (C) Copyright 2000-2005, by Object Refinery Limited and Contributors.
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
  *
  * Project Info:  http://www.jfree.org/jfreechart/index.html
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2.1 of the License, or 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License 
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  *
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc. 
- * in the United States and other countries.]
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
  *
  * ----------------
  * BlockParams.java
  * ----------------
- * (C) Copyright 2005, by Object Refinery Limited.
+ * (C) Copyright 2005-2008, by Object Refinery Limited.
  *
  * Original Author:  David Gilbert (for Object Refinery Limited);
  * Contributor(s):   -;
- *
- * $Id: BlockParams.java,v 1.1 2005/04/20 22:19:11 mungady Exp $
  *
  * Changes:
  * --------
@@ -46,93 +45,94 @@ package org.jfree.chart.block;
  * by the {@link Block} class.
  */
 public class BlockParams implements EntityBlockParams {
-    
-    /** 
-     * A flag that controls whether or not the block should generate and 
+
+    /**
+     * A flag that controls whether or not the block should generate and
      * return chart entities for the items it draws.
      */
     private boolean generateEntities;
-    
-    /** 
-     * The x-translation (used to enable chart entities to use global 
+
+    /**
+     * The x-translation (used to enable chart entities to use global
      * coordinates rather than coordinates that are local to the container
      * they are within).
      */
     private double translateX;
-    
-    /** 
-     * The y-translation (used to enable chart entities to use global 
+
+    /**
+     * The y-translation (used to enable chart entities to use global
      * coordinates rather than coordinates that are local to the container
      * they are within).
      */
     private double translateY;
-    
+
     /**
      * Creates a new instance.
      */
     public BlockParams() {
         this.translateX = 0.0;
         this.translateY = 0.0;
-        this.generateEntities = false;    
+        this.generateEntities = false;
     }
-    
+
     /**
-     * Returns the flag that controls whether or not chart entities are 
+     * Returns the flag that controls whether or not chart entities are
      * generated.
-     * 
+     *
      * @return A boolean.
      */
+    @Override
     public boolean getGenerateEntities() {
-        return this.generateEntities;   
+        return this.generateEntities;
     }
-    
+
     /**
      * Sets the flag that controls whether or not chart entities are generated.
-     * 
+     *
      * @param generate  the flag.
      */
     public void setGenerateEntities(boolean generate) {
-        this.generateEntities = generate;   
+        this.generateEntities = generate;
     }
-    
+
     /**
      * Returns the translation required to convert local x-coordinates back to
      * the coordinate space of the container.
-     * 
+     *
      * @return The x-translation amount.
      */
     public double getTranslateX() {
-        return this.translateX;   
+        return this.translateX;
     }
-    
+
     /**
      * Sets the translation required to convert local x-coordinates into the
      * coordinate space of the container.
-     * 
+     *
      * @param x  the x-translation amount.
      */
     public void setTranslateX(double x) {
-        this.translateX = x;   
+        this.translateX = x;
     }
-    
+
     /**
      * Returns the translation required to convert local y-coordinates back to
      * the coordinate space of the container.
-     * 
+     *
      * @return The y-translation amount.
      */
     public double getTranslateY() {
-        return this.translateY;   
+        return this.translateY;
     }
-    
+
     /**
      * Sets the translation required to convert local y-coordinates into the
      * coordinate space of the container.
-     * 
+     *
      * @param y  the y-translation amount.
      */
     public void setTranslateY(double y) {
-        this.translateY = y;   
+        this.translateY = y;
     }
 
 }
