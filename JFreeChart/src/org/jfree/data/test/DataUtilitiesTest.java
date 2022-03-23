@@ -36,7 +36,7 @@ public class DataUtilitiesTest {
 		ArrayList<Integer> keyList = new ArrayList<Integer>(Arrays.asList(0,1,2));
 		
 		mockery.checking(new Expectations() {{
-			allowing(value).getColumnCount(); will(returnValue(4)); // 3x4 whatever you want
+			allowing(value).getColumnCount(); will(returnValue(3)); // 3x4 whatever you want
 			allowing(value).getRowCount(); will(returnValue(3));
 			
 			allowing(kvalues).getItemCount(); will(returnValue(3));
