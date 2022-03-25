@@ -82,9 +82,6 @@ public class DataUtilitiesTest {
 			one(value).getValue(0, column); will(returnValue(val1));
 			one(value).getValue(1, column); will(returnValue(val2));
 			one(value).getValue(2, column); will(returnValue(val3));
-			one(value).getValue(0, 0); will(returnValue(0));
-			one(value).getValue(0, 1);will(returnValue(1));
-			one(value).getValue(0, 2); will(returnValue(2));
 
 			
 		}});
@@ -92,8 +89,7 @@ public class DataUtilitiesTest {
 
 		assertEquals(expected, actual, 0);
 
-		mockery.assertIsSatisfied(); // verify that the getValue method is called exactly 3
-																// times
+		mockery.assertIsSatisfied(); // verify that the getValue method is called exactly 3 times
 	}
 
 
@@ -175,7 +171,7 @@ public class DataUtilitiesTest {
 	// run.
 	// It throws a NullPointerException instead of the InvalidParameterException
 	// when tested.
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void test_calculateColumnTotal_ExceptionThrows_InvalidParameterException() {
 		value = null;
 		DataUtilities.calculateColumnTotal(value, 1);
@@ -287,7 +283,7 @@ public class DataUtilitiesTest {
 	// array because the method cannot process it at all
 	// and provides a red underline on code warning that the test program will not
 	// run.
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void test_calculateRowTotal_ExceptionThrows_InvalidParameterException() {
 		// Pass a null Values2D object => Throws IllegalArgumentException
 		value = null;
@@ -305,7 +301,7 @@ public class DataUtilitiesTest {
 
 	@Test
 	public void test_getCumulativePercentage_positive() {
-		double expected = 0.42;
+		double expected = 0.14;
 		int a = 1;
 		KeyedValues actual = DataUtilities.getCumulativePercentages(kvalues);
 		assertEquals(expected, actual.getValue(a).doubleValue(), 0.01d);
