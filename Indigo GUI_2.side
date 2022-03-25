@@ -1,0 +1,593 @@
+{
+  "id": "fec5350b-0af0-48ec-adf4-6205259cd962",
+  "version": "2.0",
+  "name": "Indigo GUI",
+  "url": "https://www.chapters.indigo.ca",
+  "tests": [{
+    "id": "1a2ae4b0-a383-4756-8027-c6135d55f9d2",
+    "name": "1_Sign in",
+    "commands": [{
+      "id": "479d6c7e-34a9-48a6-b266-c1726bb66723",
+      "comment": "",
+      "command": "open",
+      "target": "/en-ca/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "4559ad1f-8f0f-4c78-aaf9-1d6523952708",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1059x824",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "ba4b04b4-79b3-42da-a372-cba8297afa4a",
+      "comment": "",
+      "command": "click",
+      "target": "css=.service-link:nth-child(2)",
+      "targets": [
+        ["css=.service-link:nth-child(2)", "css:finder"],
+        ["xpath=(//button[@type='button'])[3]", "xpath:attributes"],
+        ["xpath=//div[@id='react_PAWPFsmhoki1II0922jMOw']/div/div/nav/div/div/div/button", "xpath:idRelative"],
+        ["xpath=//div/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "0c9bcff3-7430-4213-af91-5fc826ee2f26",
+      "comment": "",
+      "command": "type",
+      "target": "id=browseCart-signInPopup-emailTextbox",
+      "targets": [
+        ["id=browseCart-signInPopup-emailTextbox", "id"],
+        ["css=#browseCart-signInPopup-emailTextbox", "css:finder"],
+        ["xpath=//input[@id='browseCart-signInPopup-emailTextbox']", "xpath:attributes"],
+        ["xpath=//div[@id='browseCart-signInPopup-signInFields']/div/input", "xpath:idRelative"],
+        ["xpath=//div/div/div/div/div/input", "xpath:position"]
+      ],
+      "value": "jmatthewssarno@gmail.com"
+    }, {
+      "id": "ea135bca-355a-41e7-9df7-7ba5d1321364",
+      "comment": "",
+      "command": "type",
+      "target": "id=browseCart-signInPopup-passwordTextbox",
+      "targets": [
+        ["id=browseCart-signInPopup-passwordTextbox", "id"],
+        ["css=#browseCart-signInPopup-passwordTextbox", "css:finder"],
+        ["xpath=//input[@id='browseCart-signInPopup-passwordTextbox']", "xpath:attributes"],
+        ["xpath=//div[@id='browseCart-signInPopup-signInFields']/div/input[2]", "xpath:idRelative"],
+        ["xpath=//input[2]", "xpath:position"]
+      ],
+      "value": "p@ssword12345"
+    }, {
+      "id": "9d956d83-e482-4b50-af03-a33ebf1374d9",
+      "comment": "",
+      "command": "click",
+      "target": "css=.js-clickSignIn-button",
+      "targets": [
+        ["css=.js-clickSignIn-button", "css:finder"],
+        ["xpath=(//button[@type='button'])[73]", "xpath:attributes"],
+        ["xpath=//div[@id='browseCart-signInPopup-signInFields']/button", "xpath:idRelative"],
+        ["xpath=//section/div/div/div/div/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "327a6688-9a24-4b6b-8fdd-90ccbf3f3f0f",
+      "comment": "",
+      "command": "mouseOver",
+      "target": "css=.js-clickSignIn-button",
+      "targets": [
+        ["css=.js-clickSignIn-button", "css:finder"],
+        ["xpath=(//button[@type='button'])[73]", "xpath:attributes"],
+        ["xpath=//div[@id='browseCart-signInPopup-signInFields']/button", "xpath:idRelative"],
+        ["xpath=//section/div/div/div/div/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "92eba226-c20b-4d0d-a706-a612a5ca36f3",
+      "comment": "",
+      "command": "mouseOut",
+      "target": "css=.js-clickSignIn-button",
+      "targets": [
+        ["css=.js-clickSignIn-button", "css:finder"],
+        ["xpath=(//button[@type='button'])[73]", "xpath:attributes"],
+        ["xpath=//div[@id='browseCart-signInPopup-signInFields']/button", "xpath:idRelative"],
+        ["xpath=//section/div/div/div/div/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "35597e18-c655-41a5-ac9f-c109f3a31014",
+      "comment": "",
+      "command": "click",
+      "target": "css=.service-link--auth:nth-child(1)",
+      "targets": [
+        ["css=.service-link--auth:nth-child(1)", "css:finder"],
+        ["xpath=//div[@id='react_PAWPFsmhoki1II0922jMOw']/div/div/nav/div/div", "xpath:idRelative"],
+        ["xpath=//nav/div/div", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "a5bef092-637c-4aa7-b7c4-d9cf8411ebbf",
+      "comment": "",
+      "command": "assertText",
+      "target": "css=.service-link__greeting > .service-link__greeting-name",
+      "targets": [
+        ["css=.service-link__greeting > .service-link__greeting-name", "css:finder"],
+        ["xpath=//div[@id='react_PAWPFsmhoki1II0922jMOw']/div/div/nav/div/div/div/div/span/span", "xpath:idRelative"],
+        ["xpath=//span/span", "xpath:position"]
+      ],
+      "value": "john"
+    }]
+  }, {
+    "id": "150b79d2-2870-451d-8f5f-2dea183d389e",
+    "name": "4_Sign out",
+    "commands": [{
+      "id": "d2dc1945-de71-4113-ae40-cb06c4794d99",
+      "comment": "",
+      "command": "open",
+      "target": "/en-ca/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "860f4186-732b-4531-bb81-442ab1e0c60b",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1062x824",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "47b8bbcc-7f5b-4c7b-9ca5-08eda5fb6014",
+      "comment": "",
+      "command": "click",
+      "target": "css=.account-dropdown__text",
+      "targets": [
+        ["css=.account-dropdown__text", "css:finder"],
+        ["xpath=//div[@id='react_PAWPFsmhoki1II0922jMOw']/div/div/nav/div/div[2]/button/span", "xpath:idRelative"],
+        ["xpath=//button/span", "xpath:position"],
+        ["xpath=//span[contains(.,'Your Account')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "73bfd15e-94a1-4d53-b535-ae8b938abda7",
+      "comment": "",
+      "command": "click",
+      "target": "css=.account-dropdown__sign-out",
+      "targets": [
+        ["css=.account-dropdown__sign-out", "css:finder"],
+        ["xpath=(//button[@type='button'])[6]", "xpath:attributes"],
+        ["xpath=//div[@id='react_PAWPFsmhoki1II0922jMOw']/div/div/nav/div/div[2]/div/button[2]", "xpath:idRelative"],
+        ["xpath=//div/button[2]", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "5261a0e2-4816-4365-b3a3-73a6783f6131",
+      "comment": "",
+      "command": "click",
+      "target": "css=.account-dropdown__text",
+      "targets": [
+        ["css=.account-dropdown__text", "css:finder"],
+        ["xpath=//div[@id='react_PAWPFsmhoki1II0922jMOw']/div/div/nav/div/div[2]/button/span", "xpath:idRelative"],
+        ["xpath=//button/span", "xpath:position"],
+        ["xpath=//span[contains(.,'Your Account')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "20a5b2fd-c091-4ffa-a5cd-aa625b2c40d2",
+      "comment": "",
+      "command": "assertText",
+      "target": "css=.service-link:nth-child(2)",
+      "targets": [
+        ["css=.service-link:nth-child(2)", "css:finder"],
+        ["xpath=(//button[@type='button'])[3]", "xpath:attributes"],
+        ["xpath=//div[@id='react_PAWPFsmhoki1II0922jMOw']/div/div/nav/div/div/div/button", "xpath:idRelative"],
+        ["xpath=//div/button", "xpath:position"]
+      ],
+      "value": "SIGN IN"
+    }]
+  }, {
+    "id": "b29dc7e9-b52f-4521-89ce-59dd6a4456d4",
+    "name": "2_Add Review",
+    "commands": [{
+      "id": "f8403945-5753-4932-a76b-b77e6fba0454",
+      "comment": "",
+      "command": "open",
+      "target": "/en-ca/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "77f5aa04-97db-41c8-957f-627beb0c9ba4",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1066x824",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "81536484-b80c-4af1-8006-ea4b65f13abd",
+      "comment": "",
+      "command": "click",
+      "target": "id=header__quick-search",
+      "targets": [
+        ["id=header__quick-search", "id"],
+        ["name=SearchBoxKeywords", "name"],
+        ["css=#header__quick-search", "css:finder"],
+        ["xpath=//input[@id='header__quick-search']", "xpath:attributes"],
+        ["xpath=//div[@id='quick-search__input-container']/input", "xpath:idRelative"],
+        ["xpath=//div[2]/div/div/div/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "1ca76fa2-84bb-4481-b785-e522749f69dc",
+      "comment": "",
+      "command": "type",
+      "target": "id=header__quick-search",
+      "targets": [
+        ["id=header__quick-search", "id"],
+        ["name=SearchBoxKeywords", "name"],
+        ["css=#header__quick-search", "css:finder"],
+        ["xpath=//input[@id='header__quick-search']", "xpath:attributes"],
+        ["xpath=//div[@id='quick-search__input-container']/input", "xpath:idRelative"],
+        ["xpath=//div[2]/div/div/div/input", "xpath:position"]
+      ],
+      "value": "Harry Potter"
+    }, {
+      "id": "84fdd558-3c9d-4816-a03e-bb1289403bd6",
+      "comment": "",
+      "command": "sendKeys",
+      "target": "id=header__quick-search",
+      "targets": [
+        ["id=header__quick-search", "id"],
+        ["name=SearchBoxKeywords", "name"],
+        ["css=#header__quick-search", "css:finder"],
+        ["xpath=//input[@id='header__quick-search']", "xpath:attributes"],
+        ["xpath=//div[@id='quick-search__input-container']/input", "xpath:idRelative"],
+        ["xpath=//div[2]/div/div/div/input", "xpath:position"]
+      ],
+      "value": "${KEY_ENTER}"
+    }, {
+      "id": "ce51da22-5878-43c4-b8e4-8bda6e88e2d6",
+      "comment": "",
+      "command": "click",
+      "target": "css=.product-list__product:nth-child(1) .product-list__product-image--grid",
+      "targets": [
+        ["css=.product-list__product:nth-child(1) .product-list__product-image--grid", "css:finder"],
+        ["xpath=//img[@alt='Harry Potter Box Set: The Complete Collection (Children’s Paperback)']", "xpath:img"],
+        ["xpath=//div[@id='resultsContainer']/div/div/div/section/div/a/img", "xpath:idRelative"],
+        ["xpath=//img", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "570b160e-7df1-4b43-a61d-c053bf8a33cc",
+      "comment": "",
+      "command": "runScript",
+      "target": "window.scrollTo(0,72)",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "45efa4fb-a113-47b4-aa04-8093ad6c2b6d",
+      "comment": "",
+      "command": "runScript",
+      "target": "window.scrollTo(0,524.7999877929688)",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "f12dc967-dcb1-42e7-9c66-1d63110792a3",
+      "comment": "",
+      "command": "runScript",
+      "target": "window.scrollTo(0,896.7999877929688)",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "6e41c4df-2b4b-4c60-aeb7-91a1f940b9da",
+      "comment": "",
+      "command": "runScript",
+      "target": "window.scrollTo(0,940.7999877929688)",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "0551b03c-fbbc-4439-848a-479802dc16df",
+      "comment": "",
+      "command": "runScript",
+      "target": "window.scrollTo(0,1503.199951171875)",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "6f2d6ff3-3160-47ae-bd97-d6bf3be82a48",
+      "comment": "",
+      "command": "runScript",
+      "target": "window.scrollTo(0,2067.199951171875)",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "907d13ba-80ef-4fd2-9b39-da9464b678d6",
+      "comment": "",
+      "command": "mouseOver",
+      "target": "id=bv-dropdown-title-reviews",
+      "targets": [
+        ["id=bv-dropdown-title-reviews", "id"],
+        ["css=#bv-dropdown-title-reviews", "css:finder"],
+        ["xpath=//span[@id='bv-dropdown-title-reviews']", "xpath:attributes"],
+        ["xpath=//div[@id='BVRRContainer']/div/div/div/div/div/div[3]/div[3]/div/div/button/span", "xpath:idRelative"],
+        ["xpath=//div[3]/div/div/button/span", "xpath:position"],
+        ["xpath=//span[contains(.,'Most Recent')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "879ac171-b258-492b-b739-b34aca978b4f",
+      "comment": "",
+      "command": "mouseOut",
+      "target": "id=bv-dropdown-title-reviews",
+      "targets": [
+        ["id=bv-dropdown-title-reviews", "id"],
+        ["css=#bv-dropdown-title-reviews", "css:finder"],
+        ["xpath=//span[@id='bv-dropdown-title-reviews']", "xpath:attributes"],
+        ["xpath=//div[@id='BVRRContainer']/div/div/div/div/div/div[3]/div[3]/div/div/button/span", "xpath:idRelative"],
+        ["xpath=//div[3]/div/div/button/span", "xpath:position"],
+        ["xpath=//span[contains(.,'Most Recent')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "f62129d7-7eac-4585-b4a8-755873e9c0c5",
+      "comment": "",
+      "command": "click",
+      "target": "css=.bv-write-review",
+      "targets": [
+        ["css=.bv-write-review", "css:finder"],
+        ["xpath=(//button[@type='button'])[23]", "xpath:attributes"],
+        ["xpath=//div[@id='BVRRContainer']/div/div/div/div/div/div/div/button", "xpath:idRelative"],
+        ["xpath=//div/div[2]/div/div/div/div/div/div/div/div/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "67cac21c-7d91-49b9-9c5e-9a64ce65414e",
+      "comment": "",
+      "command": "click",
+      "target": "css=.icon-star-full:nth-child(10)",
+      "targets": [
+        ["css=.icon-star-full:nth-child(10)", "css:finder"],
+        ["xpath=//span[@id='inline-review___rating']/label[5]", "xpath:idRelative"],
+        ["xpath=//label[5]", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "84512c57-874f-4017-abd3-9e242f1e0dea",
+      "comment": "",
+      "command": "click",
+      "target": "id=inline-review___title",
+      "targets": [
+        ["id=inline-review___title", "id"],
+        ["name=inline-review___title", "name"],
+        ["css=#inline-review___title", "css:finder"],
+        ["xpath=//input[@id='inline-review___title']", "xpath:attributes"],
+        ["xpath=//div[@id='itemReviewsForm']/fieldset[2]/div[2]/input", "xpath:idRelative"],
+        ["xpath=//fieldset[2]/div[2]/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "cc05a22c-426d-48d4-b7c8-6056a7ace00d",
+      "comment": "",
+      "command": "type",
+      "target": "id=inline-review___title",
+      "targets": [
+        ["id=inline-review___title", "id"],
+        ["name=inline-review___title", "name"],
+        ["css=#inline-review___title", "css:finder"],
+        ["xpath=//input[@id='inline-review___title']", "xpath:attributes"],
+        ["xpath=//div[@id='itemReviewsForm']/fieldset[2]/div[2]/input", "xpath:idRelative"],
+        ["xpath=//fieldset[2]/div[2]/input", "xpath:position"]
+      ],
+      "value": "I loved this!"
+    }, {
+      "id": "62b694ae-afae-4029-a627-79f49b9dd826",
+      "comment": "",
+      "command": "click",
+      "target": "id=inline-review___reviewtext",
+      "targets": [
+        ["id=inline-review___reviewtext", "id"],
+        ["name=inline-review___reviewtext", "name"],
+        ["css=#inline-review___reviewtext", "css:finder"],
+        ["xpath=//textarea[@id='inline-review___reviewtext']", "xpath:attributes"],
+        ["xpath=//div[@id='itemReviewsForm']/fieldset[3]/div[2]/textarea", "xpath:idRelative"],
+        ["xpath=//textarea", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "31dc4306-c1db-40c3-bb38-b8b4d4a77316",
+      "comment": "",
+      "command": "type",
+      "target": "id=inline-review___reviewtext",
+      "targets": [
+        ["id=inline-review___reviewtext", "id"],
+        ["name=inline-review___reviewtext", "name"],
+        ["css=#inline-review___reviewtext", "css:finder"],
+        ["xpath=//textarea[@id='inline-review___reviewtext']", "xpath:attributes"],
+        ["xpath=//div[@id='itemReviewsForm']/fieldset[3]/div[2]/textarea", "xpath:idRelative"],
+        ["xpath=//textarea", "xpath:position"]
+      ],
+      "value": "I bought this about a month ago and I loved it! The delivery was sooo fast!"
+    }, {
+      "id": "32f503be-b7b9-426e-97d6-cf9eeb377499",
+      "comment": "",
+      "command": "click",
+      "target": "css=.yesNo_radio_yes",
+      "targets": [
+        ["css=.yesNo_radio_yes", "css:finder"],
+        ["xpath=//div[@id='itemReviewsForm']/fieldset[4]/div/label", "xpath:idRelative"],
+        ["xpath=//fieldset[4]/div/label", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "b1d9f196-209d-4d3d-b17c-e093c8d78e72",
+      "comment": "",
+      "command": "click",
+      "target": "css=.button",
+      "targets": [
+        ["css=.button", "css:finder"],
+        ["xpath=//div[@id='itemReviewsForm']/div[4]/div/button", "xpath:idRelative"],
+        ["xpath=//div/div[4]/div/button", "xpath:position"],
+        ["xpath=//button[contains(.,'submit')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "859885a9-ed8c-4765-b041-fe3b0e934925",
+      "comment": "",
+      "command": "click",
+      "target": "css=.section-preview",
+      "targets": [
+        ["css=.section-preview", "css:finder"],
+        ["xpath=//div[@id='indigo-inlineReviewForm']/div[2]", "xpath:idRelative"],
+        ["xpath=//div[5]/div/div/div/div/div[2]", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "a7b1e07d-3681-4036-a2f9-440277b81f30",
+      "comment": "",
+      "command": "click",
+      "target": "id=product-section-details-extended",
+      "targets": [
+        ["id=product-section-details-extended", "id"],
+        ["css=#product-section-details-extended", "css:finder"],
+        ["xpath=//section[@id='product-section-details-extended']", "xpath:attributes"],
+        ["xpath=//main[@id='main']/section[3]", "xpath:idRelative"],
+        ["xpath=//section[3]", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "cfd52151-f307-4fa8-a10a-c7cdf295d1d7",
+      "comment": "",
+      "command": "assertText",
+      "target": "css=.submit_header",
+      "targets": [
+        ["css=.submit_header", "css:finder"],
+        ["xpath=//div[@id='indigo-inlineReviewForm']/div[2]/div/p[2]", "xpath:idRelative"],
+        ["xpath=//p[2]", "xpath:position"]
+      ],
+      "value": "YOUR REVIEW HAS BEEN SUBMITTED"
+    }]
+  }, {
+    "id": "75a266f3-beeb-45ab-ab09-b1aea757d9aa",
+    "name": "3_Search",
+    "commands": [{
+      "id": "3b23bc9c-3b16-4b33-8892-81b68899b9d2",
+      "comment": "",
+      "command": "open",
+      "target": "/en-ca/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "3cbffb76-0cce-487b-94fd-aa10c37efa3e",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1069x824",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "bb484f05-f587-4186-b14d-551908accb22",
+      "comment": "",
+      "command": "click",
+      "target": "id=header__quick-search",
+      "targets": [
+        ["id=header__quick-search", "id"],
+        ["name=SearchBoxKeywords", "name"],
+        ["css=#header__quick-search", "css:finder"],
+        ["xpath=//input[@id='header__quick-search']", "xpath:attributes"],
+        ["xpath=//div[@id='quick-search__input-container']/input", "xpath:idRelative"],
+        ["xpath=//div[2]/div/div/div/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "8774cc0b-3514-48f1-9621-91bbe6e7dc7d",
+      "comment": "",
+      "command": "type",
+      "target": "id=header__quick-search",
+      "targets": [
+        ["id=header__quick-search", "id"],
+        ["name=SearchBoxKeywords", "name"],
+        ["css=#header__quick-search", "css:finder"],
+        ["xpath=//input[@id='header__quick-search']", "xpath:attributes"],
+        ["xpath=//div[@id='quick-search__input-container']/input", "xpath:idRelative"],
+        ["xpath=//div[2]/div/div/div/input", "xpath:position"]
+      ],
+      "value": "Harry Potter"
+    }, {
+      "id": "657a72f0-62fa-42c9-9433-55f9d01497fa",
+      "comment": "",
+      "command": "sendKeys",
+      "target": "id=header__quick-search",
+      "targets": [
+        ["id=header__quick-search", "id"],
+        ["name=SearchBoxKeywords", "name"],
+        ["css=#header__quick-search", "css:finder"],
+        ["xpath=//input[@id='header__quick-search']", "xpath:attributes"],
+        ["xpath=//div[@id='quick-search__input-container']/input", "xpath:idRelative"],
+        ["xpath=//div[2]/div/div/div/input", "xpath:position"]
+      ],
+      "value": "${KEY_ENTER}"
+    }, {
+      "id": "acc43712-ad38-4fd0-9932-72edcf72104a",
+      "comment": "",
+      "command": "click",
+      "target": "css=#resultSummary > span",
+      "targets": [
+        ["css=#resultSummary > span", "css:finder"],
+        ["xpath=//div[@id='resultSummary']/span", "xpath:idRelative"],
+        ["xpath=//section/div/div/div/div/div/div/div/div/span", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "6ea32a5d-59fc-41be-8075-eb276aae99e3",
+      "comment": "",
+      "command": "click",
+      "target": "css=#resultSummary > span",
+      "targets": [
+        ["css=#resultSummary > span", "css:finder"],
+        ["xpath=//div[@id='resultSummary']/span", "xpath:idRelative"],
+        ["xpath=//section/div/div/div/div/div/div/div/div/span", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "26274a8e-2d23-4a83-9468-06c413fb5665",
+      "comment": "",
+      "command": "click",
+      "target": "css=#resultSummary > span",
+      "targets": [
+        ["css=#resultSummary > span", "css:finder"],
+        ["xpath=//div[@id='resultSummary']/span", "xpath:idRelative"],
+        ["xpath=//section/div/div/div/div/div/div/div/div/span", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "d519cc2c-de89-4367-8178-590cebc089e6",
+      "comment": "",
+      "command": "click",
+      "target": "id=aspnetForm",
+      "targets": [
+        ["id=aspnetForm", "id"],
+        ["name=aspnetForm", "name"],
+        ["css=#aspnetForm", "css:finder"],
+        ["xpath=//form[@id='aspnetForm']", "xpath:attributes"],
+        ["xpath=//form", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "6032e2cc-63ca-44b5-9b83-480ac124b2c5",
+      "comment": "",
+      "command": "assertText",
+      "target": "css=.keyword-heading",
+      "targets": [
+        ["css=.keyword-heading", "css:finder"],
+        ["xpath=//div[@id='resultSummary']/h1", "xpath:idRelative"],
+        ["xpath=//h1", "xpath:position"]
+      ],
+      "value": "\"HARRY POTTER\""
+    }]
+  }],
+  "suites": [{
+    "id": "112f5984-7e2d-4fa5-93e2-b4ba431af6a1",
+    "name": "Default Suite",
+    "persistSession": false,
+    "parallel": false,
+    "timeout": 300,
+    "tests": []
+  }],
+  "urls": ["https://www.chapters.indigo.ca/"],
+  "plugins": []
+}
