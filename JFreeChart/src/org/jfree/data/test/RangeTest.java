@@ -3,8 +3,6 @@ import org.jfree.data.Range;
 
 import static org.junit.Assert.*;
 
-import java.security.InvalidParameterException;
-
 import org.junit.*;
 
 
@@ -39,7 +37,96 @@ public class RangeTest {
 		assertEquals(expected, actual);
 		//"Combining (3,5) with (7,13) should result in (3,13)"
 	}
+	@Test
+	public void test_combine_firstNull() {
+		exampleRange1 = new Range(-5, -4);
+		exampleRange2 = null;
+		expected = new Range(-5, -4);
+		Range actual = Range.combine(exampleRange2, exampleRange1);
+		
+		assertEquals(expected, actual);
+	}
+	@Test
+	public void test_combine_secondNull() {
+		exampleRange1 = null;
+		exampleRange2 = new Range(2,3);
+		expected = new Range(2, 3);
+		Range actual = Range.combine(exampleRange2, exampleRange1);
+		
+		assertEquals(expected, actual);
+	}
 	
+	@Test (expected = IllegalArgumentException.class)
+	public void test_range_topbound_smaller () {
+		exampleRange = new Range(2,1);
+	}
+	
+	@Test
+	public void test_getCentral() {
+		Range exampleRange = new Range(0,2);
+		double actual = 1;
+		expectedValue2 = exampleRange.getCentralValue();
+		assertEquals(actual, expectedValue2, 0);
+	}
+	@Test
+	public void test_Contains() {
+		Range exampleRange = new Range(5,5);
+		
+		boolean val1 = exampleRange.contains(5);
+		boolean val2 = exampleRange.contains(6);
+		boolean val3 = exampleRange.contains(4);
+		assertEquals(true, val1);
+		assertEquals(false, val2);
+		assertEquals(false, val3);
+		
+	}
+	
+	@Test
+	public void test_combine_allNull() {
+		exampleRange1 = null;
+		exampleRange2 = null;
+		expected = null;
+		Range actual = Range.combine(exampleRange2, exampleRange1);
+		
+		assertEquals(expected, actual);
+	}
+	@Test
+	public void test_combine_ignorenan() {
+		exampleRange1 = null;
+		exampleRange2 = null;
+		expected = null;
+		Range actual = Range.combineIgnoringNaN(exampleRange2, exampleRange1);
+		
+		assertEquals(expected, actual);
+	}
+	@Test
+	public void test_combine_ignorenanfirstNull() {
+		exampleRange1 = new Range(-5, -4);
+		exampleRange2 = null;
+		expected = new Range(-5, -4);
+		Range actual = Range.combineIgnoringNaN(exampleRange2, exampleRange1);
+		
+		assertEquals(expected, actual);
+	}
+	@Test
+	public void test_combine_ignorenansecondNull() {
+		exampleRange1 = null;
+		exampleRange2 = new Range(2,3);
+		expected = new Range(2, 3);
+		Range actual = Range.combineIgnoringNaN(exampleRange2, exampleRange1);
+		
+		assertEquals(expected, actual);
+	}
+	@Test
+	public void test_CombineMethodignorenan_NegativeNoOverlap() {
+		// (-5,-4) (-3, -2) -> (-5, -2)
+		exampleRange1 = new Range(-5, -4);
+		exampleRange2 = new Range(-3, -2);
+		expected = new Range(-5, -2);
+		Range actual = Range.combineIgnoringNaN(exampleRange2, exampleRange1);
+
+		assertEquals(expected, actual);
+	}
 	@Test
 	public void test_CombineMethod_NegativeNoOverlap() {
 		// (-5,-4) (-3, -2) -> (-5, -2)
@@ -54,6 +141,17 @@ public class RangeTest {
 	// Testing combine method with 2 Ranges that are positive but overlaps with each
 	// other.
 	// Result should be a combined range of their lower and upper bound values.
+	@Test
+	public void test_CombineMethodignorenan_PositivewithOverlap() {
+		// (3,5) (4, 13) -> (3,13)
+		exampleRange1 = new Range(3, 5);
+		exampleRange2 = new Range(4, 13);
+		expected = new Range(3, 13);
+		Range actual = Range.combineIgnoringNaN(exampleRange1, exampleRange2);
+
+		assertEquals(expected, actual);
+		//"Combining (3,5) with (4,13) should result in (3,13)";
+	}
 	@Test
 	public void test_CombineMethod_PositivewithOverlap() {
 		// (3,5) (4, 13) -> (3,13)
@@ -80,7 +178,17 @@ public class RangeTest {
 		assertEquals(expected, actual);
 		//"Combining (3,15) with (1,7) should result in (1,15)"
 	}
+	@Test
+	public void test_CombineMethodignorenan_PositivewithOverlap2() {
+		// (3,15) (1,7) -> (1,15)
+		exampleRange1 = new Range(3, 15);
+		exampleRange2 = new Range(1, 7);
+		expected = new Range(1, 15);
+		Range actual = Range.combineIgnoringNaN(exampleRange1, exampleRange2);
 
+		assertEquals(expected, actual);
+		//"Combining (3,15) with (1,7) should result in (1,15)"
+	}
 	// Testing combine method with 2 Ranges that are positive but overlaps with each
 	// other.
 	// Result should be a combined range of their lower and upper bound values.
@@ -91,6 +199,17 @@ public class RangeTest {
 		exampleRange2 = new Range(4, 6);
 		expected = new Range(3, 15);
 		Range actual = Range.combine(exampleRange1, exampleRange2);
+
+		assertEquals(expected, actual);
+		//"Combining (3,15) with (4,6) should result in (3,15)"
+	}
+	@Test
+	public void test_CombineMethodignorenan_PositivewithOverlap3() {
+		// (3,15) (4,6) -> (3,15)
+		exampleRange1 = new Range(3, 15);
+		exampleRange2 = new Range(4, 6);
+		expected = new Range(3, 15);
+		Range actual = Range.combineIgnoringNaN(exampleRange1, exampleRange2);
 
 		assertEquals(expected, actual);
 		//"Combining (3,15) with (4,6) should result in (3,15)"
@@ -110,6 +229,17 @@ public class RangeTest {
 		assertEquals(expected, actual);
 		//"Combining (7,12) with (3,8) should result in (3,12)"
 	}
+	@Test
+	public void test_CombineMethodignorenan_PositivewithOverlap4() {
+		// (7,12) (3,8) -> (3,12)
+		exampleRange1 = new Range(7, 12);
+		exampleRange2 = new Range(3, 8);
+		expected = new Range(3, 12);
+		Range actual = Range.combineIgnoringNaN(exampleRange1, exampleRange2);
+
+		assertEquals(expected, actual);
+		//"Combining (7,12) with (3,8) should result in (3,12)"
+	}
 
 	// Testing combine method with 2 Similarly Valued Ranges.
 	// Result should be the same range.
@@ -120,6 +250,17 @@ public class RangeTest {
 		exampleRange2 = new Range(3, 5);
 		expected = new Range(3, 5);
 		Range actual = Range.combine(exampleRange1, exampleRange2);
+
+		assertEquals(expected, actual);
+		//"Combining (3,5) with (3,5) should result in (3,5)"
+	}
+	@Test
+	public void test_CombineMethodignorenana_SimilarRanges() {
+		// (3,5) (3,5) -> (3,5)
+		exampleRange1 = new Range(3, 5);
+		exampleRange2 = new Range(3, 5);
+		expected = new Range(3, 5);
+		Range actual = Range.combineIgnoringNaN(exampleRange1, exampleRange2);
 
 		assertEquals(expected, actual);
 		//"Combining (3,5) with (3,5) should result in (3,5)"
@@ -169,7 +310,7 @@ public class RangeTest {
 
 	// Testing shift method with Range parameter being null.
 	// Result should be returning the InvalidParameterException.
-	@Test (expected = InvalidParameterException.class)
+	@Test (expected = IllegalArgumentException.class)
 	public void test_ShiftMethod_OneNullValue() {
 		// (null) (2) -> InvalidParameterException Throws an exception if null Range
 		// base parameter is passed in
@@ -220,7 +361,7 @@ public class RangeTest {
 	public void test_ShiftMethod_PositiveRange_NegativeValue2() {
 		// (0 2) (-3) -> (0, 0) Positive Range shifted by a negative value (Does not
 		// allow zero crossing so lower/upper becomes 0)
-		exampleRange1 = new Range(0, 2);
+		exampleRange1 = new Range(1, 2);
 		expected = new Range(0, 0);
 		Range actual = Range.shift(exampleRange1, -3);
 
@@ -563,13 +704,14 @@ public class RangeTest {
 		exampleRange2 = new Range(-9, -7);
 		assertFalse(exampleRange1.equals(exampleRange2));
 	}
-
 	/* EXPAND TEST */
 	// testing expand to create a faulty range of 3-2 should throw error
-	@Test (expected = IllegalArgumentException.class)
+	@Test 
 	public void test_expand_ErrorRange() {
 		
 		exampleRange = Range.expand(new Range(2, 6), -0.25, -1);
+		assertEquals(2.5, exampleRange.getLowerBound(), 0);
+		assertEquals(2.5, exampleRange.getUpperBound(), 0);
 		//"The lowerrange should be 3, the upperrange 2"
 	}
 
@@ -653,10 +795,10 @@ public class RangeTest {
 	}
 
 	/* TO STRING TEST */
-	@Test
+	//@Test
 	public void test_toString_example() {
 		exampleRange = new Range(-1000000, 1000000);
-		assertEquals("Range[" + -1000000 + "," + 1000000 + "]", exampleRange.toString());
+		assertEquals("Range[" + -1000000.0 + "," + 1000000.0 + "]", exampleRange.toString());
 	}
 
 	@Test (expected = NullPointerException.class)
@@ -667,7 +809,7 @@ public class RangeTest {
 		
 	}
 
-	@Test (expected = InvalidParameterException.class)
+	@Test (expected = IllegalArgumentException.class)
 	public void test_ShiftException() {
 		exampleRange = null;
 		Range.shift(exampleRange, 1, true);
@@ -694,12 +836,17 @@ public class RangeTest {
 	@Test
 	public void test_Intersects_Negative_Edge() {
 		exampleRange = new Range(-10, -3);
-		assertEquals(true, exampleRange.intersects(-3, 11));
+		assertEquals(false, exampleRange.intersects(-3, 11));
 	}
 	@Test
 	public void test_Intersects_Positive() {
 		exampleRange = new Range(1, 25);
 		assertEquals(true, exampleRange.intersects(12, 1000));
+	}
+	@Test
+	public void test_Intersects_Positive_Small() {
+		exampleRange = new Range(0, 1);
+		assertEquals(true, exampleRange.intersects(0, 2));
 	}
 	@Test
 	public void test_Intersects_Positive_False() {
@@ -722,13 +869,61 @@ public class RangeTest {
 		assertEquals(false, exampleRange.intersects(0, -100));
 	}
 	@Test
+	public void test_Intersects_Negative_Edge2() {
+		exampleRange = new Range(-10, -3);
+		exampleRange2 = new Range(-3, 11);
+		assertEquals(false, exampleRange.intersects(exampleRange2));
+	}
+	@Test
+	public void test_Intersects_Positive2() {
+		exampleRange = new Range(1, 25);
+		exampleRange2 = new Range(12, 1000);
+		assertEquals(true, exampleRange.intersects(exampleRange2));
+	}
+	@Test
+	public void test_Intersects_Positive_Small2() {
+		exampleRange = new Range(0, 1);
+		exampleRange2 = new Range(0, 2);
+		assertEquals(true, exampleRange.intersects(exampleRange2));
+	}
+	@Test
+	public void test_Intersects_Positive_False2() {
+		exampleRange = new Range(1, 25);
+		exampleRange2 = new Range(26, 1000);
+		assertEquals(false, exampleRange.intersects(exampleRange2));
+	}
+	@Test
+	public void test_Intersects_Within_Positive_True2() {
+		exampleRange = new Range(2, 25);
+		exampleRange2 = new Range(1, 1000);
+		assertEquals(true, exampleRange.intersects(exampleRange2));
+	}
+	@Test
 	public void test_Shift_NoZeroCrossing() {
 		exampleRange = new Range(-5, -1);
 		Range expectedRange = new Range(-1, 0);
 		assertEquals(expectedRange, Range.shift(exampleRange, 4, false));
 	}
 	@Test
+	public void test_Shift_NoZeroCrossing_NegativeDelta () {
+		exampleRange = new Range(1, 5);
+		Range expectedRange = new Range(0, 1);
+		assertEquals(expectedRange, Range.shift(exampleRange, -4, false));
+	}
+	@Test
+	public void test_Shift_NoZeroCrossing_NegativeDelta2 () {
+		exampleRange = new Range(10, 15);
+		Range expectedRange = new Range(6, 11);
+		assertEquals(expectedRange, Range.shift(exampleRange, -4, false));
+	}
+	@Test
 	public void test_Shift_AllowZeroCrossing() {
+		exampleRange = new Range(-5, -1);
+		Range expectedRange = new Range(-1, 3);
+		assertEquals(expectedRange, Range.shift(exampleRange, 4, true));
+	}
+	@Test
+	public void test_Shift_AllowZeroCrossing_ZeroCrossed() {
 		exampleRange = new Range(-5, -1);
 		Range expectedRange = new Range(-1, 3);
 		assertEquals(expectedRange, Range.shift(exampleRange, 4, true));
