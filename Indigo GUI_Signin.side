@@ -1,0 +1,120 @@
+{
+  "id": "fec5350b-0af0-48ec-adf4-6205259cd962",
+  "version": "2.0",
+  "name": "Indigo GUI",
+  "url": "https://www.chapters.indigo.ca",
+  "tests": [{
+    "id": "1a2ae4b0-a383-4756-8027-c6135d55f9d2",
+    "name": "Signin",
+    "commands": [{
+      "id": "479d6c7e-34a9-48a6-b266-c1726bb66723",
+      "comment": "",
+      "command": "open",
+      "target": "/en-ca/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "4559ad1f-8f0f-4c78-aaf9-1d6523952708",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1059x824",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "ba4b04b4-79b3-42da-a372-cba8297afa4a",
+      "comment": "",
+      "command": "click",
+      "target": "css=.browse-signin-down",
+      "targets": [
+        ["css=.service-link:nth-child(2)", "css:finder"],
+        ["xpath=(//button[@type='button'])[3]", "xpath:attributes"],
+        ["xpath=//div[@id='react_PAWPFsmhoki1II0922jMOw']/div/div/nav/div/div/div/button", "xpath:idRelative"],
+        ["xpath=//div/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "0c9bcff3-7430-4213-af91-5fc826ee2f26",
+      "comment": "",
+      "command": "type",
+      "target": "id=browseCart-signInPopup-emailTextbox",
+      "targets": [
+        ["id=browseCart-signInPopup-emailTextbox", "id"],
+        ["css=#browseCart-signInPopup-emailTextbox", "css:finder"],
+        ["xpath=//input[@id='browseCart-signInPopup-emailTextbox']", "xpath:attributes"],
+        ["xpath=//div[@id='browseCart-signInPopup-signInFields']/div/input", "xpath:idRelative"],
+        ["xpath=//div/div/div/div/div/input", "xpath:position"]
+      ],
+      "value": "jmatthewssarno@gmail.com"
+    }, {
+      "id": "ea135bca-355a-41e7-9df7-7ba5d1321364",
+      "comment": "",
+      "command": "type",
+      "target": "id=browseCart-signInPopup-passwordTextbox",
+      "targets": [
+        ["id=browseCart-signInPopup-passwordTextbox", "id"],
+        ["css=#browseCart-signInPopup-passwordTextbox", "css:finder"],
+        ["xpath=//input[@id='browseCart-signInPopup-passwordTextbox']", "xpath:attributes"],
+        ["xpath=//div[@id='browseCart-signInPopup-signInFields']/div/input[2]", "xpath:idRelative"],
+        ["xpath=//input[2]", "xpath:position"]
+      ],
+      "value": "p@ssword12345"
+    }, {
+      "id": "9d956d83-e482-4b50-af03-a33ebf1374d9",
+      "comment": "",
+      "command": "click",
+      "target": "css=.js-clickSignIn-button",
+      "targets": [
+        ["css=.js-clickSignIn-button", "css:finder"],
+        ["xpath=(//button[@type='button'])[73]", "xpath:attributes"],
+        ["xpath=//div[@id='browseCart-signInPopup-signInFields']/button", "xpath:idRelative"],
+        ["xpath=//section/div/div/div/div/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "327a6688-9a24-4b6b-8fdd-90ccbf3f3f0f",
+      "comment": "",
+      "command": "mouseOver",
+      "target": "css=.js-clickSignIn-button",
+      "targets": [
+        ["css=.js-clickSignIn-button", "css:finder"],
+        ["xpath=(//button[@type='button'])[73]", "xpath:attributes"],
+        ["xpath=//div[@id='browseCart-signInPopup-signInFields']/button", "xpath:idRelative"],
+        ["xpath=//section/div/div/div/div/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "92eba226-c20b-4d0d-a706-a612a5ca36f3",
+      "comment": "",
+      "command": "mouseOut",
+      "target": "css=.js-clickSignIn-button",
+      "targets": [
+        ["css=.js-clickSignIn-button", "css:finder"],
+        ["xpath=(//button[@type='button'])[73]", "xpath:attributes"],
+        ["xpath=//div[@id='browseCart-signInPopup-signInFields']/button", "xpath:idRelative"],
+        ["xpath=//section/div/div/div/div/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "a5bef092-637c-4aa7-b7c4-d9cf8411ebbf",
+      "comment": "",
+      "command": "assertText",
+      "target": "css=.service-link__greeting-name",
+      "targets": [
+        ["css=.service-link__greeting > .service-link__greeting-name", "css:finder"],
+        ["xpath=//div[@id='react_PAWPFsmhoki1II0922jMOw']/div/div/nav/div/div/div/div/span/span", "xpath:idRelative"],
+        ["xpath=//span/span", "xpath:position"]
+      ],
+      "value": "john"
+    }]
+  }],
+  "suites": [{
+    "id": "112f5984-7e2d-4fa5-93e2-b4ba431af6a1",
+    "name": "Default Suite",
+    "persistSession": false,
+    "parallel": false,
+    "timeout": 300,
+    "tests": []
+  }],
+  "urls": ["https://www.chapters.indigo.ca/"],
+  "plugins": []
+}

@@ -39,11 +39,21 @@ public class SignoutTest {
   }
   @Test
   public void Signout() {
-    driver.get("https://www.chapters.indigo.ca/en-ca/");
-    driver.manage().window().setSize(new Dimension(1062, 824));
-    driver.findElement(By.cssSelector(".account-dropdown__text")).click();
-    driver.findElement(By.cssSelector(".account-dropdown__sign-out")).click();
-    driver.findElement(By.cssSelector(".account-dropdown__text")).click();
-    assertThat(driver.findElement(By.cssSelector(".service-link:nth-child(2)")).getText(), is("SIGN IN"));
+	    driver.get("https://www.chapters.indigo.ca/en-ca/");
+	    driver.findElement(By.cssSelector(".browsepopup-closebtn")).click();
+	    driver.findElement(By.cssSelector(".browse-signin-down")).click();
+	    WebDriverWait wait = new WebDriverWait(driver, 15);   
+	    wait.until(ExpectedConditions.elementToBeClickable(By.id("browseCart-signInPopup-emailTextbox"))); 
+	    driver.findElement(By.id("browseCart-signInPopup-emailTextbox")).sendKeys("jmatthewssarno@gmail.com");
+	    driver.findElement(By.id("browseCart-signInPopup-passwordTextbox")).sendKeys("p@ssword12345");
+	    driver.findElement(By.cssSelector(".js-clickSignIn-button")).click();
+	    WebDriverWait wait2 = new WebDriverWait(driver, 15);   
+	    wait2.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".service-link__greeting-name")));
+	    driver.findElement(By.cssSelector(".account-dropdown__text")).click();
+	    driver.findElement(By.cssSelector(".account-dropdown__sign-out")).click();
+    	driver.findElement(By.cssSelector(".account-dropdown__text")).click();
+    	WebDriverWait wait3 = new WebDriverWait(driver, 15);   
+	    wait3.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".browse-signin-down")));
+    	assertThat(driver.findElement(By.cssSelector(".browse-signin-down")).getText(), is("SIGN IN"));
   }
 }

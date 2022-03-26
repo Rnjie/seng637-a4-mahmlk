@@ -1,5 +1,6 @@
 package org.indigo.test;
 
+
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.After;
@@ -38,10 +39,12 @@ public class SigninTest {
     driver.quit();
   }
   @Test
-  public void Signin() {
+  public void signin() {
     driver.get("https://www.chapters.indigo.ca/en-ca/");
-    driver.manage().window().setSize(new Dimension(1059, 824));
-    driver.findElement(By.cssSelector(".service-link:nth-child(2)")).click();
+    driver.findElement(By.cssSelector(".browsepopup-closebtn")).click();
+    driver.findElement(By.cssSelector(".browse-signin-down")).click();
+    WebDriverWait wait = new WebDriverWait(driver, 15);   
+    wait.until(ExpectedConditions.elementToBeClickable(By.id("browseCart-signInPopup-emailTextbox")));
     driver.findElement(By.id("browseCart-signInPopup-emailTextbox")).sendKeys("jmatthewssarno@gmail.com");
     driver.findElement(By.id("browseCart-signInPopup-passwordTextbox")).sendKeys("p@ssword12345");
     driver.findElement(By.cssSelector(".js-clickSignIn-button")).click();
@@ -55,7 +58,9 @@ public class SigninTest {
       Actions builder = new Actions(driver);
       builder.moveToElement(element, 0, 0).perform();
     }
-    driver.findElement(By.cssSelector(".service-link--auth:nth-child(1)")).click();
-    assertThat(driver.findElement(By.cssSelector(".service-link__greeting > .service-link__greeting-name")).getText(), is("john"));
+ 
+    WebDriverWait wait2 = new WebDriverWait(driver, 15);   
+    wait2.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".service-link__greeting-name")));
+    assertThat(driver.findElement(By.cssSelector(".service-link__greeting-name")).getText(), is("john"));
   }
 }

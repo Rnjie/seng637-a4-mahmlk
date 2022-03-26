@@ -40,14 +40,12 @@ public class SearchTest {
   @Test
   public void Search() {
     driver.get("https://www.chapters.indigo.ca/en-ca/");
-    driver.manage().window().setSize(new Dimension(1069, 824));
     driver.findElement(By.id("header__quick-search")).click();
     driver.findElement(By.id("header__quick-search")).sendKeys("Harry Potter");
     driver.findElement(By.id("header__quick-search")).sendKeys(Keys.ENTER);
-    driver.findElement(By.cssSelector("#resultSummary > span")).click();
-    driver.findElement(By.cssSelector("#resultSummary > span")).click();
+
     driver.findElement(By.cssSelector("#resultSummary > span")).click();
     driver.findElement(By.id("aspnetForm")).click();
-    assertThat(driver.findElement(By.cssSelector(".keyword-heading")).getText(), is("\\\"HARRY POTTER\\\""));
+    assertThat(driver.findElement(By.cssSelector(".keyword-heading")).getText(), is("\"HARRY POTTER\""));
   }
 }
