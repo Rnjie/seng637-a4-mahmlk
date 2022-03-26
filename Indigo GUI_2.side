@@ -5,19 +5,12 @@
   "url": "https://www.chapters.indigo.ca",
   "tests": [{
     "id": "1a2ae4b0-a383-4756-8027-c6135d55f9d2",
-    "name": "1_Sign in",
+    "name": "sign_in",
     "commands": [{
       "id": "479d6c7e-34a9-48a6-b266-c1726bb66723",
       "comment": "",
       "command": "open",
-      "target": "/en-ca/",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "4559ad1f-8f0f-4c78-aaf9-1d6523952708",
-      "comment": "",
-      "command": "setWindowSize",
-      "target": "1059x824",
+      "target": "https://www.chapters.indigo.ca/en-ca/",
       "targets": [],
       "value": ""
     }, {
@@ -119,32 +112,20 @@
     }]
   }, {
     "id": "150b79d2-2870-451d-8f5f-2dea183d389e",
-    "name": "4_Sign out",
+    "name": "sign_out",
     "commands": [{
-      "id": "bc4ba7b5-4013-4f00-887a-1c3a3619e564",
+      "id": "480c5118-91c1-4663-be59-d304893d8c5c",
       "comment": "",
       "command": "open",
-      "target": "/en-ca/",
+      "target": "https://www.chapters.indigo.ca/en-ca/",
       "targets": [],
       "value": ""
     }, {
-      "id": "256b3e36-a309-4e4f-8ef4-b0f9c2788781",
-      "comment": "",
-      "command": "setWindowSize",
-      "target": "1059x824",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "017f4167-367e-4ab8-bd8e-770aedd01880",
+      "id": "ce2b0e46-81e9-4f57-bfae-b7301c005628",
       "comment": "",
       "command": "click",
-      "target": "css=.browse-signin-down",
-      "targets": [
-        ["css=.service-link:nth-child(2)", "css:finder"],
-        ["xpath=(//button[@type='button'])[3]", "xpath:attributes"],
-        ["xpath=//div[@id='react_PAWPFsmhoki1II0922jMOw']/div/div/nav/div/div/div/button", "xpath:idRelative"],
-        ["xpath=//div/button", "xpath:position"]
-      ],
+      "target": "css=.service-link:nth-child(2)",
+      "targets": [],
       "value": ""
     }, {
       "id": "f89ec6a3-ab4a-4816-add7-fd9e8b51b0a6",
@@ -259,12 +240,12 @@
     }]
   }, {
     "id": "b29dc7e9-b52f-4521-89ce-59dd6a4456d4",
-    "name": "AddReview",
+    "name": "review_add",
     "commands": [{
       "id": "985af5fd-4f3a-4a3b-81d5-112c597b9993",
       "comment": "",
       "command": "open",
-      "target": "/en-ca/",
+      "target": "https://www.chapters.indigo.ca/en-ca/",
       "targets": [],
       "value": ""
     }, {
@@ -627,19 +608,12 @@
     }]
   }, {
     "id": "75a266f3-beeb-45ab-ab09-b1aea757d9aa",
-    "name": "3_Search",
+    "name": "search",
     "commands": [{
       "id": "3b23bc9c-3b16-4b33-8892-81b68899b9d2",
       "comment": "",
       "command": "open",
-      "target": "/en-ca/",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "3cbffb76-0cce-487b-94fd-aa10c37efa3e",
-      "comment": "",
-      "command": "setWindowSize",
-      "target": "1069x824",
+      "target": "https://www.chapters.indigo.ca/en-ca/",
       "targets": [],
       "value": ""
     }, {
@@ -721,46 +695,711 @@
       "value": "\"HARRY POTTER\""
     }]
   }, {
-    "id": "c93408cd-18b4-41df-820f-f10a0ebfb72c",
-    "name": "CartEmptyMessageTest",
+    "id": "6680ec16-7205-4557-96e4-966204e9e87c",
+    "name": "wishlist_add",
     "commands": [{
-      "id": "c67bcb43-8430-4d8c-a93a-f42221d5edb7",
+      "id": "28cb2710-f838-47f4-b07f-a2e1700b76c1",
+      "comment": "",
+      "command": "open",
+      "target": "https://www.chapters.indigo.ca/en-ca/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "b3fd1927-7ba0-4f88-a129-e224d1b8f76a",
+      "comment": "",
+      "command": "click",
+      "target": "css=.browse-signin-down",
+      "targets": [
+        ["css=.service-link:nth-child(2)", "css:finder"],
+        ["xpath=(//button[@type='button'])[3]", "xpath:attributes"],
+        ["xpath=//div[@id='react_PAWPFsmhoki1II0922jMOw']/div/div/nav/div/div/div/button", "xpath:idRelative"],
+        ["xpath=//div/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "f4b14b2d-2c7f-4e92-a707-29b54f7885cd",
+      "comment": "",
+      "command": "type",
+      "target": "id=browseCart-signInPopup-emailTextbox",
+      "targets": [
+        ["id=browseCart-signInPopup-emailTextbox", "id"],
+        ["css=#browseCart-signInPopup-emailTextbox", "css:finder"],
+        ["xpath=//input[@id='browseCart-signInPopup-emailTextbox']", "xpath:attributes"],
+        ["xpath=//div[@id='browseCart-signInPopup-signInFields']/div/input", "xpath:idRelative"],
+        ["xpath=//div/div/div/div/div/input", "xpath:position"]
+      ],
+      "value": "jmatthewssarno@gmail.com"
+    }, {
+      "id": "e0f24cdc-e5ec-461c-b534-1f59f26188d9",
+      "comment": "",
+      "command": "type",
+      "target": "id=browseCart-signInPopup-passwordTextbox",
+      "targets": [
+        ["id=browseCart-signInPopup-passwordTextbox", "id"],
+        ["css=#browseCart-signInPopup-passwordTextbox", "css:finder"],
+        ["xpath=//input[@id='browseCart-signInPopup-passwordTextbox']", "xpath:attributes"],
+        ["xpath=//div[@id='browseCart-signInPopup-signInFields']/div/input[2]", "xpath:idRelative"],
+        ["xpath=//input[2]", "xpath:position"]
+      ],
+      "value": "p@ssword12345"
+    }, {
+      "id": "1571c3ff-8d44-45e6-b127-c2f6dba62ca0",
+      "comment": "",
+      "command": "click",
+      "target": "css=.js-clickSignIn-button",
+      "targets": [
+        ["css=.js-clickSignIn-button", "css:finder"],
+        ["xpath=(//button[@type='button'])[73]", "xpath:attributes"],
+        ["xpath=//div[@id='browseCart-signInPopup-signInFields']/button", "xpath:idRelative"],
+        ["xpath=//section/div/div/div/div/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "4e375033-c446-43e8-9b68-5ea9e3fc5aa8",
+      "comment": "",
+      "command": "assertText",
+      "target": "css=.service-link__greeting-name",
+      "targets": [
+        ["css=.service-link__greeting > .service-link__greeting-name", "css:finder"],
+        ["xpath=//div[@id='react_PAWPFsmhoki1II0922jMOw']/div/div/nav/div/div/div/div/span/span", "xpath:idRelative"],
+        ["xpath=//span/span", "xpath:position"]
+      ],
+      "value": "john"
+    }, {
+      "id": "9eeb106d-1d4c-4efc-a1e3-0c2677d973d9",
+      "comment": "",
+      "command": "open",
+      "target": "https://www.chapters.indigo.ca/en-ca/books/run-towards-the-danger-confrontations/9780735242883-item.html",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "039f9f90-d7d8-42cd-a3ed-96156c6ab764",
+      "comment": "",
+      "command": "click",
+      "target": "css=.async-button--full-width > .common-button--ghost",
+      "targets": [
+        ["css=.async-button--full-width > .common-button--ghost", "css:finder"],
+        ["xpath=(//button[@type='button'])[13]", "xpath:attributes"],
+        ["xpath=//section[@id='item-page__item-purchase-container']/div[4]/div[2]/button", "xpath:idRelative"],
+        ["xpath=//div[4]/div[2]/button", "xpath:position"],
+        ["xpath=//button[contains(.,'+ WISH LIST')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "3956c8fd-06f3-4fd5-b675-e6353bd795d5",
+      "comment": "",
+      "command": "click",
+      "target": "linkText=VIEW LIST",
+      "targets": [
+        ["linkText=VIEW LIST", "linkText"],
+        ["css=.wishlist-notification__button", "css:finder"],
+        ["xpath=//a[contains(text(),'VIEW LIST')]", "xpath:link"],
+        ["xpath=//section[@id='notification__add-to-list']/div/div[2]/div/section/div[2]/div[2]/div/a", "xpath:idRelative"],
+        ["xpath=//a[contains(@href, 'https://www.chapters.indigo.ca/en-ca/list/manage/wishlist/3722438')]", "xpath:href"],
+        ["xpath=//section/div[2]/div[2]/div/a", "xpath:position"],
+        ["xpath=//a[contains(.,'VIEW LIST')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "4d84e842-57fb-4f3a-a1a0-f363a44f5046",
+      "comment": "",
+      "command": "assertText",
+      "target": "css=.product-list__results-container .product-list__product-title-link--grid",
+      "targets": [
+        ["css=.product-list__results-container .product-list__product-title-link--grid", "css:finder"],
+        ["xpath=//a[contains(text(),'Run Towards The Danger: Confrontations With A Body Of Memory')]", "xpath:link"],
+        ["xpath=//div[@id='customerListManageInstanceId46']/div/section/div/section[2]/div/div[3]/div/div/div[2]/div/div/h3/a", "xpath:idRelative"],
+        ["xpath=//h3/a", "xpath:position"]
+      ],
+      "value": "RUN TOWARDS THE DANGER: CONFRONTATIONS WITH A BODY OF MEMORY"
+    }]
+  }, {
+    "id": "2b332636-4428-443d-b527-2c84a51249ee",
+    "name": "wishlist_remove",
+    "commands": [{
+      "id": "ef135ccb-6962-4f0f-a38b-d601bfa984e7",
+      "comment": "",
+      "command": "open",
+      "target": "https://www.chapters.indigo.ca/en-ca/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "2ea608ac-7b5c-40e5-a689-fd369e05d114",
+      "comment": "",
+      "command": "click",
+      "target": "css=.browse-signin-down",
+      "targets": [
+        ["css=.service-link:nth-child(2)", "css:finder"],
+        ["xpath=(//button[@type='button'])[3]", "xpath:attributes"],
+        ["xpath=//div[@id='react_PAWPFsmhoki1II0922jMOw']/div/div/nav/div/div/div/button", "xpath:idRelative"],
+        ["xpath=//div/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "fc78b844-e440-4773-b666-90aebf164ba1",
+      "comment": "",
+      "command": "type",
+      "target": "id=browseCart-signInPopup-emailTextbox",
+      "targets": [
+        ["id=browseCart-signInPopup-emailTextbox", "id"],
+        ["css=#browseCart-signInPopup-emailTextbox", "css:finder"],
+        ["xpath=//input[@id='browseCart-signInPopup-emailTextbox']", "xpath:attributes"],
+        ["xpath=//div[@id='browseCart-signInPopup-signInFields']/div/input", "xpath:idRelative"],
+        ["xpath=//div/div/div/div/div/input", "xpath:position"]
+      ],
+      "value": "jmatthewssarno@gmail.com"
+    }, {
+      "id": "bebe4a81-8df1-4302-b793-6039b85dda81",
+      "comment": "",
+      "command": "type",
+      "target": "id=browseCart-signInPopup-passwordTextbox",
+      "targets": [
+        ["id=browseCart-signInPopup-passwordTextbox", "id"],
+        ["css=#browseCart-signInPopup-passwordTextbox", "css:finder"],
+        ["xpath=//input[@id='browseCart-signInPopup-passwordTextbox']", "xpath:attributes"],
+        ["xpath=//div[@id='browseCart-signInPopup-signInFields']/div/input[2]", "xpath:idRelative"],
+        ["xpath=//input[2]", "xpath:position"]
+      ],
+      "value": "p@ssword12345"
+    }, {
+      "id": "c73339cc-29cc-423d-a89e-0cc2f128ecc7",
+      "comment": "",
+      "command": "click",
+      "target": "css=.js-clickSignIn-button",
+      "targets": [
+        ["css=.js-clickSignIn-button", "css:finder"],
+        ["xpath=(//button[@type='button'])[73]", "xpath:attributes"],
+        ["xpath=//div[@id='browseCart-signInPopup-signInFields']/button", "xpath:idRelative"],
+        ["xpath=//section/div/div/div/div/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "ed525281-dfb3-4bc6-8c2e-477905c1f1ca",
+      "comment": "",
+      "command": "assertText",
+      "target": "css=.service-link__greeting-name",
+      "targets": [
+        ["css=.service-link__greeting > .service-link__greeting-name", "css:finder"],
+        ["xpath=//div[@id='react_PAWPFsmhoki1II0922jMOw']/div/div/nav/div/div/div/div/span/span", "xpath:idRelative"],
+        ["xpath=//span/span", "xpath:position"]
+      ],
+      "value": "john"
+    }, {
+      "id": "d69932f4-7c90-4760-8a7d-8c46835bb216",
+      "comment": "",
+      "command": "open",
+      "target": "https://www.chapters.indigo.ca/en-ca/books/run-towards-the-danger-confrontations/9780735242883-item.html",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "6d305dfa-e810-4d90-a632-5e76362e5b13",
+      "comment": "",
+      "command": "click",
+      "target": "css=.async-button--full-width > .common-button--ghost",
+      "targets": [
+        ["css=.async-button--full-width > .common-button--ghost", "css:finder"],
+        ["xpath=(//button[@type='button'])[13]", "xpath:attributes"],
+        ["xpath=//section[@id='item-page__item-purchase-container']/div[4]/div[2]/button", "xpath:idRelative"],
+        ["xpath=//div[4]/div[2]/button", "xpath:position"],
+        ["xpath=//button[contains(.,'+ WISH LIST')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "d7166d14-a471-47b7-b6e7-a1169062e8ac",
+      "comment": "",
+      "command": "click",
+      "target": "linkText=VIEW LIST",
+      "targets": [
+        ["linkText=VIEW LIST", "linkText"],
+        ["css=.wishlist-notification__button", "css:finder"],
+        ["xpath=//a[contains(text(),'VIEW LIST')]", "xpath:link"],
+        ["xpath=//section[@id='notification__add-to-list']/div/div[2]/div/section/div[2]/div[2]/div/a", "xpath:idRelative"],
+        ["xpath=//a[contains(@href, 'https://www.chapters.indigo.ca/en-ca/list/manage/wishlist/3722438')]", "xpath:href"],
+        ["xpath=//section/div[2]/div[2]/div/a", "xpath:position"],
+        ["xpath=//a[contains(.,'VIEW LIST')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "11d8773d-27af-4f4f-a99a-61199960c92d",
+      "comment": "",
+      "command": "assertText",
+      "target": "css=.product-list__results-container .product-list__product-title-link--grid",
+      "targets": [
+        ["css=.product-list__results-container .product-list__product-title-link--grid", "css:finder"],
+        ["xpath=//a[contains(text(),'Run Towards The Danger: Confrontations With A Body Of Memory')]", "xpath:link"],
+        ["xpath=//div[@id='customerListManageInstanceId46']/div/section/div/section[2]/div/div[3]/div/div/div[2]/div/div/h3/a", "xpath:idRelative"],
+        ["xpath=//h3/a", "xpath:position"]
+      ],
+      "value": "RUN TOWARDS THE DANGER: CONFRONTATIONS WITH A BODY OF MEMORY"
+    }, {
+      "id": "7ceb4a88-5a88-4324-a335-49e576f51baa",
+      "comment": "",
+      "command": "click",
+      "target": "css=#heartIcon > path:nth-child(3)",
+      "targets": [
+        ["css=#heartIcon > path:nth-child(3)", "css:finder"]
+      ],
+      "value": ""
+    }, {
+      "id": "f44055e1-727a-4bfb-8720-4aaba651bdda",
+      "comment": "",
+      "command": "click",
+      "target": "css=.common-button--underlined-text",
+      "targets": [
+        ["css=.common-button--underlined-text", "css:finder"],
+        ["xpath=(//button[@type='button'])[22]", "xpath:attributes"],
+        ["xpath=//div[@id='customerListManageInstanceId42']/div/section/div/section[2]/div/div[3]/div/div/div[3]/div[3]/button", "xpath:idRelative"],
+        ["xpath=//div[3]/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "4c8d023c-e82f-48f2-9788-e54e2eb3290f",
+      "comment": "",
+      "command": "click",
+      "target": "css=.edit-item__trash-can-icon",
+      "targets": [
+        ["css=.edit-item__trash-can-icon", "css:finder"]
+      ],
+      "value": ""
+    }, {
+      "id": "af11eac2-028c-4059-b302-6af8bfee3481",
+      "comment": "",
+      "command": "click",
+      "target": "css=.confirmation__primary-action-button",
+      "targets": [
+        ["css=.confirmation__primary-action-button", "css:finder"],
+        ["xpath=(//button[@type='button'])[28]", "xpath:attributes"],
+        ["xpath=//div[@id='confirmation']/div/button", "xpath:idRelative"],
+        ["xpath=//div[5]/div/div/div/div/div/div/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "b9ecd4cc-e288-4dbe-a46b-4983318bfc3e",
+      "comment": "",
+      "command": "assertText",
+      "target": "css=.empty-list__message--wishlist",
+      "targets": [
+        ["css=.empty-list__message--wishlist", "css:finder"],
+        ["xpath=//div[@id='customerListManageInstanceId42']/div/section/div/div/span", "xpath:idRelative"],
+        ["xpath=//div[4]/div/div/div/section/div/div/span", "xpath:position"],
+        ["xpath=//span[contains(.,'Browse and save gift ideas or items you’d love to start this Wish List.')]", "xpath:innerText"]
+      ],
+      "value": "Browse and save gift ideas or items you’d love to start this Wish List."
+    }]
+  }, {
+    "id": "bdad4dab-0c7e-420c-b6ea-aa678d02ae50",
+    "name": "store_find",
+    "commands": [{
+      "id": "d888f1e1-9a37-4563-9efd-6ee153dbbc63",
       "comment": "",
       "command": "open",
       "target": "/en-ca/",
       "targets": [],
       "value": ""
     }, {
-      "id": "517c77a1-b525-4317-a684-cc2593623d57",
+      "id": "d83033b5-748f-42f3-af14-33a2bf7612cf",
       "comment": "",
       "command": "setWindowSize",
-      "target": "1056x808",
+      "target": "1676x1393",
       "targets": [],
       "value": ""
     }, {
-      "id": "47131eab-67da-4bcb-a11a-db88c98a2f9d",
+      "id": "b353bbad-d746-42c2-ad24-bbad037dfbe1",
       "comment": "",
       "command": "click",
-      "target": "css=.common-shopping-cart",
+      "target": "css=.global-store__store-name:nth-child(1)",
       "targets": [
-        ["css=.common-title", "css:finder"],
-        ["xpath=//div[@id='cartpageInstanceId45']/div/section/section/h2", "xpath:idRelative"],
-        ["xpath=//h2", "xpath:position"],
-        ["xpath=//h2[contains(.,'Your Shopping Cart is Empty')]", "xpath:innerText"]
+        ["css=.global-store__store-name:nth-child(1)", "css:finder"],
+        ["xpath=//button[@id='global-store__link']/div/div", "xpath:idRelative"],
+        ["xpath=//button/div/div", "xpath:position"]
       ],
       "value": ""
     }, {
-      "id": "0bbaa0ce-4434-4280-b5ee-2e7ba95c730a",
+      "id": "a2c4474f-79b7-4652-9f20-fc6b7ba8ce8d",
+      "comment": "",
+      "command": "click",
+      "target": "css=.global-store__find-store-button",
+      "targets": [
+        ["css=.global-store__find-store-button", "css:finder"],
+        ["xpath=(//button[@type='button'])[8]", "xpath:attributes"],
+        ["xpath=//div[@id='react_qVMKmgpXDE5RAG0Z9m9Pw']/div/div/div/nav/div/div[2]/div/div/div/button[2]", "xpath:idRelative"],
+        ["xpath=//div[2]/div/div/div/button[2]", "xpath:position"],
+        ["xpath=//button[contains(.,'Find Another Store')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "a12d0024-707b-4045-bbe3-617cb14a7770",
+      "comment": "",
+      "command": "type",
+      "target": "id=find-in-store-search__typeahead",
+      "targets": [
+        ["id=find-in-store-search__typeahead", "id"],
+        ["css=#find-in-store-search__typeahead", "css:finder"],
+        ["xpath=//input[@id='find-in-store-search__typeahead']", "xpath:attributes"],
+        ["xpath=//div[@id='SharedStoreLoaderContainer-react-component']/div/div/div/div/div/div/div/div/div/input", "xpath:idRelative"],
+        ["xpath=//div/div/div/div/div/input", "xpath:position"]
+      ],
+      "value": "Calgary, AB"
+    }, {
+      "id": "9a46b4d2-211a-40ea-b205-158591af6ea2",
+      "comment": "",
+      "command": "click",
+      "target": "css=.find-in-store-search__button-text",
+      "targets": [
+        ["css=.find-in-store-search__button-text", "css:finder"],
+        ["xpath=//div[@id='SharedStoreLoaderContainer-react-component']/div/div/div/div/div/div/div/button[2]/span", "xpath:idRelative"],
+        ["xpath=//button[2]/span", "xpath:position"],
+        ["xpath=//span[contains(.,'Search for Stores')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "e2ce299d-4c6f-4373-a285-3a1c4e3c894e",
+      "comment": "",
+      "command": "assertElementPresent",
+      "target": "linkText=Indigospirit - The Core",
+      "targets": [
+        ["linkText=Indigospirit - The Core", "linkText"],
+        ["css=.find-in-store-result__content:nth-child(2) > .find-in-store-result__store-title-container .common-link", "css:finder"],
+        ["xpath=//a[contains(text(),'Indigospirit - The Core')]", "xpath:link"],
+        ["xpath=//div[@id='SharedStoreLoaderContainer-react-component']/div/div/div/div/div/div[2]/div/div[2]/ul/li/div[2]/div/div/a[2]", "xpath:idRelative"],
+        ["xpath=//a[contains(@href, 'https://www.chapters.indigo.ca//en-ca/home/storelocator/storedetails/79')]", "xpath:href"],
+        ["xpath=//li/div[2]/div/div/a[2]", "xpath:position"],
+        ["xpath=//a[contains(.,'Indigospirit - The Core')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "e978c766-0fce-4d77-9dbd-050d09864a8b",
+      "comment": "",
+      "command": "click",
+      "target": "linkText=Indigospirit - The Core",
+      "targets": [
+        ["linkText=Indigospirit - The Core", "linkText"],
+        ["css=.find-in-store-result__content:nth-child(2) > .find-in-store-result__store-title-container .common-link", "css:finder"],
+        ["xpath=//a[contains(text(),'Indigospirit - The Core')]", "xpath:link"],
+        ["xpath=//div[@id='SharedStoreLoaderContainer-react-component']/div/div/div/div/div/div[2]/div/div[2]/ul/li/div[2]/div/div/a[2]", "xpath:idRelative"],
+        ["xpath=//a[contains(@href, 'https://www.chapters.indigo.ca//en-ca/home/storelocator/storedetails/79')]", "xpath:href"],
+        ["xpath=//li/div[2]/div/div/a[2]", "xpath:position"],
+        ["xpath=//a[contains(.,'Indigospirit - The Core')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "c0a94d4c-a8e8-4f2f-bd3d-10f30a434a8e",
+      "comment": "",
+      "command": "assertElementPresent",
+      "target": "css=.store-result__address > div:nth-child(1)",
+      "targets": [
+        ["css=.store-result__address > div:nth-child(1)", "css:finder"],
+        ["xpath=//div[@id='SharedStoreLoaderContainer-react-component']/div/div/div/div/div/div[2]/div/section/div[2]/div/div/section[2]/div", "xpath:idRelative"],
+        ["xpath=//section[2]/div", "xpath:position"]
+      ],
+      "value": ""
+    }]
+  }, {
+    "id": "3305d745-fa46-41e3-8e58-04918c3d752a",
+    "name": "purchase",
+    "commands": [{
+      "id": "51b6fa67-3c2f-4a8a-b177-6f0aaa660b4b",
+      "comment": "",
+      "command": "open",
+      "target": "/en-ca/books/run-towards-the-danger-confrontations/9780735242883-item.html",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "68994cbb-7ef7-4bbf-8999-3a9f992e7b1c",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1676x1393",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "6a959a6a-a0e3-4dac-94c3-7513de0571f9",
+      "comment": "",
+      "command": "click",
+      "target": "css=.async-button--full-width > .common-button",
+      "targets": [
+        ["css=.async-button--full-width > .common-button", "css:finder"],
+        ["xpath=(//button[@type='button'])[12]", "xpath:attributes"],
+        ["xpath=//section[@id='item-page__item-purchase-container']/div[4]/div/div/div/div[2]/button", "xpath:idRelative"],
+        ["xpath=//div/div/div/div[2]/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "5d1da9e9-e919-4316-8272-8df3fb2b29ff",
+      "comment": "",
+      "command": "click",
+      "target": "css=.common-button--link",
+      "targets": [
+        ["css=.common-button--link", "css:finder"],
+        ["xpath=//div[@id='cart-preview-container']/section/div[2]/div[3]/a/span", "xpath:idRelative"],
+        ["xpath=//div[2]/div[3]/a/span", "xpath:position"],
+        ["xpath=//span[contains(.,'VIEW CART')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "4e45b710-e57d-4650-9849-29ef888affe6",
+      "comment": "",
+      "command": "click",
+      "target": "id=cart-checkout-button",
+      "targets": [
+        ["id=cart-checkout-button", "id"],
+        ["css=#cart-checkout-button", "css:finder"],
+        ["xpath=//button[@id='cart-checkout-button']", "xpath:attributes"],
+        ["xpath=//section[@id='CartPageContainer']/div[2]/div[2]/button", "xpath:idRelative"],
+        ["xpath=//div[2]/div[2]/button", "xpath:position"],
+        ["xpath=//button[contains(.,'Proceed to Checkout')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "fdd4d1a8-62f7-43d2-bf40-9d47ba15a74b",
+      "comment": "",
+      "command": "click",
+      "target": "css=.common-button--ghost",
+      "targets": [
+        ["css=.common-button--ghost", "css:finder"],
+        ["xpath=(//button[@type='button'])[3]", "xpath:attributes"],
+        ["xpath=//div[@id='instanceId138216']/div/div/section[2]/button", "xpath:idRelative"],
+        ["xpath=//section[2]/button", "xpath:position"],
+        ["xpath=//button[contains(.,'CHECKOUT AS A GUEST')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "617d54b7-fb88-440f-b71e-c96ac82d7527",
+      "comment": "",
+      "command": "type",
+      "target": "id=sign-in-email",
+      "targets": [
+        ["id=sign-in-email", "id"],
+        ["name=sign-in-email", "name"],
+        ["css=#sign-in-email", "css:finder"],
+        ["xpath=//input[@id='sign-in-email']", "xpath:attributes"],
+        ["xpath=//div[@id='instanceId138216']/div/div/section[2]/form/div/div/input", "xpath:idRelative"],
+        ["xpath=//div/input", "xpath:position"]
+      ],
+      "value": "testtest@test.com"
+    }, {
+      "id": "be78ce31-4afb-4309-a6d5-324952f6f217",
+      "comment": "",
+      "command": "click",
+      "target": "css=.common-button",
+      "targets": [
+        ["css=.common-button", "css:finder"],
+        ["xpath=//button[@type='submit']", "xpath:attributes"],
+        ["xpath=//div[@id='instanceId138216']/div/div/section[2]/form/button", "xpath:idRelative"],
+        ["xpath=//form/button", "xpath:position"],
+        ["xpath=//button[contains(.,'CHECKOUT AS A GUEST')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "af7fd6d2-ddb2-418a-a677-bfae0ea60a75",
+      "comment": "",
+      "command": "click",
+      "target": "id=shipping-address-form__first-name",
+      "targets": [
+        ["id=shipping-address-form__first-name", "id"],
+        ["name=shipping-address-form__first-name", "name"],
+        ["css=#shipping-address-form__first-name", "css:finder"],
+        ["xpath=//input[@id='shipping-address-form__first-name']", "xpath:attributes"],
+        ["xpath=//div[@id='instanceId138431']/div/div/div/section/div[3]/form/div/input", "xpath:idRelative"],
+        ["xpath=//div/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "9b217b10-64b1-4a71-91d4-92d8c5911024",
+      "comment": "",
+      "command": "type",
+      "target": "id=shipping-address-form__first-name",
+      "targets": [
+        ["id=shipping-address-form__first-name", "id"],
+        ["name=shipping-address-form__first-name", "name"],
+        ["css=#shipping-address-form__first-name", "css:finder"],
+        ["xpath=//input[@id='shipping-address-form__first-name']", "xpath:attributes"],
+        ["xpath=//div[@id='instanceId138431']/div/div/div/section/div[3]/form/div/input", "xpath:idRelative"],
+        ["xpath=//div/input", "xpath:position"]
+      ],
+      "value": "testest"
+    }, {
+      "id": "8ec904eb-9a31-4583-9e2d-35a6d868bd9d",
+      "comment": "",
+      "command": "type",
+      "target": "id=shipping-address-form__last-name",
+      "targets": [
+        ["id=shipping-address-form__last-name", "id"],
+        ["name=shipping-address-form__last-name", "name"],
+        ["css=#shipping-address-form__last-name", "css:finder"],
+        ["xpath=//input[@id='shipping-address-form__last-name']", "xpath:attributes"],
+        ["xpath=//div[@id='instanceId138431']/div/div/div/section/div[3]/form/div[2]/input", "xpath:idRelative"],
+        ["xpath=//div[2]/input", "xpath:position"]
+      ],
+      "value": "testest"
+    }, {
+      "id": "9fe8f2ef-b82a-4d11-aaf2-1a921bc5c0ec",
+      "comment": "",
+      "command": "type",
+      "target": "id=shipping-address-form__address",
+      "targets": [
+        ["id=shipping-address-form__address", "id"],
+        ["name=shipping-address-form__address", "name"],
+        ["css=#shipping-address-form__address", "css:finder"],
+        ["xpath=//input[@id='shipping-address-form__address']", "xpath:attributes"],
+        ["xpath=//div[@id='instanceId138431']/div/div/div/section/div[3]/form/div[4]/input", "xpath:idRelative"],
+        ["xpath=//div[4]/input", "xpath:position"]
+      ],
+      "value": "University of Calgary"
+    }, {
+      "id": "18fd1a84-cdd1-40be-8741-dd742b0f4f11",
+      "comment": "",
+      "command": "type",
+      "target": "id=shipping-address-form__city",
+      "targets": [
+        ["id=shipping-address-form__city", "id"],
+        ["name=shipping-address-form__city", "name"],
+        ["css=#shipping-address-form__city", "css:finder"],
+        ["xpath=//input[@id='shipping-address-form__city']", "xpath:attributes"],
+        ["xpath=//div[@id='instanceId138431']/div/div/div/section/div[3]/form/div[6]/input", "xpath:idRelative"],
+        ["xpath=//div[6]/input", "xpath:position"]
+      ],
+      "value": "Calgary"
+    }, {
+      "id": "ec3c4111-07ef-465c-bb4a-2e53496ee80a",
+      "comment": "",
+      "command": "select",
+      "target": "id=shipping-address-form__province",
+      "targets": [],
+      "value": "label=Alberta"
+    }, {
+      "id": "34da908f-86eb-42b7-886a-9803d53f5c38",
+      "comment": "",
+      "command": "click",
+      "target": "id=shipping-address-form__postal-code",
+      "targets": [
+        ["id=shipping-address-form__postal-code", "id"],
+        ["name=shipping-address-form__postal-code", "name"],
+        ["css=#shipping-address-form__postal-code", "css:finder"],
+        ["xpath=//input[@id='shipping-address-form__postal-code']", "xpath:attributes"],
+        ["xpath=//div[@id='instanceId138431']/div/div/div/section/div[3]/form/div[8]/input", "xpath:idRelative"],
+        ["xpath=//div[8]/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "766a0b48-3d7c-4095-9a3f-434b9c73e6d7",
+      "comment": "",
+      "command": "type",
+      "target": "id=shipping-address-form__postal-code",
+      "targets": [
+        ["id=shipping-address-form__postal-code", "id"],
+        ["name=shipping-address-form__postal-code", "name"],
+        ["css=#shipping-address-form__postal-code", "css:finder"],
+        ["xpath=//input[@id='shipping-address-form__postal-code']", "xpath:attributes"],
+        ["xpath=//div[@id='instanceId138431']/div/div/div/section/div[3]/form/div[8]/input", "xpath:idRelative"],
+        ["xpath=//div[8]/input", "xpath:position"]
+      ],
+      "value": "T2N1N4"
+    }, {
+      "id": "0b730693-5331-4962-a184-2e4fd16df2df",
+      "comment": "",
+      "command": "click",
+      "target": "id=shipping-address-form__primary-phone",
+      "targets": [
+        ["id=shipping-address-form__primary-phone", "id"],
+        ["name=shipping-address-form__primary-phone", "name"],
+        ["css=#shipping-address-form__primary-phone", "css:finder"],
+        ["xpath=//input[@id='shipping-address-form__primary-phone']", "xpath:attributes"],
+        ["xpath=//div[@id='instanceId138431']/div/div/div/section/div[3]/form/div[9]/input", "xpath:idRelative"],
+        ["xpath=//div[9]/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "b615c582-fb3e-4970-9bbb-fd01584dca14",
+      "comment": "",
+      "command": "type",
+      "target": "id=shipping-address-form__primary-phone",
+      "targets": [
+        ["id=shipping-address-form__primary-phone", "id"],
+        ["name=shipping-address-form__primary-phone", "name"],
+        ["css=#shipping-address-form__primary-phone", "css:finder"],
+        ["xpath=//input[@id='shipping-address-form__primary-phone']", "xpath:attributes"],
+        ["xpath=//div[@id='instanceId138431']/div/div/div/section/div[3]/form/div[9]/input", "xpath:idRelative"],
+        ["xpath=//div[9]/input", "xpath:position"]
+      ],
+      "value": "1-403-220-5110"
+    }, {
+      "id": "60ce9899-58ce-4908-8d24-074446b8c64f",
+      "comment": "",
+      "command": "click",
+      "target": "css=.address-form__save-button",
+      "targets": [
+        ["css=.address-form__save-button", "css:finder"],
+        ["xpath=(//button[@type='button'])[5]", "xpath:attributes"],
+        ["xpath=//div[@id='instanceId138431']/div/div/div/section/div[3]/form/div[10]/button", "xpath:idRelative"],
+        ["xpath=//div[10]/button", "xpath:position"],
+        ["xpath=//button[contains(.,'NEXT')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "cf5a5160-6ab0-4add-ba8c-20cb841bf1a5",
+      "comment": "",
+      "command": "assertElementPresent",
+      "target": "css=.panel-title__text",
+      "targets": [
+        ["css=.panel-title__text", "css:finder"],
+        ["xpath=//div[@id='instanceId138630']/div/div/div/div/h1", "xpath:idRelative"],
+        ["xpath=//h1", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "386815e6-0299-4c89-9cb8-3be5bd5c5b5b",
       "comment": "",
       "command": "assertText",
-      "target": "css=.cart-page-default__title",
+      "target": "css=.panel-title__text",
       "targets": [
-        ["css=.common-title", "css:finder"],
-        ["xpath=//div[@id='cartpageInstanceId45']/div/section/section/h2", "xpath:idRelative"],
-        ["xpath=//h2", "xpath:position"],
-        ["xpath=//h2[contains(.,'Your Shopping Cart is Empty')]", "xpath:innerText"]
+        ["css=.panel-title__text", "css:finder"],
+        ["xpath=//div[@id='instanceId138630']/div/div/div/div/h1", "xpath:idRelative"],
+        ["xpath=//h1", "xpath:position"]
       ],
-      "value": "Your Shopping Cart is Empty"
+      "value": "SHIPPING OPTIONS"
+    }, {
+      "id": "6242bd33-f1f4-4ad9-83d4-5055115e9f59",
+      "comment": "",
+      "command": "pause",
+      "target": "3000",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "17e1f7d2-82db-4eac-828c-e1de8e617c89",
+      "comment": "",
+      "command": "click",
+      "target": "css=.common-button",
+      "targets": [
+        ["css=.common-button", "css:finder"],
+        ["xpath=(//button[@type='button'])[7]", "xpath:attributes"],
+        ["xpath=//div[@id='instanceId138850']/div/div/section/section/section/section[3]/div[3]/div/div/button", "xpath:idRelative"],
+        ["xpath=//div/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "94ff1f7f-e078-436d-acb5-a5a9d62bbc1d",
+      "comment": "",
+      "command": "click",
+      "target": "css=.common-button",
+      "targets": [
+        ["css=.common-button", "css:finder"],
+        ["xpath=(//button[@type='button'])[8]", "xpath:attributes"],
+        ["xpath=//div[@id='instanceId139867']/div/div/section/section/section/section[3]/div[3]/div/div/button", "xpath:idRelative"],
+        ["xpath=//section[3]/div[3]/div/div/button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "dd2aab0d-a9b6-48ad-916c-1a8585942ba1",
+      "comment": "",
+      "command": "assertText",
+      "target": "css=.payment-card-container__heading-label",
+      "targets": [
+        ["css=.payment-card-container__heading-label", "css:finder"],
+        ["xpath=//div[@id='instanceId139386']/div/div/div/section/section[2]/div/div/div/h3/div/label", "xpath:idRelative"],
+        ["xpath=//label", "xpath:position"],
+        ["xpath=//label[contains(.,'CREDIT CARD')]", "xpath:innerText"]
+      ],
+      "value": "CREDIT CARD"
     }]
   }],
   "suites": [{
