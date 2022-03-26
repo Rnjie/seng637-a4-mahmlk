@@ -40,11 +40,11 @@
 
 #### Range: Mutation Coverage Before (47%)
 
-![](./images/Range mutation.png)
+![](./images/Range%20mutation.png)
 
 #### Range: Mutation Coverage After (61%)
 
-![](./images/Range mutation New.png)
+![](./images/Range%20mutation%20New.png)
 
 ## 3. Analysis drawn on the effectiveness of each of the test classes
 
