@@ -91,6 +91,27 @@ public class DataUtilitiesTest {
 
 		mockery.assertIsSatisfied(); // verify that the getValue method is called exactly 3 times
 	}
+	
+	@Test
+	public void test_calculateColumnTotal_validRows_withnull() {
+		// (null,3,4) in column 3 => (9) All positive in column of array v1
+		double val2 = 3;
+		double val3 = 4;
+		int column = 3;
+		double expected = 4;
+		int[] validRows = {0,2,3,4};
+		mockery.checking(new Expectations() {{
+			allowing(value).getColumnCount(); will(returnValue(3));
+			allowing(value).getRowCount(); will(returnValue(3));
+			
+			one(value).getValue(0, column); will(returnValue(null));
+			one(value).getValue(1, column); will(returnValue(val2));
+			one(value).getValue(2, column); will(returnValue(val3));
+		}});
+		double actual = DataUtilities.calculateColumnTotal(value, column, validRows);
+
+		assertEquals(expected, actual, 0);
+	}
 
 
 	// NEGATIVE COLUMN VALUES
@@ -172,9 +193,16 @@ public class DataUtilitiesTest {
 	// It throws a NullPointerException instead of the InvalidParameterException
 	// when tested.
 	@Test(expected = IllegalArgumentException.class)
-	public void test_calculateColumnTotal_ExceptionThrows_InvalidParameterException() {
+	public void test_calculateColumnTotal_ExceptionThrows_IllegalArgumentException() {
 		value = null;
 		DataUtilities.calculateColumnTotal(value, 1);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void test_calculateColumnTotal_validRows_IllegalArgumentException() {
+		value = null;
+		int[] validRows = {1};
+		DataUtilities.calculateColumnTotal(value, 1, validRows);
 	}
 
 	
@@ -206,6 +234,27 @@ public class DataUtilitiesTest {
 
 		mockery.assertIsSatisfied(); // verify that the getValue method is called exactly 3
 																// times
+	}
+	
+	@Test
+	public void test_calculateRowTotal_validCols_withnull() {
+		// (null,3,4) in row 3 => (9) All positive in column of array v1
+		double val2 = 3;
+		double val3 = 4;
+		int row = 3;
+		double expected = 4;
+		int[] validCols = {0,2,3,4};
+		mockery.checking(new Expectations() {{
+			allowing(value).getColumnCount(); will(returnValue(3));
+			allowing(value).getRowCount(); will(returnValue(3));
+			
+			one(value).getValue(row, 0); will(returnValue(null));
+			one(value).getValue(row, 1); will(returnValue(val2));
+			one(value).getValue(row, 2); will(returnValue(val3));
+		}});
+		double actual = DataUtilities.calculateRowTotal(value, row, validCols);
+
+		assertEquals(expected, actual, 0);
 	}
 
 	// NEGATIVE ROW VALUES
@@ -306,6 +355,28 @@ public class DataUtilitiesTest {
 		KeyedValues actual = DataUtilities.getCumulativePercentages(kvalues);
 		assertEquals(expected, actual.getValue(a).doubleValue(), 0.01d);
 	}
+	
+	@Test
+	public void test_getCumulativePercentage_withnull() {
+		double expected = 0;
+		int a = 0;
+		KeyedValues valuesWithNull = mockery.mock(KeyedValues.class, "valuesWithNull");
+		
+		mockery.checking(new Expectations() {{
+			allowing(valuesWithNull).getItemCount(); will(returnValue(3));
+			
+			allowing(valuesWithNull).getValue(0); will(returnValue(null));
+			allowing(valuesWithNull).getValue(1); will(returnValue(1));
+			allowing(valuesWithNull).getValue(2); will(returnValue(1));
+			
+			allowing(valuesWithNull).getKey(0); will(returnValue(0));
+			allowing(valuesWithNull).getKey(1); will(returnValue(1));
+			allowing(valuesWithNull).getKey(2); will(returnValue(2));
+		}});
+		
+		KeyedValues actual = DataUtilities.getCumulativePercentages(valuesWithNull);
+		assertEquals(expected, actual.getValue(a).doubleValue(), 0.01d);
+	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void test_getCumulativePercentage_null() {
@@ -342,7 +413,7 @@ public class DataUtilitiesTest {
 	@Test
 	public void test_createNumberArray() {
 		oldArray = new double[] { 1, 3, 4, 5, 6, 1, 0, 3, -4, -2, -10, 0.5, -0.5, 1.25, -1.25 };
-		newArray = DataUtilities.createNumberArray(oldArray);
+		newArray = DataUtilities.createNumberArray(oldArray.clone());
 
 		for (int i = 0; i < newArray.length; i++) {
 			assertNotNull(newArray[i]);
@@ -361,9 +432,12 @@ public class DataUtilitiesTest {
 	@Test
 	public void test_createNumberArray2D_single() {
 		old2DArray = new double[][] { new double[] { 1 } };
-		new2DArray = DataUtilities.createNumberArray2D(old2DArray);
-
+		double[][] old2DArrayClone = new double[][] { new double[] { 1 } };
+		new2DArray = DataUtilities.createNumberArray2D(old2DArrayClone);
+		
+		assertEquals(old2DArray.length, new2DArray.length);
 		for (int i = 0; i < new2DArray.length; i++) {
+			assertEquals(old2DArray[i].length, new2DArray[i].length);
 			for (int e = 0; e < new2DArray[i].length; e++) {
 				assertNotNull(new2DArray[i][e]);
 				assertEquals(new2DArray[i][e].doubleValue(), old2DArray[i][e], 0);
@@ -384,6 +458,68 @@ public class DataUtilitiesTest {
 				assertEquals(new2DArray[i][e].doubleValue(), old2DArray[i][e], 0);
 			}
 			;
+		}
+	}
+	
+	@Test
+	public void test_equal() {
+		double[][] a = {{1,2}, {3,4}};
+		double[][] b = {{1,2}, {3,4}};
+		
+		boolean actual = DataUtilities.equal(a, b);
+		
+		assertTrue(actual);
+	}
+	
+	@Test
+	public void test_equal_null() {
+		double[][] a = {{1,2}, {3,4}};
+		
+		assertTrue(DataUtilities.equal(null, null));
+		assertFalse(DataUtilities.equal(a, null));
+		assertFalse(DataUtilities.equal(null, a));
+	}
+	
+	@Test
+	public void test_equal_unequal_length() {
+		double[][] a = {{1,2}, {3,4}};
+		double[][] b = {{1,2}, {3,4}, {5,6}};
+		
+		assertFalse(DataUtilities.equal(a, b));
+		assertFalse(DataUtilities.equal(b, a));
+	}
+	
+	@Test
+	public void test_equal_diffferent_values() {
+		double[][] a = {{1,2}, {3,4}};
+		double[][] b = {{0,6}, {3,4}};
+		
+		assertFalse(DataUtilities.equal(a, b));
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void test_clone_null() {
+		DataUtilities.clone(null);
+	}
+	
+	@Test
+	public void test_clone_with_null() {
+		double[][] a = {{1,2}, {3,4}, null};
+		double[][] expected_clone = {{1,2}, {3,4}, null};
+		
+		double[][] actual_clone = DataUtilities.clone(a);
+		
+		assertEquals(expected_clone.length, actual_clone.length);
+		
+		for(int i=0; i<expected_clone.length; i++) {
+			if (expected_clone[i] == null) {
+				assertNull(actual_clone[i]);
+			} else {
+				assertEquals(expected_clone[i].length, actual_clone[i].length);
+				for (int j=0; j<expected_clone[i].length; j++) {
+					assertEquals(expected_clone[i][j], actual_clone[i][j], 0.001);
+				}
+			}
 		}
 	}
 
